@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
+import os, mongoengine
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -57,10 +57,26 @@ WSGI_APPLICATION = 'gsf.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': '',
     }
 }
+
+# Interfacing with MongoDB using MongoEngine
+SESSION_ENGINE = 'mongoengine.django.sessions'
+
+_MONGODB_USER = 'admin'
+_MONGODB_PASSWD = 'gsf'
+_MONGODB_HOST = 'ubuntu'
+_MONGODB_NAME = 'data'
+_MONGODB_DATABASE_HOST = \
+    'mongodb://%s:%s@%s/%s' \
+    % (_MONGODB_USER, _MONGODB_PASSWD, _MONGODB_HOST, _MONGODB_NAME)
+
+mongoengine.connect(_MONGODB_NAME, host=_MONGODB_DATABASE_HOST)
+
+AUTHENTICATION_BACKENDS = (
+    'mongoengine.django.auth.MongoEngineBackend',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
