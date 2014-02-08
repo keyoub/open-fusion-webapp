@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'show',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -57,16 +58,18 @@ WSGI_APPLICATION = 'gsf.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': '',
+        'ENGINE': 'django.db.backends.dummy',
+	'NAME': '',
     }
 }
 
 # Interfacing with MongoDB using MongoEngine
 SESSION_ENGINE = 'mongoengine.django.sessions'
+SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
 _MONGODB_USER = 'admin'
 _MONGODB_PASSWD = 'gsf'
-_MONGODB_HOST = 'ubuntu'
+_MONGODB_HOST = 'localhost'
 _MONGODB_NAME = 'data'
 _MONGODB_DATABASE_HOST = \
     'mongodb://%s:%s@%s/%s' \
@@ -77,6 +80,8 @@ mongoengine.connect(_MONGODB_NAME, host=_MONGODB_DATABASE_HOST)
 AUTHENTICATION_BACKENDS = (
     'mongoengine.django.auth.MongoEngineBackend',
 )
+
+TEST_RUNNER = 'gsf.tests.NoSQLTestRunner'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -96,3 +101,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 STATIC_ROOT = '/web/gsf/static/'
 STATIC_URL = '/static/'
+
+########## DJANGO-DEBUG CONFIGURATION
+try:
+    import debug_toolbar
+    MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
+    INSTALLED_APPS += ('debug_toolbar',)
+    INTERNAL_IPS = ('127.0.0.1',)
+
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+        'SHOW_TEMPLATE_CONTEXT': True,
+    }
+except:
+    pass
+
+########## END DJANGO-DEBUG CONFIGURATION
