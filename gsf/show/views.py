@@ -4,8 +4,8 @@ from show.models import Data
 import datetime
 
 def index(request):
-	data = Data.objects
-	return HttpResponse(data)
+	data = Data.objects[0]
+	return HttpResponse("name: %s<br />speech: %s" % (data.name,data.speech))
 
 def insert(request):
 	data = Data(name="Bardia Keyoumarsi")
