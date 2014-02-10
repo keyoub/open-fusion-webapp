@@ -1,0 +1,22 @@
+    <table class="">
+      <thead>
+        <tr>
+          <th class="header">Source</th>
+	  <th class="header">Latitude</th>
+	  <th class="header">Longitude</th>
+	  <th class="header">Timestamp</th>
+	  <th class="header">Data</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for d in data %}
+	  <tr>
+	    <td>{{ d.source }}</td>
+	    <td>{{ d.latitude }}</td>
+	    <td>{{ d.longitude }}</td>
+   	    <td>{{ d.timestamp }}</td>
+	    <td>{{ d.temperature }}</td>
+	  </tr>
+	{% endfor %}
+      </tbody>
+    </table>

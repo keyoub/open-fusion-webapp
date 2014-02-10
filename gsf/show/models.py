@@ -12,7 +12,7 @@ class Data(Document):
 	longitude   = DecimalField(precision=10, required=True)
 	timestamp   = DateTimeField(default=datetime.datetime.now)
 	text        = StringField(max_length=500)
-	image       = ImageField()
+	#image       = ImageField()
 	noise_level = DecimalField(precision=5)
 	temperature = DecimalField(precision=5)
 	humidity    = DecimalField(precision=5)
