@@ -41,6 +41,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'show',
+    'rest_framework',
+    'api',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -103,7 +105,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-STATIC_ROOT = '/web/gsf/static/'
+STATIC_ROOT = '/web/open-fusion-webapp/gsf/static/'
 STATIC_URL = '/static/'
 
 ########## DJANGO-DEBUG CONFIGURATION

@@ -1,7 +1,7 @@
 import os, sys
 
-sys.path.append('/web/gsf')
-sys.path.append('/web/gsf/gsf/')
+sys.path.append('/web/open-fusion-webapp/gsf')
+sys.path.append('/web/open-fusion-webapp/gsf/gsf/')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'gsf.settings'
 
