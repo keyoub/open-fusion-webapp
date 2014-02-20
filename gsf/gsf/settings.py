@@ -12,12 +12,16 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os, mongoengine
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+try:
+    from local_settings import *
+except ImportError:
+    pass
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '%exf1fk-5)q#-0(0=rj3nflgr)k642!#z8e5_6e8q@=xx6qd8n'
+#SECRET_KEY = '%exf1fk-5)q#-0(0=rj3nflgr)k642!#z8e5_6e8q@=xx6qd8n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -73,15 +77,15 @@ DATABASES = {
 SESSION_ENGINE = 'mongoengine.django.sessions'
 SESSION_SERIALIZER = 'mongoengine.django.sessions.BSONSerializer'
 
-_MONGODB_USER = 'admin'
-_MONGODB_PASSWD = 'gsf'
-_MONGODB_HOST = 'localhost'
-_MONGODB_NAME = 'data'
-_MONGODB_DATABASE_HOST = \
-    'mongodb://%s:%s@%s/%s' \
-    % (_MONGODB_USER, _MONGODB_PASSWD, _MONGODB_HOST, _MONGODB_NAME)
+#_MONGODB_USER = 'admin'
+#_MONGODB_PASSWD = 'gsf'
+#_MONGODB_HOST = 'localhost'
+#_MONGODB_NAME = 'data'
+#_MONGODB_DATABASE_HOST = \
+#    'mongodb://%s:%s@%s/%s' \
+#    % (_MONGODB_USER, _MONGODB_PASSWD, _MONGODB_HOST, _MONGODB_NAME)
 
-mongoengine.connect(_MONGODB_NAME, host=_MONGODB_DATABASE_HOST)
+mongoengine.connect(MONGODB_NAME, host=MONGODB_DATABASE_HOST)
 
 AUTHENTICATION_BACKENDS = (
     'mongoengine.django.auth.MongoEngineBackend',

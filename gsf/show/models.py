@@ -1,9 +1,9 @@
 from mongoengine import *
-from gsf.settings import _MONGODB_NAME
+from gsf.settings import MONGODB_NAME
 
 import datetime
 
-connect(_MONGODB_NAME)
+connect(MONGODB_NAME)
 
 # The Data collection layout
 class Data(Document):
