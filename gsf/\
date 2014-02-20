@@ -14,5 +14,6 @@ def insert(request):
 	data.longitude = random.uniform(-100, 100)
 	data.temperature = random.uniform(0, 105)
 	data.save()
-	return HttpResponse("Data was inserted, visit <a href=\"/show/\">main page</a> to view.")
+	return HttpResponse("Data was inserted, visit <a href=\"%s\">main page</a> to view." %
+				index)
 
