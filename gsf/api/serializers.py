@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api import Data
+from api.models import Data
 
 class DataSerializer(serializers.ModelSerializer):
 
