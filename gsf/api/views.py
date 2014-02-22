@@ -15,8 +15,15 @@ def upload(request):
       serializer = DataSerializer(data=request.DATA)
       if serializer.is_valid():
          serializer.save()
-         return Response(status.status.HTTP_201_CREATED)
+         return Response(status=status.HTTP_201_CREATED)
       else:
-         return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 			
+# Send requested data to the third party application
+@api_view(['GET'])
+def download(request):
+   if request.method == 'GET':
+      data = Data.objects.all()
+      serializer = DataSerializer(data, many=True)
+      return Response(serializer.data)
 	
