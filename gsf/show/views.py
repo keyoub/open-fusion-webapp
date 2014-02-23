@@ -1,11 +1,11 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from api import Data
+from api.models import Data
 import datetime, random
 
 def index(request):
-	data = Data.objects.all()
-	context = {'data' : data}
+	#data = Data.objects.all()
+	context = {'data' : 'test'}
 	return render(request, 'index.html', context)
 
 def insert(request):
