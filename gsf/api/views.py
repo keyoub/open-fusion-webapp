@@ -11,7 +11,7 @@ def upload(request):
          source = json_data['source']
       except KeyError:
          return HttpResponseServerError("Malformed data!")
-      return HttpResponse("Got json data you said source: %s" % source)
+      return HttpResponse("Got json data you said source: %s\n\n" % source)
    else: 
       return HttpResponse("Can't upload with GET request you fool")
 			
