@@ -13,24 +13,30 @@ def upload(request):
          data.location = json_data['location']
          data.timestamp = json_data['timestamp']
          # If any of the below are available add them to the Document
-         try:
-            data.altitude = json_data['altitude']
-            data.h_accuracy = json_data['h_accuracy']
-            data.v_accuracy = json_data['v_accuracy']
-            data.text = json_data['text']
-            data.image = json_data['image']
-            data.noise_level = json_data['noise_level']
-            data.temperature = json_data['temperature']
-            data.humidity = json_data['humidity']
-            data.population = json_data['population']
-         except:
-            pass
+         for key in json_data.keys():
+            if key == "altitude":
+               data.altitude = json_data[key]
+            elif key == "h_accuracy":
+               data.h_accuracy = json_data[key]
+            elif key == "v_accuracy":
+               data.v_accuracy = json_data[key]
+            elif key == "text":
+               data.text = json_data[key]
+            elif key == "image":
+               data.image = json_data[key]
+            elif key == "noise_level":
+               data.noise_level = json_data[key]
+            elif key == "temperature":
+               data.temperature = json_data[key]
+            elif key == "humidity":
+               data.humidity = json_data[key]
+            elif key == "population":
+               data.population = json_data[key]
          data.save()
       except KeyError:
          return HttpResponseServerError("The request cannot be processed\
                 due to wrong JSON format.\n")
-      return HttpResponse("Got json data. Here is what I saved: %s\n\n"\
-                 % json.dumps(data), content_type="application/json")
+      return HttpResponse("Got json data.")
    else: 
       return HttpResponse("You can only upload with POST")
 			
