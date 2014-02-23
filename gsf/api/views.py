@@ -1,29 +1,22 @@
 from django.shortcuts import render
-
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-
+from django.http import HttpResponse, HttpResponseServerError
 from api.models import Data
-from api.serializers import DataSerializer
-
+import json
 
 # Receive data from iOS app and store in db
-@api_view(['POST'])
 def upload(request):
    if request.method == 'POST':
-      serializer = DataSerializer(data=request.DATA)
-      if serializer.is_valid():
-         serializer.save()
-         return Response(status=status.HTTP_201_CREATED)
-      else:
-         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+      json_data = json.loads(request.body)
+      try:
+         source = json_data['source']
+      except KeyError:
+         return HttpResponseServerError("Malformed data!")
+      return HttpResponse("Got json data you said source: %s" % source)
+   else: 
+      return HttpResponse("Can't upload with GET request you fool")
 			
 # Send requested data to the third party application
-@api_view(['GET'])
 def download(request):
-   if request.method == 'GET':
-      data = Data.objects.all()
-      serializer = DataSerializer(data, many=True)
-      return Response(serializer.data)
+   pass
+   
 	
