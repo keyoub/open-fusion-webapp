@@ -4,25 +4,29 @@ table td{
 	padding: 5px;
 }
 </style>
-    <table style="border:solid 1px; padding:3px;">
+<table style="border:solid 1px; padding:3px;">
       <thead>
         <tr>
-          <th class="header">Source</th>
-	  <th class="header">Latitude</th>
-	  <th class="header">Longitude</th>
-	  <th class="header">Timestamp</th>
-	  <th class="header">Data</th>
-	</tr>
+         <th class="header">Source</th>
+	      <th class="header">Timestamp</th>
+         <th class="header">Location</th>
+     	   <th class="header">Data</th>
+	     </tr>
       </thead>
-      <tbody>
+   <tbody>
 	{% for d in data %}
 	  <tr>
 	    <td>{{ d.source }}</td>
-	    <td>{{ d.latitude }}</td>
-	    <td>{{ d.longitude }}</td>
-   	    <td>{{ d.timestamp }}</td>
-	    <td>{{ d.temperature }}</td>
+	    <td>{{ d.date_added }}</td>
+	    <td>{{ d.location }}</td>
+   	 <td>text: {{ d.text }}<br />
+           image: {{ d.image}}<br /> 
+           noise_level: {{ d.noise_level}}<br /> 
+           temperature: {{ d.temperature}}<br /> 
+           humidity: {{ d.humidity}}<br /> 
+           population: {{ d.population}}<br /> 
+       </td>
 	  </tr>
 	{% endfor %}
       </tbody>
-    </table>
+</table>

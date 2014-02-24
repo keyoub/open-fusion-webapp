@@ -1,8 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseServerError
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from api.models import Data
 import json
 
+
+@csrf_exempt
+@require_http_methods(["POST"])
 # Receive data from iOS app and store in db
 def upload(request):
    if request.method == 'POST':
@@ -34,8 +39,8 @@ def upload(request):
                data.population = json_data[key]
          data.save()
       except KeyError:
-         return HttpResponseServerError("The request cannot be processed\
-                due to wrong JSON format.\n")
+         return HttpResponseServerError(
+         "The request cannot be processed due to wrong JSON format.\n")
       return HttpResponse("Got json data.")
    else: 
       return HttpResponse("You can only upload with POST")
