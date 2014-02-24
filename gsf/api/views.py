@@ -7,7 +7,6 @@ import json
 
 
 @csrf_exempt
-@require_http_methods(["POST"])
 # Receive data from iOS app and store in db
 def upload(request):
    if request.method == 'POST':
