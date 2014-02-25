@@ -40,9 +40,9 @@ def upload(request):
       except KeyError:
          return HttpResponseServerError(
          "The request cannot be processed due to wrong JSON format.\n")
-      return HttpResponse("Got json data.")
+      return HttpResponse("Got json data.\n\n")
    else: 
-      return HttpResponse("You can only upload with POST")
+      return HttpResponse("You can only upload with POST you fool!")
 			
 # Send requested data to the third party application
 def download(request):
