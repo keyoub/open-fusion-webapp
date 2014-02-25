@@ -15,7 +15,7 @@ class Data(Document):
    h_accuracy  = DecimalField(precision=5)
    v_accuracy  = DecimalField(precision=5)
    text        = StringField(max_length=1000)
-   image       = ImageField()
+   image       = StringField()
    noise_level = DecimalField(precision=5)
    temperature = DecimalField(precision=5)
    humidity    = DecimalField(precision=5)
