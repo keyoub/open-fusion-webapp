@@ -65,7 +65,6 @@ WSGI_APPLICATION = 'gsf.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.dummy',
-	'NAME': '',
     }
 }
 

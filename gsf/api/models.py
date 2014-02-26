@@ -9,7 +9,7 @@ connect(MONGODB_NAME)
 class Data(Document):
    date_added  = DateTimeField(default=datetime.datetime.now)
    source      = StringField(required=True, max_length=50)
-   timestamp   = IntField(required=True)
+   timestamp   = DecimalField(required=True)
    location    = PointField(required=True)
    altitude    = DecimalField(precision=5)
    h_accuracy  = DecimalField(precision=5)
@@ -19,9 +19,16 @@ class Data(Document):
    noise_level = DecimalField(precision=5)
    temperature = DecimalField(precision=5)
    humidity    = DecimalField(precision=5)
-   population  = IntField()
+   faces_detected  = IntField()
+   people_detected = IntField()
 
    class Meta:
       ordering = ('date_added',)
+
+class Tokens(Document):
+   created = DateTimeField(default=datetime.datetime.now)
+   token   = StringField(required=True, max_length=50, min_length=50)
+   secret  = StringField(required=True, max_length=50, min_length=8)
+   
 
 
