@@ -26,9 +26,14 @@ class Data(Document):
       ordering = ('date_added',)
 
 class Tokens(Document):
-   created = DateTimeField(default=datetime.datetime.now)
-   token   = StringField(required=True, max_length=50, min_length=50)
-   secret  = StringField(required=True, max_length=50, min_length=8)
+   date_created = DateTimeField(default=datetime.datetime.now)
+   api_key   = StringField(required=True)
+   application = StringField(required=True, max_length=100)
+   organization = StringField(max_length=100)
+   dev_fullname = StringField(required=True, max_length=200)
+
+   class Meta:
+      ordering = ('date_created',)
    
 
 

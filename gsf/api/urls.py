@@ -7,5 +7,6 @@ urlpatterns = patterns('',
 	#url(r'^$', views.index, name='index'),
 	url(r'^upload/$', views.upload, name='upload'),
 	url(r'^download/$', views.download, name='download'),
+	url(r'^token/$', views.token_request, name='token'),
 )
 

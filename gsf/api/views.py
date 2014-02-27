@@ -1,10 +1,42 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseBadRequest, \
+                        HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from api.models import Data
-import json
+from api.models import Data, Tokens
+import json, base64, hashlib, random
 
+def token_request(request):
+   if request.method == 'GET':
+      application = request.GET.get('application')
+      organization = request.GET.get('organization')
+      dev_fullname = request.GET.get('developer')
+      if not application or not dev_fullname:
+         return HttpResponseBadRequest("Can't process request due to missing info.\n")
+      # Check if the token for the app already exist
+      if not Tokens.objects(application__exists=application):     
+         # Generate secret token
+         key = base64.b64encode(hashlib.sha256( \
+                   str(random.getrandbits(256)) ).digest(), \
+                   random.choice(['rA','aZ','gQ','hH','hG','aR','DD'])).rstrip('==')
+         entry = Tokens(api_key=key) 
+         entry.application = application
+         entry.organization = organization
+         entry.dev_fullname = dev_fullname
+         try:
+            entry.save()
+            response_data = {}
+            response_data['key'] = key
+            return HttpResponse(json.dumps(response_data),
+                                  content_type="application/json")
+         except:
+            return HttpResponseServerError("Your request could not be completed due"\
+                        " to internal errors. Try again later.")
+      else:
+         return HttpResponse("You already have a token with us. If you have " \
+                       "lost it please contact bkeyouma@ucsc.edu")
+   else:
+      return HttpResponseBadRequest("You can only get a token with GET request.\n")
 
 @csrf_exempt
 # Receive data from iOS app and store in db
@@ -36,13 +68,17 @@ def upload(request):
                data.humidity = json_data[key]
             elif key == "population":
                data.population = json_data[key]
-         data.save()
+         try:
+            data.save()
+         except:
+            return HttpResponseBadRequest(
+               "The request cannot be processed due to wrong JSON format.\n")
       except KeyError:
-         return HttpResponseServerError(
-         "The request cannot be processed due to wrong JSON format.\n")
-      return HttpResponse("Got json data.\n\n")
+         return HttpResponseBadRequest(
+            "The request cannot be processed due to wrong JSON format.\n")
+      return HttpResponse("Got json data.\n")
    else: 
-      return HttpResponse("You can only upload with POST you fool!")
+      return HttpResponse("You can only upload with POST you fool!\n")
 			
 # Send requested data to the third party application
 def download(request):
