@@ -6,13 +6,19 @@ from django.views.decorators.http import require_http_methods
 from api.models import Data, Tokens
 import json, base64, hashlib, random
 
-def token_request(request):
+"""
+ Applications can request an API key to get data 
+ from the Data collection
+"""
+def key_request(request):
    if request.method == 'GET':
       application = request.GET.get('application')
       organization = request.GET.get('organization')
       dev_fullname = request.GET.get('developer')
+
       if not application or not dev_fullname:
          return HttpResponseBadRequest("Can't process request due to missing info.\n")
+
       # Check if the token for the app already exist
       if not Tokens.objects(application__exists=application):     
          # Generate secret token
@@ -38,8 +44,11 @@ def token_request(request):
    else:
       return HttpResponseBadRequest("You can only get a token with GET request.\n")
 
+"""
+ Currently only accepts data from the iOS app 
+ with the appropriate API key given with the request
+"""
 @csrf_exempt
-# Receive data from iOS app and store in db
 def upload(request):
    if request.method == 'POST':
       json_data = json.loads(request.body)
@@ -72,15 +81,17 @@ def upload(request):
             data.save()
          except:
             return HttpResponseBadRequest(
-               "The request cannot be processed due to wrong JSON format.\n")
+               "The request cannot be processed due to bad data types.\n")
       except KeyError:
          return HttpResponseBadRequest(
             "The request cannot be processed due to wrong JSON format.\n")
       return HttpResponse("Got json data.\n")
-   else: 
-      return HttpResponse("You can only upload with POST you fool!\n")
-			
-# Send requested data to the third party application
+   else:  
+     return HttpResponse("You can only upload with POST you fool!\n")
+
+"""			
+ Send requested data to the third party application
+"""
 def download(request):
    pass
    
