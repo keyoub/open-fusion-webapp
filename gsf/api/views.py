@@ -51,41 +51,47 @@ def key_request(request):
 @csrf_exempt
 def upload(request):
    if request.method == 'POST':
-      json_data = json.loads(request.body)
+      json_data_top_level = json.loads(request.body)
       try:
-         # Get required data from the JSON obj
-         data = Data(source="iPhone")
-         data.location = json_data['location']
-         data.timestamp = json_data['timestamp']
-         # If any of the below are available add them to the Document
-         for key in json_data.keys():
-            if key == "altitude":
-               data.altitude = json_data[key]
-            elif key == "h_accuracy":
-               data.h_accuracy = json_data[key]
-            elif key == "v_accuracy":
-               data.v_accuracy = json_data[key]
-            elif key == "text":
-               data.text = json_data[key]
-            elif key == "image":
-               data.image = json_data[key]
-            elif key == "noise_level":
-               data.noise_level = json_data[key]
-            elif key == "temperature":
-               data.temperature = json_data[key]
-            elif key == "humidity":
-               data.humidity = json_data[key]
-            elif key == "population":
-               data.population = json_data[key]
-         try:
-            data.save()
-         except:
-            return HttpResponseBadRequest(
-               "The request cannot be processed due to bad data types.\n")
+         data_list = json_data_top_level['mapdata']
       except KeyError:
          return HttpResponseBadRequest(
-            "The request cannot be processed due to wrong JSON format.\n")
-      return HttpResponse("Got json data.\n")
+            "The request cannot be processed. Your KEY does not match.\n")
+      for json_data in data_list:
+         try:
+            # Get required data from the JSON obj
+            data = Data(source="iPhone")
+            data.location = json_data['location']
+            data.timestamp = json_data['timestamp']
+            # If any of the below are available add them to the Document
+            for key in json_data.keys():
+               if key == "altitude":
+                  data.altitude = json_data[key]
+               elif key == "h_accuracy":
+                  data.h_accuracy = json_data[key]
+               elif key == "v_accuracy":
+                  data.v_accuracy = json_data[key]
+               elif key == "text":
+                  data.text = json_data[key]
+               elif key == "image":
+                  data.image = json_data[key]
+               elif key == "noise_level":
+                  data.noise_level = json_data[key]
+               elif key == "temperature":
+                  data.temperature = json_data[key]
+               elif key == "humidity":
+                  data.humidity = json_data[key]
+               elif key == "population":
+                  data.population = json_data[key]
+            try:
+               data.save()
+            except:
+               return HttpResponseBadRequest(
+                  "The request cannot be processed due to bad data types.\n")
+         except KeyError:
+            return HttpResponseBadRequest(
+               "The request cannot be processed due malformed JSON.\n")
+      return HttpResponse(status=201)
    else:  
      return HttpResponse("You can only upload with POST you fool!\n")
 
