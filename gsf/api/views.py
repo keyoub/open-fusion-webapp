@@ -4,7 +4,9 @@ from django.http import HttpResponse, HttpResponseBadRequest, \
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from api.models import Data, Tokens
-import json, base64, hashlib, random
+import json, base64, hashlib, random, logging
+
+logger = logging.getLogger(__name__)
 
 """
  Applications can request an API key to get data 
@@ -55,6 +57,7 @@ def upload(request):
       try:
          data_list = json_data_top_level['mapdata']
       except KeyError:
+         logger.error("Failed to match mapdata key")
          return HttpResponseBadRequest(
             "The request cannot be processed. Your KEY does not match.\n")
       for json_data in data_list:
@@ -86,14 +89,18 @@ def upload(request):
             try:
                data.save()
             except:
+               logger.error("Failed to save the sent data")
                return HttpResponseBadRequest(
                   "The request cannot be processed due to bad data types.\n")
          except KeyError:
+            logger.error(
+               "Failed to match keys from one or all of the dict in the list")
             return HttpResponseBadRequest(
                "The request cannot be processed due malformed JSON.\n")
       return HttpResponse(status=201)
-   else:  
-     return HttpResponse("You can only upload with POST you fool!\n")
+   else:
+      logger.debug("GET req can't be processed")
+      return HttpResponse("You can only upload with POST you fool!\n")
 
 """			
  Send requested data to the third party application
