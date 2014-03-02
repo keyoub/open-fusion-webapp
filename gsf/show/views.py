@@ -6,5 +6,5 @@ import datetime, random
 def index(request):
 	data = Data.objects.all()
 	context = {'data' : data}
-	return render(request, 'index.html', context)
+	return render(request, 'show/index.html', context)
 
