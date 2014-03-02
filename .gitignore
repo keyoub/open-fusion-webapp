@@ -1,4 +1,5 @@
 *.log
 *.pot
 *.pyc
+gsf.log
 local_settings.py

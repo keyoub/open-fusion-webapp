@@ -52,6 +52,7 @@ def key_request(request):
 """
 @csrf_exempt
 def upload(request):
+   logger.error("this is a error message!")
    if request.method == 'POST':
       json_data_top_level = json.loads(request.body)
       try:
@@ -99,7 +100,7 @@ def upload(request):
                "The request cannot be processed due malformed JSON.\n")
       return HttpResponse(status=201)
    else:
-      logger.debug("GET req can't be processed")
+      logger.error("GET req can't be processed")
       return HttpResponse("You can only upload with POST you fool!\n")
 
 """			
