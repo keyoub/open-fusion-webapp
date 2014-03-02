@@ -52,7 +52,6 @@ def key_request(request):
 """
 @csrf_exempt
 def upload(request):
-   logger.error("this is a error message!")
    if request.method == 'POST':
       json_data_top_level = json.loads(request.body)
       try:
