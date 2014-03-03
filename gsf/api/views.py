@@ -53,7 +53,12 @@ def key_request(request):
 @csrf_exempt
 def upload(request):
    if request.method == 'POST':
-      json_data_top_level = json.loads(request.body)
+      try:
+         json_data_top_level = json.loads(request.body)
+      except:
+         logger.error("Failed to load json from request body")
+         return HttpResponseBadRequest(
+            "The request cannot be processed. We couldn't find json in the body.\n")
       try:
          data_list = json_data_top_level['mapdata']
       except KeyError:
@@ -84,8 +89,10 @@ def upload(request):
                   data.temperature = json_data[key]
                elif key == "humidity":
                   data.humidity = json_data[key]
-               elif key == "population":
-                  data.population = json_data[key]
+               elif key == "faces_detected":
+                  data.faces_detected = json_data[key]
+               elif key == "people_detected":
+                  data.people_detected = json_data[key]              
             try:
                data.save()
             except:
@@ -97,7 +104,7 @@ def upload(request):
                "Failed to match keys from one or all of the dict in the list")
             return HttpResponseBadRequest(
                "The request cannot be processed due malformed JSON.\n")
-      return HttpResponse(status=201)
+      return HttpResponse("Data was received\n", status=201)
    else:
       logger.error("GET req can't be processed")
       return HttpResponse("You can only upload with POST you fool!\n")

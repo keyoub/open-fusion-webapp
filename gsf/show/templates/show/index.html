@@ -25,13 +25,23 @@ table td{
 	  <tr>
 	    <td>{{ d.source }}</td>
 	    <td>{{ d.date_added }}</td>
-	    <td>{{ d.location }}</td>
+	    <td>location: {{ d.location }}<br />
+           altitude: {{ d.altitude }}<br />
+           horizontal accuracy: {{ d.h_accuracy }}<br />
+           vertical accuracy: {{ d.v_accuracy }}<br />
+       </td>
    	 <td>text: {{ d.text }}<br />
-           image: {{ d.image}}<br /> 
+           image: {% if d.image %}
+                  <img style='display:block; width:320px;height:480px;' id='base64image' 
+                  src='data:image/png;base64, {{ d.image }}' /><br /> 
+                  {% else %}
+                  None <br />
+                  {% endif %}
            noise_level: {{ d.noise_level}}<br /> 
            temperature: {{ d.temperature}}<br /> 
            humidity: {{ d.humidity}}<br /> 
-           population: {{ d.population}}<br /> 
+           faces detected: {{ d.faces_detected }}<br /> 
+           people detected: {{ d.people_detected }}<br /> 
        </td>
 	  </tr>
 	{% endfor %}
