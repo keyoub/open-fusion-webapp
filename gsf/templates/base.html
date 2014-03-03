@@ -11,9 +11,10 @@
 
     <!-- Bootstrap core CSS -->
     <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Add custom CSS here -->
-    <link href="{{ STATIC_URL }}css/logo-nav.css" rel="stylesheet">
+    
+    {% load staticfiles %}
+    <!-- Add custom CSS here hello -->
+    <link href="{% static "css/logo-nav.css" %}" rel="stylesheet">
 
 </head>
 
