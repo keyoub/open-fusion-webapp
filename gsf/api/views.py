@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest, \
-                        HttpResponseServerError
+                        HttpResponseServerError, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from api.models import Data, APIKey
-import json, base64, hashlib, random, logging
+import json, logging
 
 """try:
    from modules import *
@@ -27,7 +27,7 @@ class SignupForm(forms.Form):
 """
 def dev_signup(request):
    if request.method == 'POST':
-      form = ContactForm(request.POST)
+      form = SignupForm(request.POST)
       if form.is_valid():
          dev_name = form.cleaned_data['developer_name']         
          organization = form.cleaned_data['organization']         
@@ -46,10 +46,11 @@ def dev_signup(request):
          message = ("Thank you for signing up for an API Key.\n\n" +
                    "Your Key: %s ") % key_req.key
          subject = "Your Geotagged Sensor Fusion API Key"
+         recipient = [email]
 
          # Send email
-         from django.core.email import send_mail
-         send_mail(subject, message, sender, email)
+         #from django.core.mail import send_mail
+         #send_mail(subject, message, sender, recipient)
          return HttpResponseRedirect('/')
    else:
       form = SignupForm()

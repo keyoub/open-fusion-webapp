@@ -1,7 +1,7 @@
 from mongoengine import *
 from gsf.settings import MONGODB_NAME
 
-import datetime
+import datetime, base64, hashlib, random
 
 connect(MONGODB_NAME)
 
@@ -47,8 +47,8 @@ class APIKey(Document):
    
    def save(self, *args, **kwargs):
       self.key = generate_key()
-      while not APIKey.objects(key__exists=self.key):
-         self.key = generate_key()
+      #while not APIKey.objects(key__exists=self.key):
+      #   self.key = generate_key()
       super(APIKey, self).save(*args, **kwargs)
 
    #def get_key(self):
