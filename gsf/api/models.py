@@ -25,15 +25,33 @@ class Data(Document):
    class Meta:
       ordering = ('date_added',)
 
-class Tokens(Document):
+"""
+   API Key random generator
+"""
+def generate_key():
+   key = base64.b64encode(hashlib.sha256( \
+            str(random.getrandbits(256)) ).digest(), \
+            random.choice(['rA','aZ','gQ','hH','hG','aR','DD'])).rstrip('==')
+   return key
+
+class APIKey(Document):
    date_created = DateTimeField(default=datetime.datetime.now)
-   api_key   = StringField(required=True)
-   application = StringField(required=True, max_length=100)
+   key          = StringField()
+   application  = StringField(required=True, max_length=100)
    organization = StringField(max_length=100)
-   dev_fullname = StringField(required=True, max_length=200)
+   dev_name     = StringField(required=True, max_length=200)
+   email        = EmailField(required=True)
 
    class Meta:
       ordering = ('date_created',)
    
+   def save(self, *args, **kwargs):
+      self.key = generate_key()
+      while not APIKey.objects(key__exists=self.key):
+         self.key = generate_key()
+      super(APIKey, self).save(*args, **kwargs)
+
+   #def get_key(self):
+   #   return self.key
 
 

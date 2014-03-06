@@ -2,49 +2,61 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest, \
                         HttpResponseServerError
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from api.models import Data, Tokens
+from django import forms
+from api.models import Data, APIKey
 import json, base64, hashlib, random, logging
+
+"""try:
+   from modules import *
+except ImportError:
+   pass"""
 
 logger = logging.getLogger(__name__)
 
 """
- Applications can request an API key to get data 
- from the Data collection
+ The Sign up form for the developers API key
 """
-def key_request(request):
-   if request.method == 'GET':
-      application = request.GET.get('application')
-      organization = request.GET.get('organization')
-      dev_fullname = request.GET.get('developer')
+class SignupForm(forms.Form):
+   developer_name = forms.CharField(required=True)
+   organization = forms.CharField()
+   application_name = forms.CharField(required=True)
+   email = forms.EmailField(required=True)
+   
+"""
+ Process developer request for an API key
+"""
+def dev_signup(request):
+   if request.method == 'POST':
+      form = ContactForm(request.POST)
+      if form.is_valid():
+         dev_name = form.cleaned_data['developer_name']         
+         organization = form.cleaned_data['organization']         
+         app_name = form.cleaned_data['application_name']         
+         email = form.cleaned_data['email']
 
-      if not application or not dev_fullname:
-         return HttpResponseBadRequest("Can't process request due to missing info.\n")
+         # Generate API key
+         key_req = APIKey(application=app_name)
+         key_req.organization = organization
+         key_req.dev_name = dev_name
+         key_req.email = email
+         key_req.save()
 
-      # Check if the token for the app already exist
-      if not Tokens.objects(application__exists=application):     
-         # Generate secret token
-         key = base64.b64encode(hashlib.sha256( \
-                   str(random.getrandbits(256)) ).digest(), \
-                   random.choice(['rA','aZ','gQ','hH','hG','aR','DD'])).rstrip('==')
-         entry = Tokens(api_key=key) 
-         entry.application = application
-         entry.organization = organization
-         entry.dev_fullname = dev_fullname
-         try:
-            entry.save()
-            response_data = {}
-            response_data['key'] = key
-            return HttpResponse(json.dumps(response_data),
-                                  content_type="application/json")
-         except:
-            return HttpResponseServerError("Your request could not be completed due"\
-                        " to internal errors. Try again later.")
-      else:
-         return HttpResponse("You already have a token with us. If you have " \
-                       "lost it please contact bkeyouma@ucsc.edu")
+         # Prepare email
+         sender = ['admin@gsf.soe.ucsc.edu']
+         message = ("Thank you for signing up for an API Key.\n\n" +
+                   "Your Key: %s ") % key_req.key
+         subject = "Your Geotagged Sensor Fusion API Key"
+
+         # Send email
+         from django.core.email import send_mail
+         send_mail(subject, message, sender, email)
+         return HttpResponseRedirect('/')
    else:
-      return HttpResponseBadRequest("You can only get a token with GET request.\n")
+      form = SignupForm()
+            
+   return render(request, 'api/devsignup.html', 
+      {'form': form,}
+   )
 
 """
  Currently only accepts data from the iOS app 
