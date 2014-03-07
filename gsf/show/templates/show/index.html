@@ -31,9 +31,13 @@ table td{
            vertical accuracy: {{ d.v_accuracy }}<br />
        </td>
    	 <td>text: {{ d.text }}<br />
-           image: {% if d.image %}
+           images: {% if d.o_image or d.p_image or d.f_image %}
                   <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.image }}' /><br /> 
+                  src='data:image/png;base64, {{ d.o_image }}' /><br /> 
+                  <img style='display:block; width:320px;height:480px;' id='base64image' 
+                  src='data:image/png;base64, {{ d.f_image }}' /><br /> 
+                  <img style='display:block; width:320px;height:480px;' id='base64image' 
+                  src='data:image/png;base64, {{ d.p_image }}' /><br /> 
                   {% else %}
                   None <br />
                   {% endif %}

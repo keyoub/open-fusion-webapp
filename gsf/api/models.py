@@ -15,7 +15,9 @@ class Data(Document):
    h_accuracy  = DecimalField(precision=5)
    v_accuracy  = DecimalField(precision=5)
    text        = StringField(max_length=1000)
-   image       = StringField()
+   o_image     = StringField()
+   p_image     = StringField()
+   f_image     = StringField()
    noise_level = DecimalField(precision=5)
    temperature = DecimalField(precision=5)
    humidity    = DecimalField(precision=5)
@@ -50,8 +52,5 @@ class APIKey(Document):
       #while not APIKey.objects(key__exists=self.key):
       #   self.key = generate_key()
       super(APIKey, self).save(*args, **kwargs)
-
-   #def get_key(self):
-   #   return self.key
 
 

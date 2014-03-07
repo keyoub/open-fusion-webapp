@@ -6,11 +6,6 @@ from django import forms
 from api.models import Data, APIKey
 import json, logging
 
-"""try:
-   from modules import *
-except ImportError:
-   pass"""
-
 logger = logging.getLogger(__name__)
 
 """
@@ -94,8 +89,12 @@ def upload(request):
                   data.v_accuracy = json_data[key]
                elif key == "text":
                   data.text = json_data[key]
-               elif key == "image":
-                  data.image = json_data[key]
+               elif key == "o_image":
+                  data.o_image = json_data[key]
+               elif key == "p_image":
+                  data.p_image = json_data[key]
+               elif key == "f_image":
+                  data.f_image = json_data[key]
                elif key == "noise_level":
                   data.noise_level = json_data[key]
                elif key == "temperature":
