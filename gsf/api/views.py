@@ -89,11 +89,14 @@ def upload(request):
                   data.v_accuracy = json_data[key]
                elif key == "text":
                   data.text = json_data[key]
-               elif key == "o_image":
+               elif key == "oimage":
+                  logger.debug("Found oimage tag")
                   data.o_image = json_data[key]
-               elif key == "p_image":
+               elif key == "pimage":
+                  logger.debug("Found pimage tag")
                   data.p_image = json_data[key]
-               elif key == "f_image":
+               elif key == "fimage":
+                  logger.debug("Found fimage tag")
                   data.f_image = json_data[key]
                elif key == "noise_level":
                   data.noise_level = json_data[key]
