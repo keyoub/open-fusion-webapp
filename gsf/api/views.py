@@ -115,13 +115,13 @@ def upload(request):
                   feature_property.faces_detected = properties_dict[key]
                elif key == "people_detected":
                   feature_property.people_detected = properties_dict[key]              
-            #try:
+            try:
                feature.properties = feature_property
                feature.save()
-            #except:
-            #   logger.error("Failed to save the sent data")
-            #   return HttpResponseBadRequest(
-            #      "The request cannot be processed due to bad data types.\n")
+            except:
+               logger.error("Failed to save the sent data")
+               return HttpResponseBadRequest(
+                  "The request cannot be processed due to bad data types.\n")
          except KeyError:
             logger.error(
                "Failed to match keys from one or all of the dict in the list")

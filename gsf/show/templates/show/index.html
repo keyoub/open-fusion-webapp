@@ -23,29 +23,29 @@ table td{
    <tbody>
 	{% for d in data %}
 	  <tr>
-	    <td>{{ d.source }}</td>
-	    <td>{{ d.date_added }}</td>
-	    <td>location: {{ d.location }}<br />
-           altitude: {{ d.altitude }}<br />
-           horizontal accuracy: {{ d.h_accuracy }}<br />
-           vertical accuracy: {{ d.v_accuracy }}<br />
+	    <td>{{ d.properties.source }}</td>
+	    <td>{{ d.properties.date_added }}</td>
+	    <td>location: {{ d.geometry }}<br />
+           altitude: {{ d.properties.altitude }}<br />
+           horizontal accuracy: {{ d.properties.h_accuracy }}<br />
+           vertical accuracy: {{ d.properties.v_accuracy }}<br />
        </td>
-   	 <td>text: {{ d.text }}<br />
-           images: {% if d.o_image or d.p_image or d.f_image %}
+   	 <td>text: {{ d.properties.text }}<br />
+           images: {% if d.properties.o_image or d.properties.p_image or d.properties.f_image %}
                   <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.o_image }}' /><br /> 
+                  src='data:image/png;base64, {{ d.properties.o_image }}' /><br /> 
                   <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.f_image }}' /><br /> 
+                  src='data:image/png;base64, {{ d.properties.f_image }}' /><br /> 
                   <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.p_image }}' /><br /> 
+                  src='data:image/png;base64, {{ d.properties.p_image }}' /><br /> 
                   {% else %}
                   None <br />
                   {% endif %}
-           noise_level: {{ d.noise_level}}<br /> 
-           temperature: {{ d.temperature}}<br /> 
-           humidity: {{ d.humidity}}<br /> 
-           faces detected: {{ d.faces_detected }}<br /> 
-           people detected: {{ d.people_detected }}<br /> 
+           noise_level: {{ d.properties.noise_level}}<br /> 
+           temperature: {{ d.properties.temperature}}<br /> 
+           humidity: {{ d.properties.humidity}}<br /> 
+           faces detected: {{ d.properties.faces_detected }}<br /> 
+           people detected: {{ d.properties.people_detected }}<br /> 
        </td>
 	  </tr>
 	{% endfor %}
