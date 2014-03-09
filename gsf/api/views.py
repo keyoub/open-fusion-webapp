@@ -84,7 +84,7 @@ def upload(request):
             feature = Features()
             feature.geometry = dictionary['geometry']
             properties_dict  = dictionary['properties']
-            feature_property = Properties()
+            feature_property = Properties(source="iPhone")
             feature_property.timestamp = properties_dict['timestamp']
             # If any of the below are available add them to the Document
             for key in properties_dict.keys():
@@ -115,18 +115,18 @@ def upload(request):
                   feature_property.faces_detected = properties_dict[key]
                elif key == "people_detected":
                   feature_property.people_detected = properties_dict[key]              
-            try:
+            #try:
                feature.properties = feature_property
                feature.save()
-            except:
-               logger.error("Failed to save the sent data")
-               return HttpResponseBadRequest(
-                  "The request cannot be processed due to bad data types.\n")
+            #except:
+            #   logger.error("Failed to save the sent data")
+            #   return HttpResponseBadRequest(
+            #      "The request cannot be processed due to bad data types.\n")
          except KeyError:
             logger.error(
                "Failed to match keys from one or all of the dict in the list")
             return HttpResponseBadRequest(
-               "The request cannot be processed due malformed JSON.\n")
+               "The request cannot be processed due malformed geoJSON.\n")
       return HttpResponse("Data was received\n", status=201)
    else:
       logger.error("GET req can't be processed")
