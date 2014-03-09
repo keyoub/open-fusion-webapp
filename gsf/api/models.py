@@ -5,12 +5,13 @@ import datetime, base64, hashlib, random
 
 connect(MONGODB_NAME)
 
-# The Data collection layout
-class Data(Document):
+"""
+   The properties of a location
+"""
+class Properties(EmbeddedDocument):
    date_added  = DateTimeField(default=datetime.datetime.now)
    source      = StringField(required=True, max_length=50)
    timestamp   = DecimalField(required=True)
-   location    = PointField(required=True)
    altitude    = DecimalField(precision=5)
    h_accuracy  = DecimalField(precision=5)
    v_accuracy  = DecimalField(precision=5)
@@ -24,8 +25,12 @@ class Data(Document):
    faces_detected  = IntField()
    people_detected = IntField()
 
-   class Meta:
-      ordering = ('date_added',)
+"""
+   The main geoJSON formated data 
+"""
+class Features(Document):
+   geometry    = PointField(required=True)
+   properties  = EmbeddedDocumentField(Properties)
 
 """
    API Key random generator
@@ -49,8 +54,8 @@ class APIKey(Document):
    
    def save(self, *args, **kwargs):
       self.key = generate_key()
-      #while not APIKey.objects(key__exists=self.key):
-      #   self.key = generate_key()
+      while not APIKey.objects(key__exists=self.key):
+         self.key = generate_key()
       super(APIKey, self).save(*args, **kwargs)
 
 

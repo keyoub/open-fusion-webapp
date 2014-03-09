@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, \
                         HttpResponseServerError, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django import forms
-from api.models import Data, APIKey
+from api.models import Features, Properties, APIKey
 import json, logging
 
 logger = logging.getLogger(__name__)
@@ -67,49 +67,57 @@ def upload(request):
          logger.error("Failed to load json from request body")
          return HttpResponseBadRequest(
             "The request cannot be processed. We couldn't find json in the body.\n")
+      
       try:
-         data_list = json_data_top_level['mapdata']
+         if json_data_top_level['type'] != "FeatureCollection":
+            logger.error("Failed to match type with FeaturedCollection")
+            return HttpResponseBadRequest(
+               "The request cannot be processed. Your geoJSON is malformed\n")
+         features_list = json_data_top_level['features']
       except KeyError:
-         logger.error("Failed to match mapdata key")
+         logger.error("Failed to match type or features key")
          return HttpResponseBadRequest(
-            "The request cannot be processed. Your KEY does not match.\n")
-      for json_data in data_list:
+            "The request cannot be processed. Your geoJSON is malformed\n")
+      for dictionary in features_list:
          try:
-            # Get required data from the JSON obj
-            data = Data(source="iPhone")
-            data.location = json_data['location']
-            data.timestamp = json_data['timestamp']
+            # Set up variables to store proper data in the db
+            feature = Features()
+            feature.geometry = dictionary['geometry']
+            properties_dict  = dictionary['properties']
+            feature_property = Properties()
+            feature_property.timestamp = properties_dict['timestamp']
             # If any of the below are available add them to the Document
-            for key in json_data.keys():
+            for key in properties_dict.keys():
                if key == "altitude":
-                  data.altitude = json_data[key]
+                  feature_property.altitude = properties_dict[key]
                elif key == "h_accuracy":
-                  data.h_accuracy = json_data[key]
+                  feature_property.h_accuracy = properties_dict[key]
                elif key == "v_accuracy":
-                  data.v_accuracy = json_data[key]
+                  feature_property.v_accuracy = properties_dict[key]
                elif key == "text":
-                  data.text = json_data[key]
+                  feature_property.text = properties_dict[key]
                elif key == "oimage":
                   logger.debug("Found oimage tag")
-                  data.o_image = json_data[key]
+                  feature_property.o_image = properties_dict[key]
                elif key == "pimage":
                   logger.debug("Found pimage tag")
-                  data.p_image = json_data[key]
+                  feature_property.p_image = properties_dict[key]
                elif key == "fimage":
                   logger.debug("Found fimage tag")
-                  data.f_image = json_data[key]
+                  feature_property.f_image = properties_dict[key]
                elif key == "noise_level":
-                  data.noise_level = json_data[key]
+                  feature_property.noise_level = properties_dict[key]
                elif key == "temperature":
-                  data.temperature = json_data[key]
+                  feature_property.temperature = properties_dict[key]
                elif key == "humidity":
-                  data.humidity = json_data[key]
+                  feature_property.humidity = properties_dict[key]
                elif key == "faces_detected":
-                  data.faces_detected = json_data[key]
+                  feature_property.faces_detected = properties_dict[key]
                elif key == "people_detected":
-                  data.people_detected = json_data[key]              
+                  feature_property.people_detected = properties_dict[key]              
             try:
-               data.save()
+               feature.properties = feature_property
+               feature.save()
             except:
                logger.error("Failed to save the sent data")
                return HttpResponseBadRequest(
