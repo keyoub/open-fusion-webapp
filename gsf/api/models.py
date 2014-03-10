@@ -54,8 +54,8 @@ class APIKey(Document):
    
    def save(self, *args, **kwargs):
       self.key = generate_key()
-      while not APIKey.objects(key__exists=self.key):
-         self.key = generate_key()
+      #while not APIKey.objects(key__exists=self.key):
+      #   self.key = generate_key()
       super(APIKey, self).save(*args, **kwargs)
 
 
