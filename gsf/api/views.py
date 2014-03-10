@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseBadRequest, \
 from django.views.decorators.csrf import csrf_exempt
 from django import forms
 from api.models import Features, Properties, APIKey
+from gsf.settings import reCAPTCHA_KEY
+from recaptcha.client import captcha
 import json, logging
 
 logger = logging.getLogger(__name__)
@@ -21,9 +23,18 @@ class SignupForm(forms.Form):
  Process developer request for an API key
 """
 def dev_signup(request):
+   invalid_captcha = False
    if request.method == 'POST':
       form = SignupForm(request.POST)
-      if form.is_valid():
+
+      # talk to the reCAPTCHA service  
+      response = captcha.submit(  
+            request.POST.get('recaptcha_challenge_field'),  
+            request.POST.get('recaptcha_response_field'),  
+            reCAPTCHA_KEY,  
+            request.META['REMOTE_ADDR'],)
+
+      if form.is_valid() and response.is_valid:
          dev_name = form.cleaned_data['developer_name']         
          organization = form.cleaned_data['organization']         
          app_name = form.cleaned_data['application_name']         
@@ -47,11 +58,13 @@ def dev_signup(request):
          #from django.core.mail import send_mail
          #send_mail(subject, message, sender, recipient)
          return HttpResponseRedirect('/')
+      elif not response.is_valid:
+         invalid_captcha = True
    else:
       form = SignupForm()
             
    return render(request, 'api/devsignup.html', 
-      {'form': form,}
+      {'form': form, 'captcha_flag': invalid_captcha}
    )
 
 """
