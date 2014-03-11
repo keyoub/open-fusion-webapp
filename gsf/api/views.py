@@ -146,13 +146,16 @@ def upload(request):
       return HttpResponseBadRequest("You can only upload with POST you fool!\n")
 
 """			
- Send requested data to the third party application
+ Receives uri encoded querystring, converts to JSON and passes
+ to mongoengine for processing. The returned data is converted to 
+ JSON and sent back to the user
 """
 def download(request):
    if request.method == 'GET':
-      query = request.GET.get('query')
-      data = Features.objects(query).to_json()
-      return HttpResponse(data + query)
+      query_string = request.GET.get('query')
+      query = json.loads(query_string)
+      data = Features.objects(__raw__=query).to_json()
+      return HttpResponse(data, content_type='application/json')
    else: 
       return HttpResponseBadRequest("Onle GET requests are processed\n")
    
