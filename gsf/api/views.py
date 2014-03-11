@@ -153,9 +153,16 @@ def upload(request):
 def download(request):
    if request.method == 'GET':
       query_string = request.GET.get('query')
-      query = json.loads(query_string)
-      data = Features.objects(__raw__=query).to_json()
-      return HttpResponse(data, content_type='application/json')
+      if not query_string:
+         logger.error("Failed to pull the query from the url")
+         return HttpResponseBadRequest("No query string provided\n")
+      try:
+         query = json.loads(query_string)
+         data = Features.objects(__raw__=query).to_json()
+         return HttpResponse(data, content_type='application/json')
+      except:
+         logger.error("Failed to run the query")
+         return HttpResponseBadRequest("Bad query!\n")
    else: 
       return HttpResponseBadRequest("Onle GET requests are processed\n")
    
