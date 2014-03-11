@@ -143,12 +143,17 @@ def upload(request):
       return HttpResponse("Data was received\n", status=201)
    else:
       logger.error("GET req can't be processed")
-      return HttpResponse("You can only upload with POST you fool!\n")
+      return HttpResponseBadRequest("You can only upload with POST you fool!\n")
 
 """			
  Send requested data to the third party application
 """
 def download(request):
-   pass
+   if request.method == 'GET':
+      query = request.GET.get('query')
+      data = Features.objects(query).to_json()
+      return HttpResponse(data + query)
+   else: 
+      return HttpResponseBadRequest("Onle GET requests are processed\n")
    
 	
