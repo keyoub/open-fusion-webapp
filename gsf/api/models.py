@@ -48,6 +48,7 @@ class APIKey(Document):
    organization = StringField(max_length=100)
    dev_name     = StringField(required=True, max_length=200)
    email        = EmailField(required=True)
+   allowed_fcn  = StringField(required=True)
 
    class Meta:
       ordering = ('date_created',)
