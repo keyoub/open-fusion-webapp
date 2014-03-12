@@ -1,7 +1,8 @@
 from mongoengine import *
 from gsf.settings import MONGODB_NAME
+from django.db import models
 
-import datetime, base64, hashlib, random
+import datetime
 
 connect(MONGODB_NAME)
 
@@ -33,30 +34,18 @@ class Features(Document):
    properties  = EmbeddedDocumentField(Properties)
 
 """
-   API Key random generator
+   The SQL model for API Keys so that Django
+   admin library can be used
 """
-def generate_key():
-   key = base64.b64encode(hashlib.sha256( \
-            str(random.getrandbits(256)) ).digest(), \
-            random.choice(['rA','aZ','gQ','hH','hG','aR','DD'])).rstrip('==')
-   return key
-
-class APIKey(Document):
-   date_created = DateTimeField(default=datetime.datetime.now)
-   key          = StringField()
-   application  = StringField(required=True, max_length=100)
-   organization = StringField(max_length=100)
-   dev_name     = StringField(required=True, max_length=200)
-   email        = EmailField(required=True)
-   allowed_fcn  = StringField(required=True)
+class APIKey(models.Model):
+   date_created = models.DateTimeField(default=datetime.datetime.now)
+   key          = models.CharField(max_length=38)
+   application  = models.CharField(max_length=200)
+   organization = models.CharField(max_length=200)
+   dev_name     = models.CharField(max_length=200)
+   email        = models.EmailField()
+   upload       = models.BooleanField(default=False)
+   download     = models.BooleanField(default=True)
 
    class Meta:
       ordering = ('date_created',)
-   
-   def save(self, *args, **kwargs):
-      self.key = generate_key()
-      #while not APIKey.objects(key__exists=self.key):
-      #   self.key = generate_key()
-      super(APIKey, self).save(*args, **kwargs)
-
-

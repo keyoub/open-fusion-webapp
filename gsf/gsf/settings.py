@@ -62,7 +62,8 @@ WSGI_APPLICATION = 'gsf.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.dummy',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME'  : os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -71,9 +72,9 @@ SESSION_ENGINE = 'mongoengine.django.sessions'
 
 mongoengine.connect(MONGODB_NAME, host=MONGODB_DATABASE_HOST)
 
-AUTHENTICATION_BACKENDS = (
-    'mongoengine.django.auth.MongoEngineBackend',
-)
+#AUTHENTICATION_BACKENDS = (
+#    'mongoengine.django.auth.MongoEngineBackend',
+#)
 
 TEST_RUNNER = 'gsf.tests.NoSQLTestRunner'
 

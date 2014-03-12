@@ -6,9 +6,23 @@ from django import forms
 from api.models import Features, Properties, APIKey
 from gsf.settings import reCAPTCHA_KEY
 from recaptcha.client import captcha
-import json, logging
+import json, logging, base64, hashlib, random
 
 logger = logging.getLogger(__name__)
+
+try:
+   from decorators import *
+except:
+   logger.error("Failed to load the decorators module")   
+
+"""
+   API Key random generator
+"""
+def generate_key():
+   key = base64.b64encode(hashlib.sha256( \
+            str(random.getrandbits(256)) ).digest(), \
+            random.choice(['rA','aZ','gQ','hH','hG','aR','DD'])).rstrip('==')
+   return key
 
 """
  The Sign up form for the developers API key
@@ -45,6 +59,8 @@ def dev_signup(request):
          key_req.organization = organization
          key_req.dev_name = dev_name
          key_req.email = email
+         key_req.key = generate_key()
+         
          key_req.save()
 
          # Prepare email
@@ -72,6 +88,7 @@ def dev_signup(request):
  with the appropriate API key given with the request
 """
 @csrf_exempt
+#@auth_required
 def upload(request):
    if request.method == 'POST':
       try:
@@ -150,6 +167,7 @@ def upload(request):
  to mongoengine for processing. The returned data is converted to 
  JSON and sent back to the user
 """
+@auth_required
 def download(request):
    if request.method == 'GET':
       query_string = request.GET.get('query')
