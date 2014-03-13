@@ -64,15 +64,14 @@ def dev_signup(request):
          key_req.save()
 
          # Prepare email
-         sender = ['admin@gsf.soe.ucsc.edu']
-         message = ("Thank you for signing up for an API Key.\n\n" +
-                   "Your Key: %s ") % key_req.key
-         subject = "Your Geotagged Sensor Fusion API Key"
+         sender = 'Wild Stallions'
+         message = ("Thank you for signing up for an API Key.\n\nYour Key: %s" % key_req.key)
+         subject = "Geotagged Sensor Fusion API Key"
          recipient = [email]
 
          # Send email
-         #from django.core.mail import send_mail
-         #send_mail(subject, message, sender, recipient)
+         from django.core.mail import send_mail
+         send_mail(subject, message, sender, recipient)
          return HttpResponseRedirect('/')
       elif not response.is_valid:
          invalid_captcha = True

@@ -29,8 +29,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <!-- You'll want to use a responsive image option so this logo looks good on devices - I recommend using something like retina.js (do a quick Google search for it and you'll find it) -->
-                <a class="navbar-brand logo-nav" href="#">
+                <a class="navbar-brand logo-nav" href="/">
                     <img src="{% static "images/transparent-white-shadow.png" %}">
                 </a>
             </div>
@@ -38,11 +37,17 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#about">About</a>
+                    <li><a href="#">About</a>
                     </li>
-                    <li><a href="#services">Services</a>
+                    <li><a href="#">Documentation</a>
                     </li>
-                    <li><a href="#contact">Contact</a>
+                    <!--<li><a href="/admin/">Admin</a>
+                    </li>-->
+                    <li><a href="/show/">Data Collections</a>
+                    </li>
+                    <li><a href="/api/devsignup">Developer</a>
+                    </li>
+                    <li><a href="#">Contact</a>
                     </li>
                 </ul>
             </div>
