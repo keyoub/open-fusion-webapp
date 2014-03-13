@@ -5,17 +5,25 @@ from random import randint
 class APIKeyAdmin(admin.ModelAdmin):
    fieldsets = (
       ('Generate iOS API Key', {
-         'fields': ('application', 'organization',
-                    'dev_name', 'email','key')
+         'fields': ('dev_name', 'email',
+                      ('application', 'organization', 'key'))
       }),
    )
 
-   readonly_fields = ('key',)
+   readonly_fields = ('key', 'application', 'organization')
    
-   list_display = ('dev_name', 'email', 'key')
+   list_display = ('dev_name', 'email', 'application', 'key', 'upload', 'download')
+
+   list_filter  = ('upload', 'download', 'application')
+
+   search_fields = ['dev_name', 'application', 'email', 'organization']
+
+   save_on_top = True
 
    def save_model(self, request, obj, form, change):
       obj.key = randint(10000000, 99999999)
+      obj.application = "iPhone"
+      obj.organization = "LLNL"
       obj.upload = True
       obj.save() 
 
