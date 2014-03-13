@@ -88,7 +88,7 @@ def dev_signup(request):
  with the appropriate API key given with the request
 """
 @csrf_exempt
-#@auth_required
+@auth_required
 def upload(request):
    if request.method == 'POST':
       try:
