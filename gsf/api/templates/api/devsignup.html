@@ -10,14 +10,14 @@ Once submitted, your API Key will be emailed to the provided email address.</p>
 {{ form.as_p }}
 <span class="validation_error">{{ captcha_response }}</span>         
 <script type="text/javascript"  
-src="http://api.recaptcha.net/challenge?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L">  
+src="https://www.google.com/recaptcha/api/challenge?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L">  
 </script>  
   
 <noscript>
 {% if captcha_flag %}
 &#42; Invalid reCAPTCHA! Are you human?
 {% endif %}
-<iframe src="http://api.recaptcha.net/noscript?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L"  
+<iframe src="https://www.google.com/recaptcha/api/noscript?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L"  
 height="300" width="500" frameborder="0"></iframe><br>  
 <textarea name="recaptcha_challenge_field" rows="3" cols="40">  
 </textarea>  
