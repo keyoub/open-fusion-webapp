@@ -1,6 +1,9 @@
 *.log
 *.pot
 *.pyc
+*.geojson
 gsf.log
 local_settings.py
 db.sqlite3
+credentials.py
+ogre-test.py
