@@ -1,5 +1,6 @@
 from django.contrib import admin
-from api.models import Features, APIKey
+from django.db import IntegrityError
+from api.models import APIKey
 from random import randint
 
 class APIKeyAdmin(admin.ModelAdmin):
@@ -18,13 +19,11 @@ class APIKeyAdmin(admin.ModelAdmin):
 
    search_fields = ['dev_name', 'application', 'email', 'organization']
 
-   save_on_top = True
-
    def save_model(self, request, obj, form, change):
-      obj.key = randint(10000000, 99999999)
+      obj.key = str(randint(100000, 99999999))
       obj.application = "iPhone"
       obj.organization = "LLNL"
       obj.upload = True
-      obj.save() 
+      obj.save()
 
 admin.site.register(APIKey, APIKeyAdmin)

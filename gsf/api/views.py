@@ -61,7 +61,12 @@ def dev_signup(request):
          key_req.email = email
          key_req.key = generate_key()
          
-         key_req.save()
+         while True:
+            try:
+              key_req.save()
+              break
+            except IntegrityError:
+               key_req.key = generate_key()
 
          # Prepare email
          sender = 'Wild Stallions'

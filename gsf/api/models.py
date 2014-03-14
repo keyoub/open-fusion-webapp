@@ -39,7 +39,7 @@ class Features(Document):
 """
 class APIKey(models.Model):
    date_created = models.DateTimeField(default=datetime.datetime.now)
-   key          = models.CharField(max_length=38)
+   key          = models.CharField(max_length=38, unique=True)
    application  = models.CharField(max_length=200)
    organization = models.CharField(max_length=200)
    dev_name     = models.CharField(max_length=200)
