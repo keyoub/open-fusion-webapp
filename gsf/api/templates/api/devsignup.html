@@ -1,31 +1,42 @@
 {% extends "base.html" %}
 
+{% load bootstrap3 %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
 {% block main %}
 <h1>Developer API Key Signup</h1>
 
 <p>Please fill out the form below. <br />
 Once submitted, your API Key will be emailed to the provided email address.</p>
 
-<form action="/api/devsignup/" method="post">{% csrf_token %}
-{{ form.as_p }}
+<form action="/api/devsignup/" method="post" class="form" style="width:50%;">
+   {% csrf_token %}
+   {% bootstrap_form form %}
+
 <span class="validation_error">{{ captcha_response }}</span>         
 <script type="text/javascript"  
 src="https://www.google.com/recaptcha/api/challenge?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L">  
 </script>  
   
 <noscript>
-{% if captcha_flag %}
-&#42; Invalid reCAPTCHA! Are you human?
-{% endif %}
-<iframe src="https://www.google.com/recaptcha/api/noscript?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L"  
-height="300" width="500" frameborder="0"></iframe><br>  
-<textarea name="recaptcha_challenge_field" rows="3" cols="40">  
-</textarea>  
-<input type="hidden" name="recaptcha_response_field"   
-value="manual_challenge">  
+   {% if captcha_flag %}
+   Invalid reCAPTCHA! Are you human?
+   {% endif %}
+   <iframe src="https://www.google.com/recaptcha/api/noscript?k=6LfU1u8SAAAAAFStWtaj6C6bSPodujNaoJIuwR4L"  
+   height="300" width="500" frameborder="0"></iframe><br>  
+   <textarea name="recaptcha_challenge_field" rows="3" cols="40">  
+   </textarea>  
+   <input type="hidden" name="recaptcha_response_field"   
+   value="manual_challenge">  
 </noscript> 
 
-<input type="submit" value="Submit" />
+   {% buttons %}
+       <button type="submit" class="btn btn-primary">
+          {% bootstrap_icon "star" %} Submit
+       </button>
+   {% endbuttons %}
 </form>
 
 {% endblock %}
