@@ -29,7 +29,7 @@ def generate_key():
 """
 class SignupForm(forms.Form):
    developer_name = forms.CharField(required=True)
-   organization = forms.CharField()
+   organization = forms.CharField(required=False)
    application_name = forms.CharField(required=True)
    email = forms.EmailField(required=True)
    

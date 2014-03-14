@@ -1,0 +1,524 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39872,
+                            37.781157
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "text": "Epicenter of tweets",
+                        "radius": 1.0
+                    }
+                }
+            ]
+        },
+        {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40456641,
+                            37.78441845
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "I'm at @MelsDriveIn (San Francisco, CA) http://t.co/yfhL7ighLt",
+                        "timestamp": 1394806175.646
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39898259,
+                            37.78890216
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Up early on this Bay Area grind !!! Swag to the MA MA MA MAXIMUM !!!!! Good Morning SAN FRANCISCO -\u2026 http://t.co/fha1zrtuQx",
+                        "timestamp": 1394805539.51
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39936428,
+                            37.78867446
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "I'm at Menlo Worldwide Logistics (San Francisco, CA) http://t.co/38nPSJ18ag",
+                        "timestamp": 1394805258.882
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40762823,
+                            37.78775017
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Love this city (at @UnionSquareSf) http://t.co/7oA9NkeIpN",
+                        "timestamp": 1394805253.077
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39445213,
+                            37.77643708
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "At the Caltrain depot, apparently the lemon scone has zero calories before 7AM #\ud83d\ude04happystaff",
+                        "timestamp": 1394805146.399
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39936811,
+                            37.77859678
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "And she has a cute butt. That's a must. Or else I'll just let her fall.",
+                        "timestamp": 1394804922.949
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40052164,
+                            37.77762819
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "On the bus I always hope some cute girl falls on me, and I'm like \"gotcha\" and wrap my arms around her and save her. Then we fall in love.",
+                        "timestamp": 1394804896.472
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.396286,
+                            37.7888046
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@Airasian @MGally77  In #brighton?  That could have only went in one direction #offthetracks",
+                        "timestamp": 1394804493.511
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39486754,
+                            37.77664258
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "I'm at San Francisco Caltrain Station - @caltrain_news (San Francisco, CA) w/ 3 others http://t.co/I7gZeZRF2s",
+                        "timestamp": 1394804313.704
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39486754,
+                            37.77664258
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "I'm at San Francisco Caltrain Station - @caltrain_news (San Francisco, CA) http://t.co/kUZG4fiUH5",
+                        "timestamp": 1394804006.12
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39111495,
+                            37.77879337
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@GiaoLe yup! And so can all your followers. ;) I'm famous now!!",
+                        "timestamp": 1394803849.942
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40420026,
+                            37.78460635
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Siga : treino_ninja \nSiga : treino_ninja \nSiga : treino_ninja \nSiga : treino_ninja @ Ninja Life Style http://t.co/udExK83wif",
+                        "timestamp": 1394802959.817
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39504398,
+                            37.7863872
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@tsharon scary is that you wrote a check in 2014. :)",
+                        "timestamp": 1394802621.826
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40767801,
+                            37.78740223
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "\ud83d\ude0e @ Union Square San Francisco Downtown http://t.co/sVKc2G57lV",
+                        "timestamp": 1394801301.459
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39520498,
+                            37.78622353
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@hondanhon @landlessness @timoreilly @OReillySolid @moia whatev they'll come up w/ will have broken interactions and bad UI. It'll be pretty",
+                        "timestamp": 1394800761.713
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.405,
+                            37.7851
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "$19 for $100 worth of Windshield Service at Cascade Auto Glass http://t.co/NcakBEaVDF",
+                        "timestamp": 1394796824.311
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.405,
+                            37.7851
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "$12-2 Tickets for 1 Game Zone for Stray Boots City Hunt at Stray Boots http://t.co/faPozWaCW5",
+                        "timestamp": 1394794876.772
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39867877,
+                            37.78357674
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@bodybuilder_all Dieting and working out hard.",
+                        "timestamp": 1394794875.105
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.3967241,
+                            37.78317966
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@crybabytayler 3 English boys, 3 girls, 6 pools",
+                        "timestamp": 1394792907.014
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.3967241,
+                            37.78317966
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@crybabytayler you met him!! death 2 us girls",
+                        "timestamp": 1394792882.61
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.3967241,
+                            37.78317966
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "ugh rip",
+                        "timestamp": 1394792707.451
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.3967241,
+                            37.78317966
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "literally met the most attractive English band men tonight that live less than a block away from me and have 6 pools",
+                        "timestamp": 1394792702.329
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39597783,
+                            37.78649003
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Happy birthday to my role model @dhmeyer!  Wishing you nothing but the best, you deserve it.  Eat and drink up!  Cheers!",
+                        "timestamp": 1394791988.326
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40555287,
+                            37.78215182
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "listening to smash mouth",
+                        "timestamp": 1394791053.369
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40219723,
+                            37.78711239
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@ZOMBIEMISFIT_ yah I saw u should now start moving on to figures as in full figure drawings",
+                        "timestamp": 1394788158.123
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40223739,
+                            37.78726721
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@ZOMBIEMISFIT_ my room is an art studio xD well it's a studio :-p",
+                        "timestamp": 1394787975.179
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.39273467,
+                            37.77761109
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Have sweat thru my shirt for the second time thanks to elaborate nightmares featuring me in an Old Boy-like theatre of pain. #scaredtosleep",
+                        "timestamp": 1394787582.086
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40223867,
+                            37.78719446
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "FEE-FI-FO-FUM",
+                        "timestamp": 1394787223.067
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40213566,
+                            37.78717146
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "@Marawi_01 LOL OMG ur avatar xD LOOOL",
+                        "timestamp": 1394787156.591
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40196362,
+                            37.78705601
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "I eat unicorns for breakfast",
+                        "timestamp": 1394786885.596
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.409461,
+                            37.784806
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "En busca de Lionel @ San Francisco International Hostel http://t.co/FhpklJA8WR",
+                        "timestamp": 1394786619.166
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40791585,
+                            37.7848741
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "\u30db\u30c6\u30eb\u5e30\u6295\u3002\u98f2\u307f\u3059\u304e\u305f\u306e\u3067\u3082\u3046\u5bdd\u308b (@ The Powell Hotel) http://t.co/PODJ7O6Rjm",
+                        "timestamp": 1394786344.553
+                    }
+                },
+                {
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            -122.40166426,
+                            37.78816617
+                        ]
+                    },
+                    "type": "Feature",
+                    "properties": {
+                        "source": "Twitter",
+                        "text": "Just posted a photo @ Palace Hotel http://t.co/CqSTIQlkQj",
+                        "timestamp": 1394786200.81
+                    }
+                }
+            ]
+        }
+    ]
+}

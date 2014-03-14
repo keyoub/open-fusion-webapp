@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 
+{% load bootstrap3 %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
 {% block main %}
-<h1>Welcome to the Geotaged Sensor Fusion home page.</h1>
+<h1>Search Tweets</h1>
+
+<form action="/" method="post" class="form" style="width:30%;">
+   {% csrf_token %}
+   {% bootstrap_form form %}
+
+   {% buttons %}
+       <button type="submit" class="btn btn-primary">
+          {% bootstrap_icon "star" %} Vizit!
+       </button>
+   {% endbuttons %}
+   
 
 {% endblock %}
