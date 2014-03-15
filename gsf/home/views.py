@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 from ogre import OGRe
@@ -56,25 +56,25 @@ def index(request):
                                  "coordinates": [lon, lat]
                               },
                               "properties": {
-                                 "text": "Epicenter of tweets",
-                                 "radius": radius
+                                 "data": "Epicenter of tweets",
+                                 "radius": (radius*1000)
                               }
-                           }
+                           }, 
+                           data
                         ]
                       }
 
          # The complete JSON obj that gets written to .geoJSON file
          package = {
                      "type": "FeatureCollection",
-                     "features": [epicenter, data]
+                     "features": [epicenter]
                    }
-         with io.open('home/templates/viz/test.geojson', 'w') as outfile:
+         with io.open('static/vizit/data/test.geojson', 'w') as outfile:
             outfile.write(unicode(json.dumps(package, indent=4, separators=(",", ": "))))
 
          temp = json.dumps(package, indent=4, separators=(",", ": "))
 
-         #return render(request, '/home/viz/')
-         return HttpResponse(temp, content_type='application/json')
+         return HttpResponseRedirect('/static/vizit/index.html?data=test.geojson')
    else:
       form = TwitterForm()
 
