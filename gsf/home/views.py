@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 from ogre import OGRe
-import io, json, time
+from gsf.settings import BASE_DIR
+import os, io, json, time
 
 class TwitterForm(forms.Form):
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
@@ -69,7 +70,9 @@ def index(request):
                      "type": "FeatureCollection",
                      "features": [epicenter]
                    }
-         with io.open('static/vizit/data/test.geojson', 'w') as outfile:
+         path = os.path.join(BASE_DIR, 'static', 'vizit', 
+                              'data', 'test.geojson')
+         with io.open(path, 'w') as outfile:
             outfile.write(unicode(json.dumps(package, indent=4, separators=(",", ": "))))
 
          temp = json.dumps(package, indent=4, separators=(",", ": "))
