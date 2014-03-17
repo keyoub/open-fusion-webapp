@@ -61,12 +61,7 @@ def dev_signup(request):
          key_req.email = email
          key_req.key = generate_key()
          
-         while True:
-            try:
-              key_req.save()
-              break
-            except IntegrityError:
-               key_req.key = generate_key()
+         key_req.save()
 
          # Prepare email
          sender = 'Wild Stallions'
@@ -77,6 +72,7 @@ def dev_signup(request):
          # Send email
          from django.core.mail import send_mail
          send_mail(subject, message, sender, recipient)
+
          return HttpResponseRedirect('/')
       elif not response.is_valid:
          invalid_captcha = True

@@ -19,6 +19,7 @@ class APIKeyAdmin(admin.ModelAdmin):
 
    search_fields = ['dev_name', 'application', 'email', 'organization']
 
+   # Generate API key and prefill the static fields
    def save_model(self, request, obj, form, change):
       obj.key = str(randint(100000, 99999999))
       obj.application = "iPhone"

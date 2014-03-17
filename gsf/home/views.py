@@ -5,22 +5,13 @@ from django import forms
 from gsf.settings import BASE_DIR
 from pygeocoder import Geocoder
 from ogre import OGRe
-from random import randint
 import os, io, json, time
 
-"""def validate_addr(value):
-
-   # Check if the address is valid
-   if not Geocoder.geocode(value).valid_address:
-      raise forms.ValidationError("Please enter a valid address")
 """
-   
-      
-
+   The UI input form for the twitter retriever
+"""
 class TwitterForm(forms.Form):
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   #lat      = forms.FloatField(label='Latitude', required=True )
-   #lon      = forms.FloatField(label='Longitude', required=True )
    addr     = forms.CharField(required=True, max_length=500, label='Address',
                 help_text='eg. Santa Cruz, CA or Mission st, San Francisco')
    radius   = forms.FloatField(required=True, 
@@ -30,28 +21,34 @@ class TwitterForm(forms.Form):
    t_to     = forms.DateTimeField(label='To', required=False,
                                   input_formats=['%Y-%m-%d %H:%M:%S'])
    #text     = forms.BooleanField()
+   # TODO: Add images checkbox
    #images   = forms.BooleanField(required=False)
 
+"""
+   The home page query UI controller.
+      - Handles queries on local db
+      - Handle queries for the retriever
+"""
 def index(request):
    if request.method == 'POST':
       form = TwitterForm(request.POST)
       
+      # Get query parameters
       if form.is_valid():
          lat, lon = 0, 0
          keywords = form.cleaned_data['keywords']
-         #lat = form.cleaned_data['lat']
-         #lon = form.cleaned_data['lon']
          addr = form.cleaned_data['addr']
          radius = form.cleaned_data['radius']
          t_from = form.cleaned_data['t_from']
          t_to = form.cleaned_data['t_to']
          #images = form.cleaned_data['images']
-
+         
+         # Get coordinates from the address entered
          results = Geocoder.geocode(addr)
-
          lat = float(results[0].coordinates[0])
          lon = float(results[0].coordinates[1])
 
+         # Start building the query for the retriever
          params = {
                      "where": (lat, lon, radius, "km"),
                   }
@@ -97,17 +94,18 @@ def index(request):
                      "features": [epicenter]
                    }
 
-         file_name = "points_" + str(randint(0, 9000)) + ".geojson"
+         # Build unique output file name using the session id
+         file_name = "points_" + str(request.session.session_key) + ".geojson"
          
+         # Write data to the file
          path = os.path.join(BASE_DIR, 'static', 'vizit', 
                               'data', file_name)
          with io.open(path, 'w') as outfile:
-            outfile.write(unicode(json.dumps(package, indent=4, separators=(",", ": "))))
-
-         temp = json.dumps(package, indent=4, separators=(",", ": "))
-
+            outfile.write(unicode(json.dumps(package,
+               indent=4, separators=(",", ": "))))
+         
+         # redirect user to the visualizer
          redr_path = "/static/vizit/index.html?data=" + file_name
-
          return HttpResponseRedirect(redr_path)
    else:
       form = TwitterForm()
