@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<script>
+   document.body.style.overflow = 'hidden';
+   document.body.style.height = '100%';
+</script>
+
+   <div id="h_iframe">
+      {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
+      <iframe class="container well well-small span6 fill"
+           src="{{ vizit_url }}">
+      </iframe>
+      {% endwith %}
+   </div> 
+
+{% endblock %}

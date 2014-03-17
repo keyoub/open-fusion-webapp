@@ -10,10 +10,13 @@ class auth_required(object):
    def __call__(self, request, *args, **kwargs):
       if request.method in allowed_methods:
          if request.method == 'POST':
-            key = request.META['HTTP_AUTHORIZATION']            
+            try:
+               key = request.META['HTTP_AUTHORIZATION']
+            except:
+               return HttpResponseForbidden("Missing HTTP Authorization\n")
 
             if key == None:
-               return HttpResponseForbidden("Invalid or disabled app key 2\n")
+               return HttpResponseForbidden("Invalid or disabled app key\n")
             
             #Check if the user provided API key has access to the view being called
             try:

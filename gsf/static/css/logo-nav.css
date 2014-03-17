@@ -2,21 +2,38 @@ body {
 	margin-top: 125px; /* adjust this if the height of the menu bar changes */
 }
 
+html {
+   height: 100%;
+}
+
 .nav {
 	margin-top: 28px; /* this is a faux center fix for the nav options - adjust this if you wish to change the logo height or the font of the menu items */
 }
 
-/*.navbar-inverse {
-   background-color: #000000;
-   border-color: #080808;
-   -webkit-box-shadow: 0 8px 6px -6px black;
-   -moz-box-shadow: 0 8px 6px -6px black;
-   box-shadow: 0 8px 6px -6px black;
-}*/
+.col-lg-12 {
+   height: 100%;
+}
+
+.navbar-brand {
+   padding: 10px;
+   height: auto;
+   width: 3.9em;
+}
 
 .logo-nav img{
-   height: 140px;
-   width: 140px;
+   height: auto;
+   width: 3.9em;
    z-index: -1;
-   margin-top: -6px;
+   margin-top: 0px;
+}
+
+#h_iframe {
+   height: 80%; 
+   min-height: 60%; 
+   display: block
+}
+
+.fill {
+   min-height: 100%;
+   height: 100%;
 }

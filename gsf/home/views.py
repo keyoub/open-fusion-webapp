@@ -21,8 +21,7 @@ class TwitterForm(forms.Form):
    t_to     = forms.DateTimeField(label='To', required=False,
                                   input_formats=['%Y-%m-%d %H:%M:%S'])
    #text     = forms.BooleanField()
-   # TODO: Add images checkbox
-   #images   = forms.BooleanField(required=False)
+   images   = forms.BooleanField(required=False)
 
 """
    The home page query UI controller.
@@ -41,7 +40,7 @@ def index(request):
          radius = form.cleaned_data['radius']
          t_from = form.cleaned_data['t_from']
          t_to = form.cleaned_data['t_to']
-         #images = form.cleaned_data['images']
+         images = form.cleaned_data['images']
          
          # Get coordinates from the address entered
          results = Geocoder.geocode(addr)
@@ -53,10 +52,10 @@ def index(request):
                      "where": (lat, lon, radius, "km"),
                   }
 
-         #if images:
-         #   params['what'] = ("text", "image")
-         #else:
-         params['what'] = ("text",)
+         if images:
+            params['what'] = ("text", "image")
+         else:
+            params['what'] = ("text",)
 
          # Get time span and convert to epoch time
          if t_from and t_to:
@@ -105,9 +104,10 @@ def index(request):
                indent=4, separators=(",", ": "))))
          
          # redirect user to the visualizer
-         redr_path = "/static/vizit/index.html?data=" + file_name
-         return HttpResponseRedirect(redr_path)
+         #redr_path = "/static/vizit/index.html?data=" + file_name
+         #return HttpResponseRedirect(redr_path)
+         return render(request, 'home/vizit.html', {'file_name':file_name})
    else:
       form = TwitterForm()
 
-      return render(request, 'home/index.html', {'form':form})
+   return render(request, 'home/index.html', {'form':form})
