@@ -5,6 +5,7 @@ from django import forms
 from gsf.settings import BASE_DIR
 from pygeocoder import Geocoder
 from ogre import OGRe
+from random import randint
 import os, io, json, time
 
 """def validate_addr(value):
@@ -22,13 +23,14 @@ class TwitterForm(forms.Form):
    #lon      = forms.FloatField(label='Longitude', required=True )
    addr     = forms.CharField(required=True, max_length=500, label='Address',
                 help_text='eg. Santa Cruz, CA or Mission st, San Francisco')
-   radius   = forms.FloatField(required=True)
+   radius   = forms.FloatField(required=True, 
+                help_text='in Kilometers')
    t_from   = forms.DateTimeField(label='From', required=False,
                                   input_formats=['%Y-%m-%d %H:%M:%S'])
    t_to     = forms.DateTimeField(label='To', required=False,
                                   input_formats=['%Y-%m-%d %H:%M:%S'])
    #text     = forms.BooleanField()
-   #images   = forms.BooleanField()
+   #images   = forms.BooleanField(required=False)
 
 def index(request):
    if request.method == 'POST':
@@ -43,6 +45,7 @@ def index(request):
          radius = form.cleaned_data['radius']
          t_from = form.cleaned_data['t_from']
          t_to = form.cleaned_data['t_to']
+         #images = form.cleaned_data['images']
 
          results = Geocoder.geocode(addr)
 
@@ -51,9 +54,13 @@ def index(request):
 
          params = {
                      "where": (lat, lon, radius, "km"),
-                     "what" : ("text",)
                   }
-         
+
+         #if images:
+         #   params['what'] = ("text", "image")
+         #else:
+         params['what'] = ("text",)
+
          # Get time span and convert to epoch time
          if t_from and t_to:
             t_from = int(time.mktime(
@@ -89,14 +96,19 @@ def index(request):
                      "type": "FeatureCollection",
                      "features": [epicenter]
                    }
+
+         file_name = "points_" + str(randint(0, 9000)) + ".geojson"
+         
          path = os.path.join(BASE_DIR, 'static', 'vizit', 
-                              'data', 'test.geojson')
+                              'data', file_name)
          with io.open(path, 'w') as outfile:
             outfile.write(unicode(json.dumps(package, indent=4, separators=(",", ": "))))
 
          temp = json.dumps(package, indent=4, separators=(",", ": "))
 
-         return HttpResponseRedirect('/static/vizit/index.html?data=test.geojson')
+         redr_path = "/static/vizit/index.html?data=" + file_name
+
+         return HttpResponseRedirect(redr_path)
    else:
       form = TwitterForm()
 
