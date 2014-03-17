@@ -10,10 +10,10 @@ class auth_required(object):
    def __call__(self, request, *args, **kwargs):
       if request.method in allowed_methods:
          if request.method == 'POST':
-            key = request.POST.get('key', None)
+            key = request.META['HTTP_AUTHORIZATION']            
 
             if key == None:
-               return HttpResponseForbidden("Invalid or disabled app key")
+               return HttpResponseForbidden("Invalid or disabled app key 2\n")
             
             #Check if the user provided API key has access to the view being called
             try:
@@ -22,10 +22,10 @@ class auth_required(object):
                return HttpResponseForbidden(
                      "You do not have permission to access the %s API" % self.func.__name__)
          else:
-            key = request.GET.get('key', None)
+            key = request.GET.get('key')
 
             if key == None:
-               return HttpResponseForbidden("Invalid or disabled app key")
+               return HttpResponseForbidden("Invalid or disabled app key\n")
             
             #Check if the user provided API key has access to the view being called
             try:

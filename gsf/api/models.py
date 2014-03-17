@@ -12,7 +12,7 @@ connect(MONGODB_NAME)
 class Properties(EmbeddedDocument):
    date_added  = DateTimeField(default=datetime.datetime.now)
    source      = StringField(required=True, max_length=50)
-   timestamp   = DecimalField(required=True)
+   timestamp   = StringField(required=True)
    altitude    = DecimalField(precision=5)
    h_accuracy  = DecimalField(precision=5)
    v_accuracy  = DecimalField(precision=5)
