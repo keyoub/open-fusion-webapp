@@ -3,6 +3,32 @@
 {% block main %}
 <h1>Data Collections</h1>
 
+<script>
+   $(function() {
+    $( ".accordion" ).accordion({
+      heightStyle: "content"
+    });
+  });
+</script>
+
+<style>
+   .images {
+      height:auto;
+      width:auto;
+   }
+   .images img{
+      width:100%;
+      display: block;
+   }
+   .accordion h4{
+      background: lightgray;
+      padding: 7px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+   }
+</style>
+
 <br />
 <br />
 <table class="table">
@@ -18,29 +44,47 @@
 	{% for d in data %}
 	  <tr>
 	    <td>{{ d.properties.source }}</td>
-	    <td>{{ d.properties.date_added }}<br />
+	    <td>{# d.properties.date_added|date:"Y-m-d G:i:s" #}<br />
            {{ d.properties.timestamp }}</td>
-	    <td>location: {{ d.geometry }}<br />
-           altitude: {{ d.properties.altitude }}<br />
-           horizontal accuracy: {{ d.properties.h_accuracy }}<br />
-           vertical accuracy: {{ d.properties.v_accuracy }}<br />
+	    <td><b>location:</b> {{ d.geometry }}<br />
+           <b>altitude:</b> {{ d.properties.altitude }}<br />
+           <b>horizontal accuracy:</b> {{ d.properties.h_accuracy }}<br />
+           <b>vertical accuracy:</b> {{ d.properties.v_accuracy }}<br />
        </td>
-   	 <td>text: {{ d.properties.text }}<br />
-           images: {% if d.properties.o_image or d.properties.p_image or d.properties.f_image %}
-                  <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.properties.o_image }}' /><br /> 
-                  <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.properties.f_image }}' /><br /> 
-                  <img style='display:block; width:320px;height:480px;' id='base64image' 
-                  src='data:image/png;base64, {{ d.properties.p_image }}' /><br /> 
+   	 <td><b>text:</b> {{ d.properties.text }}<br />
+           <b>images:</b> {% if d.properties.o_image or d.properties.p_image or d.properties.f_image %}
+                     
+                  <div class="accordion">
+                     {% if d.properties.o_image %}
+                        <h4>Original Image</h4>
+                        <div class='images'>
+                        <img id='base64image' 
+                        src='data:image/png;base64, {{ d.properties.o_image }}' /><br /> 
+                        </div>
+                     {% endif %}
+                     {% if d.properties.f_image %}
+                        <h4>Faces Image</h4>
+                        <div class='images'>
+                        <img id='base64image' 
+                        src='data:image/png;base64, {{ d.properties.f_image }}' /><br /> 
+                        </div>
+                     {% endif %}
+                     {% if d.properties.p_image %}
+                        <h4>People Image</h4>
+                        <div class='images'>
+                        <img id='base64image' 
+                        src='data:image/png;base64, {{ d.properties.p_image }}' /><br /> 
+                        </div>
+                     {% endif %}
+                  </div>
                   {% else %}
                   None <br />
                   {% endif %}
-           noise_level: {{ d.properties.noise_level}}<br /> 
-           temperature: {{ d.properties.temperature}}<br /> 
-           humidity: {{ d.properties.humidity}}<br /> 
-           faces detected: {{ d.properties.faces_detected }}<br /> 
-           people detected: {{ d.properties.people_detected }}<br /> 
+           <b>noise_level:</b> {{ d.properties.noise_level}}<br /> 
+           <b>temperature:</b> {{ d.properties.temperature}}<br /> 
+           <b>humidity:</b> {{ d.properties.humidity}}<br /> 
+           <b>faces detected:</b> {{ d.properties.faces_detected }}<br /> 
+           <b>people detected:</b> {{ d.properties.people_detected }}<br /> 
        </td>
 	  </tr>
 	{% endfor %}
