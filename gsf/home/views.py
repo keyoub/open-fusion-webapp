@@ -5,7 +5,7 @@ from django import forms
 from gsf.settings import BASE_DIR
 from pygeocoder import Geocoder
 from ogre import OGRe
-import os, io, json, time
+import os, io, json, time, hashlib, datetime
 
 """
    The UI input form for the twitter retriever
@@ -93,8 +93,15 @@ def index(request):
                      "features": [epicenter]
                    }
 
-         # Build unique output file name using the session id
-         file_name = "points_" + str(request.session.session_key) + ".geojson"
+         # Build unique output file name using user ip and timestamp
+         try:
+            ip = request.get_host()
+         except:
+            pass
+         now = str(datetime.datetime.now())
+
+         file_name = "points_" + \
+            str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
          
          # Write data to the file
          path = os.path.join(BASE_DIR, 'static', 'vizit', 
@@ -104,8 +111,6 @@ def index(request):
                indent=4, separators=(",", ": "))))
          
          # redirect user to the visualizer
-         #redr_path = "/static/vizit/index.html?data=" + file_name
-         #return HttpResponseRedirect(redr_path)
          return render(request, 'home/vizit.html', {'file_name':file_name})
    else:
       form = TwitterForm()
