@@ -49,9 +49,9 @@ def dev_signup(request):
             request.META['REMOTE_ADDR'],)
 
       if form.is_valid() and response.is_valid:
-         dev_name = form.cleaned_data['developer_name']         
-         organization = form.cleaned_data['organization']         
-         app_name = form.cleaned_data['application_name']         
+         dev_name = form.cleaned_data['developer_name']
+         organization = form.cleaned_data['organization']
+         app_name = form.cleaned_data['application_name']
          email = form.cleaned_data['email']
 
          # Generate API key
@@ -60,7 +60,7 @@ def dev_signup(request):
          key_req.dev_name = dev_name
          key_req.email = email
          key_req.key = generate_key()
-         
+
          key_req.save()
 
          # Prepare email
@@ -78,7 +78,7 @@ def dev_signup(request):
          invalid_captcha = True
    else:
       form = SignupForm()
-            
+
    return render(request, 'api/devsignup.html', 
       {'form': form, 'captcha_flag': invalid_captcha}
    )
@@ -162,7 +162,7 @@ def upload(request):
       logger.error("GET req can't be processed")
       return HttpResponseBadRequest("You can only upload with POST you fool!\n")
 
-"""			
+"""
  Receives uri encoded querystring, converts to JSON and passes
  to mongoengine for processing. The returned data is converted to 
  JSON and sent back to the user
@@ -181,7 +181,6 @@ def download(request):
       except:
          logger.error("Failed to run the query")
          return HttpResponseBadRequest("Bad query!\n")
-   else: 
+   else:
       return HttpResponseBadRequest("Onle GET requests are processed\n")
-   
-	
+
