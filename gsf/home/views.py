@@ -111,7 +111,12 @@ def index(request):
                indent=4, separators=(",", ": "))))
          
          # redirect user to the visualizer
-         return render(request, 'home/vizit.html', {'file_name':file_name})
+         # if mobile device detected, redirect to touchscreen version
+         if request.mobile:
+            redr_path = "/static/vizit/index.html?data=" + file_name
+            return HttpResponseRedirect(redr_path)
+         else:
+            return render(request, 'home/vizit.html', {'file_name':file_name})
    else:
       form = TwitterForm()
 
