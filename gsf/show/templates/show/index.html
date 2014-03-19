@@ -27,6 +27,9 @@
       font-weight: bold;
       cursor: pointer;
    }
+   table #data {
+      width: 30%;
+   }
 </style>
 
 <br />
@@ -51,7 +54,7 @@
            <b>horizontal accuracy:</b> {{ d.properties.h_accuracy }}<br />
            <b>vertical accuracy:</b> {{ d.properties.v_accuracy }}<br />
        </td>
-   	 <td><b>text:</b> {{ d.properties.text }}<br />
+   	 <td id="data"><b>text:</b> {{ d.properties.text }}<br />
            <b>images:</b> {% if d.properties.o_image or d.properties.p_image or d.properties.f_image %}
                      
                   <div class="accordion">

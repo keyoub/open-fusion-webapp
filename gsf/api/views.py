@@ -176,11 +176,11 @@ def download(request):
          return HttpResponseBadRequest("No query string provided\n")
       try:
          query = json.loads(query_string)
-         data = Features.objects(__raw__=query).to_json()
+         data = Features.objects(__raw__=query).to_json(indent=4, separators=(",", ": "))
          return HttpResponse(data, content_type='application/json')
       except:
          logger.error("Failed to run the query")
          return HttpResponseBadRequest("Bad query!\n")
    else:
-      return HttpResponseBadRequest("Onle GET requests are processed\n")
+      return HttpResponseBadRequest("Only GET requests are processed\n")
 

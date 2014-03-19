@@ -9,10 +9,27 @@
 
     <title>Geotagged Sensor Fusion Project</title>
 
+    {% load staticfiles %}
+
+     <link rel="icon" type="image/png" href="{% static "vizit/img/icon.png" %}">
+     <!--[if IE]><link rel="shortcut icon" href="{% static "vizit/favicon.ico" %}"/><![endif]-->
+     <link rel="apple-touch-icon" href="{% static "vizit/apple-touch-icon-precomposed.png" %}">
+     <link rel="apple-touch-icon" sizes="57x57"   
+                           href="{% static "vizit/apple-touch-icon-57x57-precomposed.png" %}">
+     <link rel="apple-touch-icon" sizes="72x72"   
+                           href="{% static "vizit/apple-touch-icon-72x72-precomposed.png" %}">
+     <link rel="apple-touch-icon" sizes="114x114" 
+                           href="{% static "vizit/apple-touch-icon-114x114-precomposed.png" %}">
+     <link rel="apple-touch-icon" sizes="144x144" 
+                           href="{% static "vizit/apple-touch-icon-144x144-precomposed.png" %}">
+     
+     <link rel="author"  type="text/plain" href="{% static "vizit/humans.txt" %}">
+     <link rel="license" type="text/plain" href="http://www.gnu.org/licenses/gpl.txt">
+
+
     <!-- Bootstrap core CSS -->
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     
-    {% load staticfiles %}
     <!-- Add custom CSS here hello -->
     <link href="{% static "css/logo-nav.css" %}" rel="stylesheet">
 
