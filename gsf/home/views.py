@@ -43,9 +43,12 @@ def index(request):
          images = form.cleaned_data['images']
          
          # Get coordinates from the address entered
-         results = Geocoder.geocode(addr)
-         lat = float(results[0].coordinates[0])
-         lon = float(results[0].coordinates[1])
+         try:
+            results = Geocoder.geocode(addr)
+            lat = float(results[0].coordinates[0])
+            lon = float(results[0].coordinates[1])
+         except:
+            pass
 
          # Start building the query for the retriever
          params = {
