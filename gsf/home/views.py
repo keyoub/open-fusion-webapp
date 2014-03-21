@@ -17,10 +17,12 @@ class TwitterForm(forms.Form):
    radius   = forms.FloatField(required=True, 
                 help_text='in Kilometers')
    t_from   = forms.DateTimeField(label='From', required=False,
-                                  input_formats=['%Y-%m-%d %H:%M:%S'])
+                                  input_formats=['%Y-%m-%d %H:%M:%S'],
+                                  widget=forms.TextInput(attrs={"data-format":"yyyy/MM/dd hh:mm:ss"}))
    t_to     = forms.DateTimeField(label='To', required=False,
-                                  input_formats=['%Y-%m-%d %H:%M:%S'])
-   #text     = forms.BooleanField()
+                                  input_formats=['%Y-%m-%d %H:%M:%S'],
+                                  widget=forms.TextInput(attrs={"data-format":"yyyy/MM/dd hh:mm:ss"}))
+   text     = forms.BooleanField(required=False)
    images   = forms.BooleanField(required=False)
 
 """
@@ -40,6 +42,7 @@ def index(request):
          radius = form.cleaned_data['radius']
          t_from = form.cleaned_data['t_from']
          t_to = form.cleaned_data['t_to']
+         text = form.cleaned_data['text']
          images = form.cleaned_data['images']
          
          # Get coordinates from the address entered
@@ -55,8 +58,10 @@ def index(request):
                      "where": (lat, lon, radius, "km"),
                   }
 
-         if images:
+         if images and text:
             params['what'] = ("text", "image")
+         elif images:
+            params['what'] = ("image",)
          else:
             params['what'] = ("text",)
 

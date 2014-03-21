@@ -10,13 +10,33 @@
 
 <form action="/" method="post" class="form" style="width:30%;">
    {% csrf_token %}
-   {% bootstrap_form form %}
+   {% for field in form %}
+      {% if field.name == "t_from" or field.name == "t_to" %}
+         <div class="datetimepicker1 input-append date">
+         {% bootstrap_field field %}
+         <span class="glyphicon glyphicon-calendar add-on">
+            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+         </span>
+         </div>
+      {% else %}
+         {% bootstrap_field field %}
+      {% endif %}
+
+   {% endfor %}
 
    {% buttons %}
        <button type="submit" class="btn btn-primary">
           {% bootstrap_icon "star" %} Vizit!
        </button>
    {% endbuttons %}
+
+<script type="text/javascript">
+  $(function() {
+    $('.datetimepicker1').datetimepicker({
+      language: 'pt-BR'
+    });
+  });
+</script>
    
 
 {% endblock %}
