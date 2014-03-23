@@ -38,7 +38,8 @@ html {
    height: 100%;
 }
 
-#formerros li{
+#formerrors li{
    color: red;
-   font: 1em bold;
+   font-size: 1em;
+   font-weight: bold;
 }
