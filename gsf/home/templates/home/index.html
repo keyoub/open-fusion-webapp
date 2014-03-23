@@ -2,41 +2,51 @@
 
 {% load bootstrap3 %}
 
+{% load staticfiles %}
+
 {# Display django.contrib.messages as Bootstrap alerts #}
 {% bootstrap_messages %}
+
+{{ form.media }}
 
 {% block main %}
 <h1>Search Tweets</h1>
 
-<form action="/" method="post" class="form" style="width:30%;">
-   {% csrf_token %}
-   {% for field in form %}
-      {% if field.name == "t_from" or field.name == "t_to" %}
-         <div class="datetimepicker1 input-append date">
-         {% bootstrap_field field %}
-         <span class="glyphicon glyphicon-calendar add-on">
-            <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
-         </span>
-         </div>
-      {% else %}
-         {% bootstrap_field field %}
-      {% endif %}
+<div class="col-md-5">
+   <form action="/" method="post" class="form" style="width:;">
+      {% csrf_token %}
+      {% bootstrap_form form %}
 
-   {% endfor %}
+      {% buttons %}
+          <button type="submit" class="btn btn-primary">
+             {% bootstrap_icon "star" %} Vizit!
+          </button>
+      {% endbuttons %}
+   </form>
+</div>
+<div class="col-md-5">
+   <ul id="formerrors">
+   {% if address_flag %}
+      <li>Could not find provided Address.</li>
+   {% endif %}
+   {% if no_result_flag %}
+      <li>Your query did not return any results.</li>
+   {% endif %}
+   {% if time_flag %}
+      <li>Both "From" and "To" must be provided for time
+          based queries</li>
+   {% endif %}
+   </ul>
+</div>
 
-   {% buttons %}
-       <button type="submit" class="btn btn-primary">
-          {% bootstrap_icon "star" %} Vizit!
-       </button>
-   {% endbuttons %}
 
 <script type="text/javascript">
-  $(function() {
-    $('.datetimepicker1').datetimepicker({
-      language: 'pt-BR'
-    });
-  });
+   $(function () {
+      $('.date').datetimepicker();
+   });
 </script>
-   
+
+<script src="{% static "js/moment.js" %}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
 {% endblock %}
