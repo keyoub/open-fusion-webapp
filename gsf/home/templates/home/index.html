@@ -25,16 +25,20 @@
    </form>
 </div>
 <div class="col-md-5">
-   <ul id="formerrors">
    {% if address_flag %}
-      <li>Could not find provided Address.</li>
+      <script>
+         alert("Could not find provided Address.");
+      </script>
    {% endif %}
    {% if no_result_flag %}
-      <li>Your query did not return any results.</li>
+      <script>
+         alert("Your query did not return any results.")
+      </script>
    {% endif %}
    {% if time_flag %}
-      <li>Both "From" and "To" must be provided for time
-          based queries</li>
+      <script>
+         alert("Both \"From\" and \"To\" must be provided for time based queries");
+      </script>
    {% endif %}
    </ul>
 </div>
