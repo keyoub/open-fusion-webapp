@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block main %}
+   <div class="row">
+
+      <div class="col-lg-12">
+         <h1 class="page-header">About the Project</h1>
+
+      <article>
+            <header>
+                <h1>OpenFusion</h1>
+                <p>Development began for a &quot;Geotagged Sensor Fusion&quot; idea in late 2013 as a Senior Design project at the University of California at Santa Cruz with sponsorship from Lawrence Livermore National Laboratory. There are currently 4 components to the project including a mobile data logger, a web application, a retriever, and a visualizer. Some examples of questions this project tries to answer are listed below.</p>
+                <ul>
+                    <li>What images were posted in Times Square when the temperature was 50 degrees?</li>
+                    <li>What was posted within 1 kilometer of any Tweet mentioning Barack Obama?</li>
+                    <li>What posts mentioning the Super Bowl were created within 5 minutes of a humidity measurement of 50%?</li>
+                </ul>
+            </header>
+            <section>
+                <h1>Mobile Data Logger</h1>
+                <p>The mobile data collection suite consists of a series of sensors and a mobile application. In addition to utilizing sensors common in mobile devices (i.e. the camera, microphone, and GPS receiver), students developed a pluggable device with onboard sensors. The external sensors connect to via a 3.5mm headset jack and relay measurements using a microcontroller. Gathered data then gets transmitted to the OpenFusion web application.</p>
+                <details>
+                    <summary>See Also</summary>
+                    <a target="_blank" href="https://github.com/mbaptist23/open-fusion-iOS">https://github.com/mbaptist23/open-fusion-iOS</a>
+                    <p>Currently, only the iPhone 4S and 5S are officially supported.</p>
+                </details>
+            </section>
+            <section>
+                <h1>Web Application</h1>
+                <p>Mobile devices upload geotagged data to the web application where it is stored in a database for later retrieval. OpenFusion coordinates programmatic uploads and downloads through a public REST API. Users may access a deployment of the web application online using their favorite browser. There, they can query the database of measurements and use it to create fusions with data from other sources.</p>
+                <details>
+                    <summary>See Also</summary>
+                    <a target="_blank" href="https://github.com/bkeyoumarsi/open-fusion-webapp">https://github.com/bkeyoumarsi/open-fusion-webapp</a><br>
+                    <a target="_blank" href="http://gsf.soe.ucsc.edu/">http://gsf.soe.ucsc.edu/</a>
+                </details>
+                <aside>
+                    <h1>Retriever</h1>
+                    <p>The web application uses a retriever called OGRe to collect relevant data from public sources such as Twitter. It merges the results with gathered data and writes the combined set to a GeoJSON file that gets handed off to the visualizer.</p>
+                    <details>
+                        <summary>See Also</summary>
+                        <a target="_blank" href="https://github.com/dmtucker/ogre">https://github.com/dmtucker/ogre</a>
+                    </details>
+                </aside>
+            </section>
+            <section>
+                <h1>Visualizer</h1>
+                <p>After a query is run, a client-side visualizer called Vizit fetches data from the web application via AJAX and plots it on a map or timeline. Vizit is capable of rendering any GeoJSON file, and it supports a number of special properties to affect the resulting visualization.</p>
+                <details>
+                    <summary>See Also</summary>
+                    <a target="_blank" href="https://github.com/dmtucker/vizit">https://github.com/dmtucker/vizit</a>
+                </details>
+            </section>
+        </article>
+
+      </div>
+
+
+            <div class="col-lg-12">
+                <h2 class="page-header">Our Team</h2>
+            </div>
+
+  </div>
+
+        <div class="row">
+            <div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="{% static "images/keyoumarsi.jpg" %}">
+                <h3>Bardia Keyoumarsi
+                    <small>Team Leader/Web Developer</small>
+                </h3>
+                <p>Computer Engineering (System Programming) and Computer Science</p>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="http://placehold.it/200x200">
+                <h3>Michael Bennett 
+                    <small>Vice Lead/Pluggable Sensors Firmware Lead</small>
+                </h3>
+                <p>Computer Engineering (Digital Hardware) minoring in Computer Science and Electrical Engineering</p>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="{% static "images/lantaca.jpg" %}">
+                <h3>Vincent Lantaca
+                    <small>Parts and Equipment Manager/Pluggable Sensors Hardware Lead</small>
+                </h3>
+                <p>Computer Engineering (Digital Hardware) and Computer Science minoring in Electrical Engineering</p>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="{% static "images/tucker.jpg" %}">
+                <h3>David Tucker
+                    <small>Treasurer/Fusion & Visualization Lead</small>
+                </h3>
+                <p>Computer Engineering (Networks) and Computer Science</p>
+            </div>
+            <div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="{% static "images/baptist.jpg" %}">
+                <h3>Michael Baptist
+                    <small>System Administrator/iOS Application Lead</small>
+                </h3>
+                <p>Computer Engineering (Systems Programming)</p>
+            </div>
+            <!--<div class="col-lg-4 col-sm-6">
+                <img class="img-circle img-responsive" src="http://placehold.it/200x200">
+                <h3>John Smuth
+                    <small>Job Title</small>
+                </h3>
+                <p>What does this team member to? Keep it short! This is also a great spot for social links!</p>
+            </div>-->
+        </div>
+{% endblock %}
+
