@@ -38,8 +38,8 @@ html {
    height: 100%;
 }
 
-#formerrors li{
-   color: red;
-   font-size: 1em;
-   font-weight: bold;
-}
+.footer {
+  border-top: 1px solid #eee;
+  clear:both;
+  padding-top:30px;
+} 

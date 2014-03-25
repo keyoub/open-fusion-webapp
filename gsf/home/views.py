@@ -161,8 +161,3 @@ def index(request):
 
    return render(request, 'home/index.html', {'form':form})
 
-"""
-   Simple static page rendering 
-"""
-def about(request):
-   return render(request, 'home/about.html')
