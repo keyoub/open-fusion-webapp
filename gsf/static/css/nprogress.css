@@ -38,18 +38,24 @@
   display: block;
   position: fixed;
   z-index: 100;
-  top: 110px;
-  right: 30px;
+  top: 50%;
+  left: 30%;
+  background-color: rgba(14, 13, 13, 0.5);
+  width: 115px;
+  height: 115px;
+  padding-top: 25px;
+  border-radius: 18px;
 }
 
 #nprogress .spinner-icon {
-  width: 35px;
-  height: 35px;
+  width: 65px;
+  height: 65px;
+  margin: auto;
 
   border:  solid 2px transparent;
-  border-top-color:  #29d;
+  border-top-color:  #22DD5E;
   border-left-color: #29d;
-  border-radius: 20px;
+  border-radius: 60px;
 
   -webkit-animation: nprogress-spinner 400ms linear infinite;
   -moz-animation:    nprogress-spinner 400ms linear infinite;
