@@ -7,20 +7,26 @@
 {# Display django.contrib.messages as Bootstrap alerts #}
 {% bootstrap_messages %}
 
-{{ form.media }}
+{# form.media #}
 
 {% block main %}
+
+<link href="{% static "css/nprogress.css" %}" rel="stylesheet">
+<script src="{% static "js/nprogress.js" %}"></script>
+
 <h1>Search Tweets</h1>
 
 <div class="col-md-5">
-   <form action="/" method="post" class="form" style="width:;">
+   <form action="/" method="post" class="form" id="twitterform">
       {% csrf_token %}
       {% bootstrap_form form %}
 
       {% buttons %}
-          <button type="submit" class="btn btn-primary">
+         <p id="sendwrapper">
+          <button id="vizit" type="submit" class="btn btn-primary">
              {% bootstrap_icon "star" %} Vizit!
           </button>
+         </p>
       {% endbuttons %}
    </form>
 </div>
@@ -50,7 +56,12 @@
    });
 </script>
 
+<script>
+   $("#vizit").click(function() { NProgress.start(); });
+</script>
+
 <script src="{% static "js/moment.js" %}"></script>
 <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+
 
 {% endblock %}
