@@ -23,7 +23,7 @@
     trickleRate: 0.08,
     trickleSpeed: 600,
     showSpinner: true,
-    template: '<div class="bar" role="bar"><div class="peg"></div></div><div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
+    template: '<!--<div class="bar" role="bar"><div class="peg"></div></div>--><div class="spinner" role="spinner"><div class="spinner-icon"></div></div>'
   };
 
   /**
