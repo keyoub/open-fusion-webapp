@@ -39,12 +39,27 @@
   position: fixed;
   z-index: 100;
   top: 50%;
-  left: 30%;
+  left: 50%;
   background-color: rgba(14, 13, 13, 0.5);
   width: 115px;
   height: 115px;
   padding-top: 25px;
   border-radius: 18px;
+}
+
+@media (max-width: 699px){
+#nprogress .spinner {
+  display: block;
+  position: fixed;
+  z-index: 100;
+  top: 50%;
+  left: 35%;
+  background-color: rgba(14, 13, 13, 0.5);
+  width: 115px;
+  height: 115px;
+  padding-top: 25px;
+  border-radius: 18px;
+}
 }
 
 #nprogress .spinner-icon {

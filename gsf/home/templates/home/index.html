@@ -7,8 +7,6 @@
 {# Display django.contrib.messages as Bootstrap alerts #}
 {% bootstrap_messages %}
 
-{# form.media #}
-
 {% block main %}
 
 <link href="{% static "css/nprogress.css" %}" rel="stylesheet">
@@ -31,6 +29,11 @@
    </form>
 </div>
 <div class="col-md-5">
+   {% if no_query_flag %}
+      <script>
+         alert("You must enter something to get results!");
+      </script>
+   {% endif %}
    {% if address_flag %}
       <script>
          alert("Could not find provided Address.");

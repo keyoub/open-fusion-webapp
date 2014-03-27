@@ -14,9 +14,9 @@ import os, io, json, time, hashlib, datetime
 """
 class TwitterForm(forms.Form):
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   addr     = forms.CharField(required=True, max_length=500, label='*Address',
+   addr     = forms.CharField(required=True, max_length=500, label='Address',
                 help_text='eg. Santa Cruz, CA or Mission st, San Francisco')
-   radius   = forms.FloatField(required=True, label='*Radius',
+   radius   = forms.FloatField(required=True, label='Radius',
                 help_text='in Kilometers')
    t_from   = forms.DateTimeField(required=False, label='From',
                help_text='Enter starting date and time',
@@ -48,7 +48,7 @@ def form_errors(address_flag, no_result_flag, time_flag):
 def index(request):
    if request.method == 'POST':
       form = TwitterForm(request.POST)
-      
+
       # Get query parameters
       if form.is_valid():
          # Initialize variables and flags
@@ -65,15 +65,16 @@ def index(request):
          images = form.cleaned_data['images']
          
          # Get coordinates from the address entered
-         try:
-            results = Geocoder.geocode(addr)
-            lat = float(results[0].coordinates[0])
-            lon = float(results[0].coordinates[1])
-         except:
-            # If the geocoder API doesn't return with results
-            # return the user to home page with the address error flag
-            return render(request, 'home/index.html', 
-                     form_errors(True, no_result_flag, time_flag))
+         if addr:
+            try:
+               results = Geocoder.geocode(addr)
+               lat = float(results[0].coordinates[0])
+               lon = float(results[0].coordinates[1])
+            except:
+               # If the geocoder API doesn't return with results
+               # return the user to home page with the address error flag
+               return render(request, 'home/index.html', 
+                        form_errors(True, no_result_flag, time_flag))
 
          # Start building the query for the retriever
          params = {
