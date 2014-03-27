@@ -60,7 +60,17 @@
 </script>
 
 <script>
-   $("#vizit").click(function() { NProgress.start(); });
+   $("#twitterform").submit(function(){
+      var valid = 0;
+      $(this).find('input, select').each(function(){
+               if($(this).val() != ""){ 
+                     valid+=1;
+                     NProgress.start();
+               }
+      });
+   });
+   
+   //$("#vizit").click(function() { NProgress.start(); });
 </script>
 
 <script src="{% static "js/moment.js" %}"></script>
