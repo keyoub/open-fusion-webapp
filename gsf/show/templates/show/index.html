@@ -55,28 +55,28 @@
            <b>vertical accuracy:</b> {{ d.properties.v_accuracy }}<br />
        </td>
    	 <td id="data"><b>text:</b> {{ d.properties.text }}<br />
-           <b>images:</b> {% if d.properties.o_image or d.properties.p_image or d.properties.f_image %}
+           <b>images:</b> {% if d.properties.oimage or d.properties.pimage or d.properties.fimage %}
                      
                   <div class="accordion">
-                     {% if d.properties.o_image %}
+                     {% if d.properties.oimage %}
                         <h4>Original Image</h4>
                         <div class='images'>
                         <img id='base64image' 
-                        src='data:image/png;base64, {{ d.properties.o_image }}' /><br /> 
+                        src='data:image/png;base64, {{ d.properties.oimage }}' /><br /> 
                         </div>
                      {% endif %}
-                     {% if d.properties.f_image %}
+                     {% if d.properties.fimage %}
                         <h4>Faces Image</h4>
                         <div class='images'>
                         <img id='base64image' 
-                        src='data:image/png;base64, {{ d.properties.f_image }}' /><br /> 
+                        src='data:image/png;base64, {{ d.properties.fimage }}' /><br /> 
                         </div>
                      {% endif %}
-                     {% if d.properties.p_image %}
+                     {% if d.properties.pimage %}
                         <h4>People Image</h4>
                         <div class='images'>
                         <img id='base64image' 
-                        src='data:image/png;base64, {{ d.properties.p_image }}' /><br /> 
+                        src='data:image/png;base64, {{ d.properties.pimage }}' /><br /> 
                         </div>
                      {% endif %}
                   </div>
