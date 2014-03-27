@@ -111,42 +111,9 @@ def upload(request):
       for dictionary in features_list:
          try:
             # Set up variables to store proper data in the db
-            feature = Features()
-            feature.geometry = dictionary['geometry']
-            properties_dict  = dictionary['properties']
-            feature_property = Properties(source="iPhone")
-            feature_property.timestamp = properties_dict['timestamp']
-            # If any of the below are available add them to the Document
-            for key in properties_dict.keys():
-               if key == "altitude":
-                  feature_property.altitude = properties_dict[key]
-               elif key == "h_accuracy":
-                  feature_property.h_accuracy = properties_dict[key]
-               elif key == "v_accuracy":
-                  feature_property.v_accuracy = properties_dict[key]
-               elif key == "text":
-                  feature_property.text = properties_dict[key]
-               elif key == "oimage":
-                  logger.debug("Found oimage tag")
-                  feature_property.o_image = properties_dict[key]
-               elif key == "pimage":
-                  logger.debug("Found pimage tag")
-                  feature_property.p_image = properties_dict[key]
-               elif key == "fimage":
-                  logger.debug("Found fimage tag")
-                  feature_property.f_image = properties_dict[key]
-               elif key == "noise_level":
-                  feature_property.noise_level = properties_dict[key]
-               elif key == "temperature":
-                  feature_property.temperature = properties_dict[key]
-               elif key == "humidity":
-                  feature_property.humidity = properties_dict[key]
-               elif key == "faces_detected":
-                  feature_property.faces_detected = properties_dict[key]
-               elif key == "people_detected":
-                  feature_property.people_detected = properties_dict[key]              
+            feature = Features().from_json(json.dumps(dictionary))
+            feature.properties['source'] = "iPhone"
             try:
-               feature.properties = feature_property
                feature.save()
             except:
                logger.error("Failed to save the sent data")
