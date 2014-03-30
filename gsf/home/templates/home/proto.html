@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load staticfiles %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block main %}
+
+<link href="{% static "css/nprogress.css" %}" rel="stylesheet">
+<script src="{% static "js/nprogress.js" %}"></script>
+
+<h1>Fuse Data</h1>
+
+<form action="/" method="post" class="form" id="fuseform">
+   {% csrf_token %}
+   <div class="col-md-5">
+      <h2>Epicenters</h2>
+      {% bootstrap_form epicenters_form %}
+   </div>
+   <div class="col-md-5">
+      <h2>Aftershocks</h2>
+      {% bootstrap_form aftershocks_form %}
+      {% buttons %}
+         <p id="sendwrapper">
+          <button id="vizit" type="submit" class="btn btn-primary">
+             {% bootstrap_icon "star" %} Vizit!
+          </button>
+         </p>
+      {% endbuttons %}
+
+   </div>
+   
+</form>
+
+{% if no_query_flag %}
+   <script>
+      alert("You must enter something to get results!");
+   </script>
+{% endif %}
+{% if address_flag %}
+   <script>
+      alert("Could not find provided Address.");
+   </script>
+{% endif %}
+{% if no_result_flag %}
+   <script>
+      alert("Your query did not return any results.")
+   </script>
+{% endif %}
+{% if time_flag %}
+   <script>
+      alert("Both \"From\" and \"To\" must be provided for time based queries");
+   </script>
+{% endif %}
+
+<script type="text/javascript">
+   $(function () {
+      $('.date').datetimepicker();
+   });
+</script>
+
+<script>
+   $("#fuseform").submit(function(){
+      var valid = 0;
+      $(this).find('input, select').each(function(){
+               if($(this).val() != ""){ 
+                     valid+=1;
+                     NProgress.start();
+               }
+      });
+   });
+   
+   //$("#vizit").click(function() { NProgress.start(); });
+</script>
+
+<script src="{% static "js/moment.js" %}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+
+
+{% endblock %}
