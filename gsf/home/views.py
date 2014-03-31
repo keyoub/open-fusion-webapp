@@ -195,7 +195,7 @@ def prototype_ui(request):
       aftershocks_form = AftershocksForm(request.POST, prefix='aftershocks')
 
       # Get query parameters
-      if epicenters.is_valid() and aftershocks.is_valid():
+      if epicenters_form.is_valid() and aftershocks_form.is_valid():
          # Initialize variables and flags
          no_result_flag = False
          lat, lon = 0.0, 0.0
