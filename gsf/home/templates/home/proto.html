@@ -73,7 +73,9 @@
       });
    });
    
-   //$("#vizit").click(function() { NProgress.start(); });
+   $( window ).unload(function() {
+      NProgress.stop();
+   });
 </script>
 
 <script src="{% static "js/moment.js" %}"></script>
