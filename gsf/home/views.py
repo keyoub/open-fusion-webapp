@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ValidationError
 from bootstrap3_datetime.widgets import DateTimePicker
 from django import forms
+from django.forms.formsets import formset_factory
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
 from pygeocoder import Geocoder
@@ -171,23 +172,81 @@ def index(request):
 
    return render(request, 'home/index.html', {'form':form})
 
+
+# Choices variables for the forms' select field
+SOURCE_CHOICES = (
+   ('twt', 'Twitter'),
+   ('owm', 'Open Weather Map'),
+   ('gsf', 'GSF iOS App'),
+   
+)
+
+IMAGE_CHOICES = (
+   ('twt', 'Images from Twitter'),
+   ('imf', 'Images with faces detected'),
+   ('imb', 'Images with bodies detected'),
+   
+)
+
+OPERATORS = (
+   ('gt', '>'),
+   ('lt', '<'),
+   ('ge', '>='),
+   ('le', '<='),
+)
+
+LOGICALS = (
+   (1, 'OR'),
+   (2, 'AND'), 
+)
+
 """
    The Epicenters UI
 """
-class EpicentersForm(forms.Form):
+class EpicentersRemoteForm(forms.Form):
+   # Remote query form
+   sources  = forms.MultipleChoiceField(choices=SOURCE_CHOICES,
+                widget=forms.CheckboxSelectMultiple())
+   images   = forms.MultipleChoiceField(choices=IMAGE_CHOICES,
+                widget=forms.CheckboxSelectMultiple())
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   text     = forms.BooleanField(required=False)
-   images   = forms.BooleanField(required=False)
+   logic    = forms.ChoiceField(label="", widget=forms.Select(attrs={'class':'form-operators'}),
+                     required=True, choices=LOGICALS)
+   
+class EpicentersLocalForm(forms.Form):
+   # Local query form
+   #keywords = forms.CharField(required=False, help_text="Space separated keywords")
+   #text     = forms.BooleanField(required=False)
+   #images   = forms.BooleanField(required=False)
+   temp_logic  = forms.ChoiceField(label="Temperature",
+                     required=True, choices=OPERATORS)
+   temperature = forms.DecimalField(label="",required=False)
+
+   fst_logic    = forms.ChoiceField(label="", widget=forms.Select(attrs={'class':'form-operators'}),
+                     required=True, choices=LOGICALS)
+
+   humid_logic  = forms.ChoiceField(label="Humidity",
+                     required=True, choices=OPERATORS)
+   humidity = forms.DecimalField(label="",required=False)
+
+   snd_logic    = forms.ChoiceField(label="", widget=forms.Select(attrs={'class':'form-operators'}),
+                     required=True, choices=LOGICALS)
+
+   noise_logic  = forms.ChoiceField(label="Noise Level",
+                     required=True, choices=OPERATORS)
+   noise_level = forms.DecimalField(label="",required=False)
 
 """
    The Aftershocks UI
 """
 class AftershocksForm(forms.Form):
+   # Remote data fields
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
    radius   = forms.FloatField(required=True, label='*Radius',
                 help_text='in Kilometers')
    text     = forms.BooleanField(required=False)
    images   = forms.BooleanField(required=False)
+   
 
 def prototype_ui(request):
    if request.method == 'POST':
@@ -287,12 +346,14 @@ def prototype_ui(request):
          else:
             return render(request, 'home/vizit.html', {'file_name':file_name})
    else:
-      epicenters_form = EpicentersForm(prefix='epicenters')
+      epicenters_remote_form = EpicentersRemoteForm(prefix='epi_remote')
+      epicenters_local_form = EpicentersLocalForm(prefix='epi_local')
       aftershocks_form = AftershocksForm(prefix='aftershocks')
 
    return render(request, 'home/proto.html',
                  {
-                  'epicenters_form': epicenters_form,
+                  'epicenters_local_form': epicenters_local_form,
+                  'epicenters_remote_form': epicenters_remote_form,
                   'aftershocks_form': aftershocks_form,
                  })
    

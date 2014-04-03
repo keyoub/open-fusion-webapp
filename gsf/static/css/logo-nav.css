@@ -47,3 +47,16 @@ html {
 .help-link{
    font-size: 50%;
 }
+
+.form-operators{
+   width:20%;
+   margin-left:40%;
+}
+
+@media (max-width: 699px){
+.form-operators {
+   width:45%;
+   margin-left:30%;
+}
+}
+
