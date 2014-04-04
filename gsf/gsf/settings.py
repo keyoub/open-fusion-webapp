@@ -138,6 +138,10 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
         },
+        'home': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        },
     }
 }
 ########## END DJANGO-DEBUG CONFIGURATION
