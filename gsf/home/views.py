@@ -6,6 +6,7 @@ from django import forms
 from django.forms.formsets import formset_factory
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
+from api.models import Features
 from pygeocoder import Geocoder
 from ogre import OGRe
 import os, io, json, time, hashlib, datetime, logging
@@ -197,8 +198,8 @@ OPERATORS = (
 )
 
 LOGICALS = (
-   (1, 'OR'),
-   (2, 'AND'), 
+   (0, 'OR'),
+   (1, 'AND'), 
 )
 
 """
@@ -269,11 +270,52 @@ def query_remote(sources, keywords, images):
    return epicenters
 
 """
-   Query the local db
+   Query the local db for temperature data
 """
-def query_local(temperature, temp_logic):
-   pass
+def query_for_temperature(local_data, temperature, temp_logic):
+   if (temp_logic == 'eq'):
+      data = local_data(properties__temperature=temperature)
+   elif (temp_logic == 'gt'):
+      data = local_data(properties__temperature__gt=temperature)
+   elif (temp_logic == 'lt'):
+      data = local_data(properties__temperature__lt=temperature)
+   elif (temp_logic == 'ge'):
+      data = local_data(properties__temperature__gte=temperature)
+   elif (temp_logic == 'le'):
+      data = local_data(properties__temperature__lte=temperature)
+   return data
    
+"""
+   Query the local db for humidity data
+"""
+def query_for_humidity(local_data, humidity, hum_logic):
+   if (hum_logic == 'eq'):
+      data = local_data(properties__humidity=humidity)
+   elif (hum_logic == 'gt'):
+      data = local_data(properties__humidity__gt=humidity)
+   elif (hum_logic == 'lt'):
+      data = local_data(properties__humidity__lt=humidity)
+   elif (hum_logic == 'ge'):
+      data = local_data(properties__humidity__gte=humidity)
+   elif (hum_logic == 'le'):
+      data = local_data(properties__humidity__lte=humidity)
+   return data
+
+"""
+   Query the local db for noise_level data
+"""
+def query_for_noise_level(local_data, noise_level, noise_logic):
+   if (noise_logic == 'eq'):
+      data = local_data(properties__noise_level=noise_level)
+   elif (noise_logic == 'gt'):
+      data = local_data(properties__noise_level__gt=noise_level)
+   elif (noise_logic == 'lt'):
+      data = local_data(properties__noise_level__lt=noise_level)
+   elif (noise_logic == 'ge'):
+      data = local_data(properties__noise_level__gte=noise_level)
+   elif (noise_logic == 'le'):
+      data = local_data(properties__noise_level__lte=noise_level)
+   return data
 
 def prototype_ui(request):
    if request.method == 'POST':
@@ -294,6 +336,12 @@ def prototype_ui(request):
          fst_logic = epicenters_form.cleaned_data['fst_logic']
          temp_logic = epicenters_form.cleaned_data['temp_logic']
          temperature = epicenters_form.cleaned_data['temperature']
+         snd_logic = epicenters_form.cleaned_data['snd_logic']
+         humid_logic = epicenters_form.cleaned_data['humid_logic']
+         humidity = epicenters_form.cleaned_data['humidity']
+         thd_logic = epicenters_form.cleaned_data['thd_logic']
+         noise_logic = epicenters_form.cleaned_data['noise_logic']
+         noise_level = epicenters_form.cleaned_data['noise_level']
 
          for source in sources:
             if source == 'twt':
@@ -303,8 +351,22 @@ def prototype_ui(request):
          if twitter_epicenters:
             epicenters.extend(twitter_epicenters['features'])
 
+         # Start querying the local db for data
+         query_data = Features.objects().all()
+         local_data = None
          if temperature:
-            epicenters.extend(query_local(temperature, temp_logic))
+            local_data = query_for_temperature(query_data, temperature, temp_logic)
+         
+         if humidity and int(snd_logic):
+            local_data = query_for_humidity(local_data, humidity, humid_logic)
+         elif humidity:
+            # TODO: have to fix this 
+            #local_data = local_data | query_for_humidity(query_data, humidity, humid_logic)
+            pass
+
+
+         # Merge local data with remote
+         epicenters.extend(json.loads(local_data.to_json()))
 
          # The package that gets written to file for the visualizer
          package =   {

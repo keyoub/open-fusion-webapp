@@ -30,6 +30,7 @@ class Properties(EmbeddedDocument):
    The main geoJSON formated data 
 """
 class Features(Document):
+   type        = StringField(default="Feature")
    geometry    = PointField(required=True)
    properties  = EmbeddedDocumentField(Properties)
 
