@@ -268,15 +268,16 @@ def query_remote(sources, keywords, images):
 def query_for_images(local_data, faces, bodies):
    data = None
    if faces and bodies:
-      data = local_data( (Q(properties__fimage__exists=False) &
-               Q(properties__pimage__exists=False) &
-               Q(properties__faces_detected__gt=0) & 
-               Q(properties__people_detected__gt=0) ))
+      data = local_data( (Q(properties__fimage__exists=False) |
+               Q(properties__faces_detected__gt=0)) | 
+               (Q(properties__pimage__exists=False) |
+               Q(properties__people_detected__gt=0)) )
+      logger.debug(data)
    elif faces:
-      data = local_data( (Q(properties__fimage__exists=False) &
+      data = local_data( (Q(properties__fimage__exists=False) |
                Q(properties__faces_detected__gt=0) ))
    elif bodies:
-      data = local_data( (Q(properties__pimage__exists=False) &
+      data = local_data( (Q(properties__pimage__exists=False) |
                Q(properties__people_detected__gt=0) ))
    return data
 
@@ -371,6 +372,7 @@ def prototype_ui(request):
          if faces or bodies:
             epicenters.extend(json.loads(
                query_for_images(query_data, faces, bodies).to_json()))
+            logger.debug(epicenters)
 
          if temperature:
             epicenters.extend(json.loads(
