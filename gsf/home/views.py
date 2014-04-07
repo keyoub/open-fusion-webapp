@@ -15,9 +15,9 @@ import os, io, json, time, hashlib, datetime, logging
 logger = logging.getLogger(__name__)
 
 retriever = OGRe ({
-   'Twitter': {
-      'consumer_key': TWITTER_CONSUMER_KEY,
-      'access_token': TWITTER_ACCESS_TOKEN,
+   "Twitter": {
+      "consumer_key": TWITTER_CONSUMER_KEY,
+      "access_token": TWITTER_ACCESS_TOKEN,
    }
 })
 
@@ -26,15 +26,15 @@ retriever = OGRe ({
 """
 class TwitterForm(forms.Form):
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   addr     = forms.CharField(required=True, max_length=500, label='*Address',
-                help_text='eg. Santa Cruz, CA or Mission st, San Francisco')
-   radius   = forms.FloatField(required=True, label='*Radius',
-                help_text='in Kilometers')
-   t_from   = forms.DateTimeField(required=False, label='From',
-               help_text='Enter starting date and time',
+   addr     = forms.CharField(required=True, max_length=500, label="*Address",
+                help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
+   radius   = forms.FloatField(required=True, label="*Radius",
+                help_text="in Kilometers")
+   t_from   = forms.DateTimeField(required=False, label="From",
+               help_text="Enter starting date and time",
                widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-   t_to     = forms.DateTimeField(required=False, label='To',
-               help_text='Enter ending date and time',
+   t_to     = forms.DateTimeField(required=False, label="To",
+               help_text="Enter ending date and time",
                widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
    text     = forms.BooleanField(required=False)
    images   = forms.BooleanField(required=False)
@@ -45,10 +45,10 @@ class TwitterForm(forms.Form):
 def form_errors(address_flag, no_result_flag, time_flag):
    form = TwitterForm()
    context = {
-                'form': form,
-                'address_flag': address_flag,
-                'no_result_flag': no_result_flag,
-                'time_flag': time_flag,
+                "form": form,
+                "address_flag": address_flag,
+                "no_result_flag": no_result_flag,
+                "time_flag": time_flag,
              }
    return context
 
@@ -58,7 +58,7 @@ def form_errors(address_flag, no_result_flag, time_flag):
       - Handles queries for the retriever
 """
 def index(request):
-   if request.method == 'POST':
+   if request.method == "POST":
       form = TwitterForm(request.POST)
 
       # Get query parameters
@@ -69,13 +69,13 @@ def index(request):
          params = {"what":None,"where":None}
          
          # Get data from the from
-         keywords = form.cleaned_data['keywords']
-         addr = form.cleaned_data['addr']
-         radius = form.cleaned_data['radius']
-         t_from = form.cleaned_data['t_from']
-         t_to = form.cleaned_data['t_to']
-         text = form.cleaned_data['text']
-         images = form.cleaned_data['images']
+         keywords = form.cleaned_data["keywords"]
+         addr = form.cleaned_data["addr"]
+         radius = form.cleaned_data["radius"]
+         t_from = form.cleaned_data["t_from"]
+         t_to = form.cleaned_data["t_to"]
+         text = form.cleaned_data["text"]
+         images = form.cleaned_data["images"]
 
          # Get coordinates from the address entered
          if addr:
@@ -84,31 +84,31 @@ def index(request):
                lat = float(results[0].coordinates[0])
                lon = float(results[0].coordinates[1])
             except:
-               # If the geocoder API doesn't return with results
+               # If the geocoder API doesn"t return with results
                # return the user to home page with the address error flag
-               return render(request, 'home/index.html', 
+               return render(request, "home/index.html", 
                         form_errors(True, no_result_flag, time_flag))
 
             # Start building the query for the retriever
-            params['where'] = (lat, lon, radius, "km")
+            params["where"] = (lat, lon, radius, "km")
 
          if images and text:
-            params['what'] = ("text", "image")
+            params["what"] = ("text", "image")
          elif images:
-            params['what'] = ("image",)
+            params["what"] = ("image",)
          else:
-            params['what'] = ("text",)
+            params["what"] = ("text",)
 
          # Get time span and convert to epoch time
          if t_from and t_to:
             t_from = int(time.mktime(
-               time.strptime(str(t_from)[:19], '%Y-%m-%d %H:%M:%S'))) - time.timezone
+               time.strptime(str(t_from)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
             t_to   = int(time.mktime(
-               time.strptime(str(t_to)[:19], '%Y-%m-%d %H:%M:%S'))) - time.timezone
-            params['when'] = (t_from, t_to)
+               time.strptime(str(t_to)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+            params["when"] = (t_from, t_to)
          # Return to home page with error if only one field id provided
          elif t_from or t_to:
-            return render(request, 'home/index.html', 
+            return render(request, "home/index.html", 
                      form_errors(address_flag, no_result_flag, True))
 
          # Get twitter data
@@ -116,14 +116,14 @@ def index(request):
          try:
             data = retriever.get(("Twitter",),
                                  keyword=keywords, 
-                                 what=params['what'],
-                                 where=params['where'])
+                                 what=params["what"],
+                                 where=params["where"])
          except:
             pass
 
          # Return to home page if no tweets were found
-         if not data or not data['features']:
-            return render(request, 'home/index.html', 
+         if not data or not data["features"]:
+            return render(request, "home/index.html", 
                      form_errors(address_flag, True, time_flag))
 
          # The center pin for the visualizer
@@ -157,9 +157,9 @@ def index(request):
             str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
          
          # Write data to the file
-         path = os.path.join(BASE_DIR, 'static', 'vizit', 
-                              'data', file_name)
-         with io.open(path, 'w') as outfile:
+         path = os.path.join(BASE_DIR, "static", "vizit", 
+                              "data", file_name)
+         with io.open(path, "w") as outfile:
             outfile.write(unicode(json.dumps(package,
                indent=4, separators=(",", ": "))))
          
@@ -169,38 +169,38 @@ def index(request):
             redr_path = "/static/vizit/index.html?data=" + file_name
             return HttpResponseRedirect(redr_path)
          else:
-            return render(request, 'home/vizit.html', {'file_name':file_name})
+            return render(request, "home/vizit.html", {"file_name":file_name})
    else:
       form = TwitterForm()
 
-   return render(request, 'home/index.html', {'form':form})
+   return render(request, "home/index.html", {"form":form})
 
 
-# Choices variables for the forms' select field
+# Choices variables for the forms" select field
 SOURCE_CHOICES = (
-   ('twt', 'Twitter'),
-   #('owm', 'Open Weather Map'),
-   #('gsf', 'GSF iOS App'),
+   ("twt", "Twitter"),
+   #("owm", "Open Weather Map"),
+   #("gsf", "GSF iOS App"),
 )
 
 IMAGE_CHOICES = (
-   ('twt', 'Images from Twitter'),
-   ('imf', 'Images with faces detected'),
-   ('imb', 'Images with bodies detected'),
+   ("twt", "Images from Twitter"),
+   ("imf", "Images with faces detected"),
+   ("imb", "Images with bodies detected"),
    
 )
 
 OPERATORS = (
-   ('eq', '='),
-   ('gt', '>'),
-   ('lt', '<'),
-   ('ge', '>='),
-   ('le', '<='),
+   ("eq", "="),
+   ("gt", ">"),
+   ("lt", "<"),
+   ("ge", ">="),
+   ("le", "<="),
 )
 
 LOGICALS = (
-   (0, 'OR'),
-   (1, 'AND'), 
+   (0, "OR"),
+   (1, "AND"), 
 )
 
 """
@@ -234,8 +234,8 @@ class EpicentersForm(forms.Form):
 class AftershocksForm(forms.Form):
    # Remote data fields
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   radius   = forms.FloatField(required=True, label='*Radius',
-                help_text='in Kilometers')
+   radius   = forms.FloatField(required=True, label="*Radius",
+                help_text="in Kilometers")
    text     = forms.BooleanField(required=False)
    images   = forms.BooleanField(required=False)
 
@@ -245,11 +245,11 @@ class AftershocksForm(forms.Form):
 def query_remote(sources, keywords, images):
    what = ()
    for image in images:
-      if image == 'twt':
-         what = what + ('image',)
+      if image == "twt":
+         what = what + ("image",)
 
    if keywords:
-      what = what + ('text',)
+      what = what + ("text",)
          
    # Get epicenters from twitter
    epicenters = None
@@ -266,34 +266,62 @@ def query_remote(sources, keywords, images):
    Query the local db for images
 """
 def query_for_images(local_data, faces, bodies):
-   data = None
-   if faces and bodies:
+   data = []
+   """if faces and bodies:
       data = local_data( (Q(properties__fimage__exists=False) |
                Q(properties__faces_detected__gt=0)) | 
                (Q(properties__pimage__exists=False) |
-               Q(properties__people_detected__gt=0)) )
-      logger.debug(data)
-   elif faces:
-      data = local_data( (Q(properties__fimage__exists=False) |
-               Q(properties__faces_detected__gt=0) ))
-   elif bodies:
-      data = local_data( (Q(properties__pimage__exists=False) |
-               Q(properties__people_detected__gt=0) ))
+               Q(properties__people_detected__gt=0)) )"""      
+   if faces:
+      data.extend(json.loads(local_data(Q(properties__fimage__exists=True) &
+               Q(properties__faces_detected__gt=0) ).only(
+                  "type",
+                  "geometry",
+                  "properties.source",
+                  "properties.timestamp",
+                  "properties.text",
+                  "properties.fimage",
+                  "properties.faces_detected",
+               ).to_json()
+            )
+         )
+      if data:
+         for d in data:
+            temp = d["properties"]
+            temp["image"] = temp.pop("fimage")
+   if bodies:
+      lis = json.loads(local_data(Q(properties__pimage__exists=True) &
+               Q(properties__people_detected__gt=0)).only(
+                   "type",
+                  "geometry",
+                  "properties.source",
+                  "properties.timestamp",
+                  "properties.text",
+                  "properties.pimage",
+                  "properties.people_detected",
+               ).to_json()
+            )
+      if lis:
+         for d in lis:
+            temp = d["properties"]
+            temp["image"] = temp.pop("pimage")
+         data.extends(lis)
    return data
 
 """
    Query the local db for temperature data
 """
 def query_for_temperature(local_data, temperature, temp_logic):
-   if (temp_logic == 'eq'):
+   # TODO: add exclude for images
+   if (temp_logic == "eq"):
       data = local_data(properties__temperature=temperature)
-   elif (temp_logic == 'gt'):
+   elif (temp_logic == "gt"):
       data = local_data(properties__temperature__gt=temperature)
-   elif (temp_logic == 'lt'):
+   elif (temp_logic == "lt"):
       data = local_data(properties__temperature__lt=temperature)
-   elif (temp_logic == 'ge'):
+   elif (temp_logic == "ge"):
       data = local_data(properties__temperature__gte=temperature)
-   elif (temp_logic == 'le'):
+   elif (temp_logic == "le"):
       data = local_data(properties__temperature__lte=temperature)
    return data
    
@@ -301,15 +329,15 @@ def query_for_temperature(local_data, temperature, temp_logic):
    Query the local db for humidity data
 """
 def query_for_humidity(local_data, humidity, hum_logic):
-   if (hum_logic == 'eq'):
+   if (hum_logic == "eq"):
       data = local_data(properties__humidity=humidity)
-   elif (hum_logic == 'gt'):
+   elif (hum_logic == "gt"):
       data = local_data(properties__humidity__gt=humidity)
-   elif (hum_logic == 'lt'):
+   elif (hum_logic == "lt"):
       data = local_data(properties__humidity__lt=humidity)
-   elif (hum_logic == 'ge'):
+   elif (hum_logic == "ge"):
       data = local_data(properties__humidity__gte=humidity)
-   elif (hum_logic == 'le'):
+   elif (hum_logic == "le"):
       data = local_data(properties__humidity__lte=humidity)
    return data
 
@@ -317,22 +345,39 @@ def query_for_humidity(local_data, humidity, hum_logic):
    Query the local db for noise_level data
 """
 def query_for_noise_level(local_data, noise_level, noise_logic):
-   if (noise_logic == 'eq'):
+   if (noise_logic == "eq"):
       data = local_data(properties__noise_level=noise_level)
-   elif (noise_logic == 'gt'):
+   elif (noise_logic == "gt"):
       data = local_data(properties__noise_level__gt=noise_level)
-   elif (noise_logic == 'lt'):
+   elif (noise_logic == "lt"):
       data = local_data(properties__noise_level__lt=noise_level)
-   elif (noise_logic == 'ge'):
+   elif (noise_logic == "ge"):
       data = local_data(properties__noise_level__gte=noise_level)
-   elif (noise_logic == 'le'):
+   elif (noise_logic == "le"):
       data = local_data(properties__noise_level__lte=noise_level)
    return data
 
+"""
+   Add all the local data fields as html to the text key
+      - this is required for nice looking output on the visualizer
+"""
+def beautify_results(packages):
+   for package in packages:
+      properties = package["properties"]
+      if "noise_level" in properties:
+         properties["text"] += "<br /><b>Noise Level</b>:" + \
+                              str(properties["noise_level"]) + " dB"
+      if "temperature" in properties:
+         properties["text"] += "<br /><b>Temperature</b>: " + \
+                              str(properties["temperature"]) + " &deg;F"
+      if "humidity" in properties:
+         properties["text"] += "<br /><b>Humidity</b>:" + \
+                               str(properties["humidity"]) + " %"
+
 def prototype_ui(request):
-   if request.method == 'POST':
-      epicenters_form = EpicentersForm(request.POST, prefix='epicenters')
-      aftershocks_form = AftershocksForm(request.POST, prefix='aftershocks')
+   if request.method == "POST":
+      epicenters_form = EpicentersForm(request.POST, prefix="epicenters")
+      aftershocks_form = AftershocksForm(request.POST, prefix="aftershocks")
 
       # Get query parameters
       if epicenters_form.is_valid() and aftershocks_form.is_valid():
@@ -342,37 +387,27 @@ def prototype_ui(request):
          params = {"what":None,"where":None}
          
          # Get epicenters parameters
-         sources = epicenters_form.cleaned_data['sources']
-         images = epicenters_form.cleaned_data['images']
-         keywords = epicenters_form.cleaned_data['keywords']
-         temp_logic = epicenters_form.cleaned_data['temp_logic']
-         temperature = epicenters_form.cleaned_data['temperature']
-         humid_logic = epicenters_form.cleaned_data['humid_logic']
-         humidity = epicenters_form.cleaned_data['humidity']
-         noise_logic = epicenters_form.cleaned_data['noise_logic']
-         noise_level = epicenters_form.cleaned_data['noise_level']
-
-         for source in sources:
-            if source == 'twt':
-               twitter_epicenters = query_remote(('Twitter',), keywords, images)
-               logger.debug("Getting data from twitter for epicenters")
-         
-         if twitter_epicenters:
-            epicenters.extend(twitter_epicenters['features'])
+         sources = epicenters_form.cleaned_data["sources"]
+         images = epicenters_form.cleaned_data["images"]
+         keywords = epicenters_form.cleaned_data["keywords"]
+         temp_logic = epicenters_form.cleaned_data["temp_logic"]
+         temperature = epicenters_form.cleaned_data["temperature"]
+         humid_logic = epicenters_form.cleaned_data["humid_logic"]
+         humidity = epicenters_form.cleaned_data["humidity"]
+         noise_logic = epicenters_form.cleaned_data["noise_logic"]
+         noise_level = epicenters_form.cleaned_data["noise_level"]
 
          # Start querying the local db for data
          query_data = Features.objects().all()
          faces, bodies = False, False
          for image in images:
-            if image == 'imf':
+            if image == "imf":
                faces = True
-            elif image == 'imb':
+            elif image == "imb":
                bodies = True
 
          if faces or bodies:
-            epicenters.extend(json.loads(
-               query_for_images(query_data, faces, bodies).to_json()))
-            logger.debug(epicenters)
+            epicenters.extend(query_for_images(query_data, faces, bodies))
 
          if temperature:
             epicenters.extend(json.loads(
@@ -386,6 +421,17 @@ def prototype_ui(request):
             epicenters.extend(json.loads(
                query_for_noise_level(query_data, noise_level, noise_logic).to_json()))
 
+         beautify_results(epicenters)
+
+         # Query twitter if user asked for it
+         for source in sources:
+            if source == "twt":
+               twitter_epicenters = query_remote(("Twitter",), keywords, images)
+               logger.debug("Getting data from twitter for epicenters")
+         
+         if twitter_epicenters:
+            epicenters.extend(twitter_epicenters["features"])
+
          # The package that gets written to file for the visualizer
          package =   {
                         "OpenFusion": "1",
@@ -394,10 +440,10 @@ def prototype_ui(request):
                      }
 
          # Get aftershocks parameters
-         keywords = aftershocks_form.cleaned_data['keywords']
-         radius = aftershocks_form.cleaned_data['radius']
-         text = aftershocks_form.cleaned_data['text']
-         images = aftershocks_form.cleaned_data['images']
+         keywords = aftershocks_form.cleaned_data["keywords"]
+         radius = aftershocks_form.cleaned_data["radius"]
+         text = aftershocks_form.cleaned_data["text"]
+         images = aftershocks_form.cleaned_data["images"]
          
          what = None
          if images and text:
@@ -411,20 +457,20 @@ def prototype_ui(request):
          data = []
          for feature in epicenters:
             # Get aftershocks
-            lon = feature['geometry']['coordinates'][0]
-            lat = feature['geometry']['coordinates'][1]
+            lon = feature["geometry"]["coordinates"][0]
+            lat = feature["geometry"]["coordinates"][1]
             # TODO: Add try catch
             aftershocks = retriever.get(
-                              ('Twitter',),
+                              ("Twitter",),
                               keyword=keywords,
                               what=what,
-                              where=(lat, lon, radius, 'km')
+                              where=(lat, lon, radius, "km")
                           )
-            feature['properties']['radius'] = (radius*1000)
-            feature['properties']['related'] = aftershocks
+            feature["properties"]["radius"] = (radius*1000)
+            feature["properties"]["related"] = aftershocks
             data.append(feature)
          
-         package['features'] = data
+         package["features"] = data
 
          # Build unique output file name using user ip and timestamp
          ip = ""
@@ -438,9 +484,9 @@ def prototype_ui(request):
             str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
          
          # Write data to the file
-         path = os.path.join(BASE_DIR, 'static', 'vizit', 
-                              'data', file_name)
-         with io.open(path, 'w') as outfile:
+         path = os.path.join(BASE_DIR, "static", "vizit", 
+                              "data", file_name)
+         with io.open(path, "w") as outfile:
             outfile.write(unicode(json.dumps(package,
                indent=4, separators=(",", ": "))))
          
@@ -450,14 +496,14 @@ def prototype_ui(request):
             redr_path = "/static/vizit/index.html?data=" + file_name
             return HttpResponseRedirect(redr_path)
          else:
-            return render(request, 'home/vizit.html', {'file_name':file_name})
+            return render(request, "home/vizit.html", {"file_name":file_name})
    else:
-      epicenters_form = EpicentersForm(prefix='epicenters')
-      aftershocks_form = AftershocksForm(prefix='aftershocks')
+      epicenters_form = EpicentersForm(prefix="epicenters")
+      aftershocks_form = AftershocksForm(prefix="aftershocks")
 
-   return render(request, 'home/proto.html',
+   return render(request, "home/proto.html",
                  {
-                  'epicenters_form': epicenters_form,
-                  'aftershocks_form': aftershocks_form,
+                  "epicenters_form": epicenters_form,
+                  "aftershocks_form": aftershocks_form,
                  })
    
