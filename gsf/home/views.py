@@ -211,25 +211,14 @@ class EpicentersForm(forms.Form):
    images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
                 widget=forms.CheckboxSelectMultiple())
    keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   fst_logic    = forms.ChoiceField(label="", 
-                     widget=forms.Select(attrs={'class':'form-operators'}),
-                     required=True, choices=LOGICALS)
    # Local query fields
    temp_logic  = forms.ChoiceField(label="Temperature",
                      required=True, choices=OPERATORS)
    temperature = forms.DecimalField(label="",required=False)
 
-   snd_logic    = forms.ChoiceField(label="", 
-                     widget=forms.Select(attrs={'class':'form-operators'}),
-                     required=True, choices=LOGICALS)
-
    humid_logic  = forms.ChoiceField(label="Humidity",
                      required=True, choices=OPERATORS)
    humidity = forms.DecimalField(label="",required=False)
-
-   thd_logic    = forms.ChoiceField(label="", 
-                     widget=forms.Select(attrs={'class':'form-operators'}),
-                     required=True, choices=LOGICALS)
 
    noise_logic  = forms.ChoiceField(label="Noise Level",
                      required=True, choices=OPERATORS)
@@ -333,13 +322,10 @@ def prototype_ui(request):
          sources = epicenters_form.cleaned_data['sources']
          images = epicenters_form.cleaned_data['images']
          keywords = epicenters_form.cleaned_data['keywords']
-         fst_logic = epicenters_form.cleaned_data['fst_logic']
          temp_logic = epicenters_form.cleaned_data['temp_logic']
          temperature = epicenters_form.cleaned_data['temperature']
-         snd_logic = epicenters_form.cleaned_data['snd_logic']
          humid_logic = epicenters_form.cleaned_data['humid_logic']
          humidity = epicenters_form.cleaned_data['humidity']
-         thd_logic = epicenters_form.cleaned_data['thd_logic']
          noise_logic = epicenters_form.cleaned_data['noise_logic']
          noise_level = epicenters_form.cleaned_data['noise_level']
 
@@ -353,20 +339,22 @@ def prototype_ui(request):
 
          # Start querying the local db for data
          query_data = Features.objects().all()
-         local_data = None
+         local_data = []
          if temperature:
-            local_data = query_for_temperature(query_data, temperature, temp_logic)
+            local_data.append(
+               query_for_temperature(query_data, temperature, temp_logic).to_json())
          
-         if humidity and int(snd_logic):
-            local_data = query_for_humidity(local_data, humidity, humid_logic)
-         elif humidity:
-            # TODO: have to fix this 
-            #local_data = local_data | query_for_humidity(query_data, humidity, humid_logic)
-            pass
+         if humidity:
+            local_data.append(
+               query_for_humidity(query_data, humidity, humid_logic).to_json())
 
+         if noise_level:
+            local_data.append(
+               query_for_noise_level(query_data, noise_level, noise_logic).to_json())
 
          # Merge local data with remote
-         epicenters.extend(json.loads(local_data.to_json()))
+         for data in local_data:
+            epicenters.extend(json.loads(data))
 
          # The package that gets written to file for the visualizer
          package =   {
