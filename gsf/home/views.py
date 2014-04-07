@@ -287,22 +287,20 @@ def query_for_images(local_data, faces, bodies):
                   Q(properties__faces_detected__gt=0)).to_json()
              )
       if data:
-         temp = exclude
-         temp.extend(["pimage", "people_detected"])
-         exclude_fields(data, temp)
+         exclude_fields(data, exclude)
          for d in data:
             d["properties"]["image"] = d["properties"].pop("fimage")
+            d["properties"].pop("pimage", None)
    if bodies:
       lis = json.loads(
                local_data(Q(properties__pimage__exists=True) &
                   Q(properties__people_detected__gt=0)).to_json()
             )
       if lis:
-         temp = exclude
-         temp.extend(["fimage", "faces_detected"])
-         exclude_fields(lis, temp)
+         exclude_fields(lis, exclude)
          for d in lis:
             d["properties"]["image"] = d["properties"].pop("pimage")
+            d["properties"].pop("fimage", None)
          data.extend(lis)
    return data
 
