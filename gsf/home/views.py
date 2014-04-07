@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from bootstrap3_datetime.widgets import DateTimePicker
 from django import forms
 from django.forms.formsets import formset_factory
+from mongoengine.queryset import Q
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
 from api.models import Features
@@ -214,15 +215,18 @@ class EpicentersForm(forms.Form):
    # Local query fields
    temp_logic  = forms.ChoiceField(label="Temperature",
                      required=True, choices=OPERATORS)
-   temperature = forms.DecimalField(label="",required=False)
+   temperature = forms.DecimalField(label="",required=False,
+                     help_text="eg. Temperature >= 60 &deg;F")
 
    humid_logic  = forms.ChoiceField(label="Humidity",
                      required=True, choices=OPERATORS)
-   humidity = forms.DecimalField(label="",required=False)
+   humidity = forms.DecimalField(label="",required=False,
+                  help_text="eg. humidity <= 60 %")
 
    noise_logic  = forms.ChoiceField(label="Noise Level",
                      required=True, choices=OPERATORS)
-   noise_level = forms.DecimalField(label="",required=False)
+   noise_level = forms.DecimalField(label="",required=False,
+                     help_text="eg. Noise level < 80 dB")
 
 """
    The Aftershocks UI
@@ -257,6 +261,24 @@ def query_remote(sources, keywords, images):
       logger.error("the retriever failed")
 
    return epicenters
+
+"""
+   Query the local db for images
+"""
+def query_for_images(local_data, faces, bodies):
+   data = None
+   if faces and bodies:
+      data = local_data( (Q(properties__fimage__exists=False) &
+               Q(properties__pimage__exists=False) &
+               Q(properties__faces_detected__gt=0) & 
+               Q(properties__people_detected__gt=0) ))
+   elif faces:
+      data = local_data( (Q(properties__fimage__exists=False) &
+               Q(properties__faces_detected__gt=0) ))
+   elif bodies:
+      data = local_data( (Q(properties__pimage__exists=False) &
+               Q(properties__people_detected__gt=0) ))
+   return data
 
 """
    Query the local db for temperature data
@@ -339,22 +361,28 @@ def prototype_ui(request):
 
          # Start querying the local db for data
          query_data = Features.objects().all()
-         local_data = []
+         faces, bodies = False, False
+         for image in images:
+            if image == 'imf':
+               faces = True
+            elif image == 'imb':
+               bodies = True
+
+         if faces or bodies:
+            epicenters.extend(json.loads(
+               query_for_images(query_data, faces, bodies).to_json()))
+
          if temperature:
-            local_data.append(
-               query_for_temperature(query_data, temperature, temp_logic).to_json())
+            epicenters.extend(json.loads(
+               query_for_temperature(query_data, temperature, temp_logic).to_json()))
          
          if humidity:
-            local_data.append(
-               query_for_humidity(query_data, humidity, humid_logic).to_json())
+            epicenters.extend(json.loads(
+               query_for_humidity(query_data, humidity, humid_logic).to_json()))
 
          if noise_level:
-            local_data.append(
-               query_for_noise_level(query_data, noise_level, noise_logic).to_json())
-
-         # Merge local data with remote
-         for data in local_data:
-            epicenters.extend(json.loads(data))
+            epicenters.extend(json.loads(
+               query_for_noise_level(query_data, noise_level, noise_logic).to_json()))
 
          # The package that gets written to file for the visualizer
          package =   {
@@ -431,4 +459,3 @@ def prototype_ui(request):
                   'aftershocks_form': aftershocks_form,
                  })
    
-
