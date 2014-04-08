@@ -211,7 +211,8 @@ class EpicentersForm(forms.Form):
                 widget=forms.CheckboxSelectMultiple())
    images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
                 widget=forms.CheckboxSelectMultiple())
-   keywords = forms.CharField(required=False, help_text="Space separated keywords")
+   keywords = forms.CharField(required=False, 
+               help_text="for twitter search. eg. Wild AND Stallions")
    # Local query fields
    temp_logic  = forms.ChoiceField(label="Temperature",
                      required=False, choices=OPERATORS)
@@ -274,7 +275,7 @@ def exclude_fields(data, keys):
    Query the local db for images
 """
 def query_for_images(local_data, faces, bodies):
-   exclude = [
+   EXCLUDE = [
       "oimage",
       "humidity",
       "noise_level",
@@ -287,7 +288,7 @@ def query_for_images(local_data, faces, bodies):
                   Q(properties__faces_detected__gt=0)).to_json()
              )
       if data:
-         exclude_fields(data, exclude)
+         exclude_fields(data, EXCLUDE)
          for d in data:
             d["properties"]["image"] = d["properties"].pop("fimage")
             d["properties"].pop("pimage", None)
@@ -297,7 +298,7 @@ def query_for_images(local_data, faces, bodies):
                   Q(properties__people_detected__gt=0)).to_json()
             )
       if lis:
-         exclude_fields(lis, exclude)
+         exclude_fields(lis, EXCLUDE)
          for d in lis:
             d["properties"]["image"] = d["properties"].pop("pimage")
             d["properties"].pop("fimage", None)
@@ -305,60 +306,13 @@ def query_for_images(local_data, faces, bodies):
    return data
 
 """
-   Query the local db for temperature data
+   Query the local db for non-image data
 """
-def query_for_temperature(local_data, temperature, temp_logic):
-   EXCLUDE_FIELDS = [
-      "oimage",
-      "fimage",
-      "pimage",
-      "faces_detected",
-      "people_detected",
-      "humidity",
-      "noise_level"
-   ] 
-   query_string = "properties__temperature" + temp_logic
-   kwargs = { query_string: temperature }
-   data = json.loads(local_data.filter(**kwargs).to_json())
-   exclude_fields(data, EXCLUDE_FIELDS)
-   return data
-   
-"""
-   Query the local db for humidity data
-"""
-def query_for_humidity(local_data, humidity, hum_logic):
-   EXCLUDE_FIELDS = [
-      "oimage",
-      "fimage",
-      "pimage",
-      "faces_detected",
-      "people_detected",
-      "temperature",
-      "noise_level"
-   ]
-   query_string = "properties__humidity" + hum_logic
-   kwargs = { query_string: humidity }
-   data = json.loads(local_data.filter(**kwargs).to_json())
-   exclude_fields(data, EXCLUDE_FIELDS)
-   return data
-
-"""
-   Query the local db for noise_level data
-"""
-def query_for_noise_level(local_data, noise_level, noise_logic):
-   EXCLUDE_FIELDS = [
-      "oimage",
-      "fimage",
-      "pimage",
-      "faces_detected",
-      "people_detected",
-      "humidity",
-      "temperature"
-   ]
-   query_string = "properties__noise_level" + noise_logic
-   kwargs = { query_string: noise_level }
-   data = json.loads(local_data.filter(**kwargs).to_json())
-   exclude_fields(data, EXCLUDE_FIELDS)
+def query_local_data(keyword, logic, value, exclude_list):
+   query_string = "properties__" + keyword + logic
+   kwargs = { query_string: value }
+   data = json.loads(Features.objects.filter(**kwargs).to_json())
+   exclude_fields(data, exclude_list)
    return data
 
 """
@@ -422,16 +376,22 @@ def prototype_ui(request):
             epicenters.extend(query_for_images(query_data, faces, bodies))
 
          if temperature:
+            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
+                        "people_detected", "humidity", "noise_level"] 
             epicenters.extend(
-               query_for_temperature(query_data, temperature, temp_logic))
+               query_local_data("temperature", temp_logic, temperature, temp_list))
          
          if humidity:
-            epicenters.extend(json.loads(
-               query_for_humidity(query_data, humidity, humid_logic).to_json()))
+            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
+                        "people_detected", "temperature", "noise_level"] 
+            epicenters.extend(
+               query_local_data("humidity", humid_logic, humidity, temp_list))
 
          if noise_level:
-            epicenters.extend(json.loads(
-               query_for_noise_level(query_data, noise_level, noise_logic).to_json()))
+            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
+                        "people_detected", "humidity", "temperature"] 
+            epicenters.extend(
+               query_local_data("noise_level", noise_logic, noise_level, temp_list))
 
          beautify_results(epicenters)
 
