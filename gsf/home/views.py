@@ -204,64 +204,78 @@ LOGICALS = (
 )
 
 """
-   The Epicenters UI
+   Shared form fields
 """
+radius   = forms.FloatField(required=True, label="*Radius",
+             help_text="in Kilometers")
+sources  = forms.MultipleChoiceField(required=False, choices=SOURCE_CHOICES,
+             widget=forms.CheckboxSelectMultiple())
+images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
+             widget=forms.CheckboxSelectMultiple())
+keywords = forms.CharField(required=False, 
+            help_text="for twitter search. eg. Wild AND Stallions")
+temperature_logic  = forms.ChoiceField(label="Temperature",
+                  required=False, choices=OPERATORS)
+temperature = forms.DecimalField(label="",required=False,
+                  help_text="eg. Temperature >= 60 &deg;F")
+humidity_logic  = forms.ChoiceField(label="Humidity",
+                  required=False, choices=OPERATORS)
+humidity = forms.DecimalField(label="",required=False,
+               help_text="eg. humidity <= 60 %")
+noise_level_logic  = forms.ChoiceField(label="Noise Level",
+                  required=False, choices=OPERATORS)
+noise_level = forms.DecimalField(label="",required=False,
+                  help_text="eg. Noise level < 80 dB")
+
 class EpicentersForm(forms.Form):
-   sources  = forms.MultipleChoiceField(required=False, choices=SOURCE_CHOICES,
-                widget=forms.CheckboxSelectMultiple())
-   images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
-                widget=forms.CheckboxSelectMultiple())
-   keywords = forms.CharField(required=False, 
-               help_text="for twitter search. eg. Wild AND Stallions")
-   # Local query fields
-   temp_logic  = forms.ChoiceField(label="Temperature",
-                     required=False, choices=OPERATORS)
-   temperature = forms.DecimalField(label="",required=False,
-                     help_text="eg. Temperature >= 60 &deg;F")
-
-   humid_logic  = forms.ChoiceField(label="Humidity",
-                     required=False, choices=OPERATORS)
-   humidity = forms.DecimalField(label="",required=False,
-                  help_text="eg. humidity <= 60 %")
-
-   noise_logic  = forms.ChoiceField(label="Noise Level",
-                     required=False, choices=OPERATORS)
-   noise_level = forms.DecimalField(label="",required=False,
-                     help_text="eg. Noise level < 80 dB")
+   sources     = sources 
+   images      = images
+   keywords    = keywords
+   temperature_logic  = temperature_logic
+   temperature = temperature
+   humidity_logic = humidity_logic
+   humidity    = humidity
+   noise_level_logic = noise_level_logic
+   noise_level = noise_level
 
 """
    The Aftershocks UI
 """
 class AftershocksForm(forms.Form):
-   # Remote data fields
-   keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   radius   = forms.FloatField(required=True, label="*Radius",
-                help_text="in Kilometers")
-   text     = forms.BooleanField(required=False)
-   images   = forms.BooleanField(required=False)
+   radius      = radius
+   sources     = sources 
+   images      = images
+   keywords    = keywords
+   temperature_logic  = temperature_logic
+   temperature = temperature
+   humidity_logic = humidity_logic
+   humidity    = humidity
+   noise_level_logic = noise_level_logic
+   noise_level = noise_level
 
 """
    Passes user query to get data from the retriever
 """
-def query_remote(sources, keywords, images):
-   what = ()
+def query_third_party(sources, keywords, images, where):
+   what = ("text",)
    for image in images:
       if image == "twt":
          what = what + ("image",)
 
-   if keywords:
-      what = what + ("text",)
+   #if keywords:
+   #   what = what + ("text",)
          
-   # Get epicenters from twitter
-   epicenters = None
+   # Get results from third party provider
+   results = None
    try:
-      epicenters = retriever.get(sources,
+      results = retriever.get(sources,
                            keyword=keywords, 
-                           what=what)
+                           what=what,
+                           where=where)
    except:
       logger.error("the retriever failed")
 
-   return epicenters
+   return results
 
 """
    Drop unwanted fields from query documents
@@ -274,7 +288,10 @@ def exclude_fields(data, keys):
 """
    Query the local db for images
 """
-def query_for_images(local_data, faces, bodies):
+def query_for_images(faces, bodies, geo, coords, radius):
+   data_set = Features.objects.all()
+   if geo:
+      data_set = data_set(geometry__geo_within_center=[coords, radius])
    EXCLUDE = [
       "oimage",
       "humidity",
@@ -284,7 +301,7 @@ def query_for_images(local_data, faces, bodies):
    data = []
    if faces:
       data = json.loads(
-               local_data(Q(properties__fimage__exists=True) &
+               data_set(Q(properties__fimage__exists=True) &
                   Q(properties__faces_detected__gt=0)).to_json()
              )
       if data:
@@ -294,7 +311,7 @@ def query_for_images(local_data, faces, bodies):
             d["properties"].pop("pimage", None)
    if bodies:
       lis = json.loads(
-               local_data(Q(properties__pimage__exists=True) &
+               data_set(Q(properties__pimage__exists=True) &
                   Q(properties__people_detected__gt=0)).to_json()
             )
       if lis:
@@ -308,10 +325,13 @@ def query_for_images(local_data, faces, bodies):
 """
    Query the local db for non-image data
 """
-def query_local_data(keyword, logic, value, exclude_list):
+def query_local_data(keyword, logic, value, exclude_list, geo, coords, radius):
+   data_set = Features.objects.all()
+   if geo:
+      data_set = data_set(geometry__geo_within_center=[coords, radius])
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
-   data = json.loads(Features.objects.filter(**kwargs).to_json())
+   data = json.loads(data_set.filter(**kwargs).to_json())
    exclude_fields(data, exclude_list)
    return data
 
@@ -340,6 +360,74 @@ def beautify_results(packages):
          properties["text"] += "<br /><b>Number of Bodies Detected: </b>: " + \
                                str(int(properties["people_detected"]))
 
+def process_form(params, aftershocks, coords):
+   results, third_party_results = [], {}
+   faces, bodies = False, False
+   for image in params["images"]:
+      if image == "imf":
+         faces = True
+      elif image == "imb":
+         bodies = True
+
+   if (faces or bodies) and aftershocks:
+      results.extend(
+         query_for_images(
+            faces, bodies, geo=True,
+            coords=coords, radius=params["radius"]
+         )
+      )
+   elif faces or bodies:
+      results.extend(
+         query_for_images(
+            faces, bodies, geo=False,
+            coords=None, radius=None
+         )
+      )
+
+   generic_list = ["temperature", "humidity", "noise_level"]
+   exclude_list = ["oimage", "fimage", "pimage", "faces_detected",
+                   "people_detected", "humidity", "noise_level", "temperature"] 
+   for k,v in params.items():
+      if (k in generic_list) and v:
+         temp_list = []
+         for elem in exclude_list:
+            if elem != k:
+               temp_list.append(elem)
+         if aftershocks:
+            results.extend(
+               query_local_data(
+                  k, param[k+"_logic"], v, temp_list,
+                  geo=True, coords=coords, radius=params["radius"]
+               )
+            )
+         else:
+            results.extend(
+               query_local_data(
+                  k, param[k+"_logic"], v, temp_list,
+                  geo=False, coords=None, radius=None
+               )
+            )
+
+   beautify_results(results)
+
+   # Query twitter if user asked for it
+   for source in params["sources"]:
+      if source == "twt" and aftershocks:
+         where=(coords[1], coords[0], params["radius"], "km")
+         third_party_results = query_third_party(
+            ("Twitter",), params["keywords"], params["images"], where
+         )
+      elif source == "twt":
+         third_party_results = query_third_party(
+            ("Twitter",), params["keywords"], params["images"], None
+         )
+   
+   if third_party_results:
+      results.extend(third_party_results["features"])
+
+   return results
+
+
 def prototype_ui(request):
    if request.method == "POST":
       epicenters_form = EpicentersForm(request.POST, prefix="epicenters")
@@ -349,59 +437,15 @@ def prototype_ui(request):
       if epicenters_form.is_valid() and aftershocks_form.is_valid():
          # Initialize variables and flags
          no_result_flag = False
-         epicenters, twitter_epicenters = [], {}
-         params = {"what":None,"where":None}
          
          # Get epicenters parameters
-         sources = epicenters_form.cleaned_data["sources"]
-         images = epicenters_form.cleaned_data["images"]
-         keywords = epicenters_form.cleaned_data["keywords"]
-         temp_logic = epicenters_form.cleaned_data["temp_logic"]
-         temperature = epicenters_form.cleaned_data["temperature"]
-         humid_logic = epicenters_form.cleaned_data["humid_logic"]
-         humidity = epicenters_form.cleaned_data["humidity"]
-         noise_logic = epicenters_form.cleaned_data["noise_logic"]
-         noise_level = epicenters_form.cleaned_data["noise_level"]
+         epicenter_params = {}
+         for k,v in epicenters_form.cleaned_data.items():
+            epicenter_params[k] = v
 
-         # Start querying the local db for data
-         query_data = Features.objects().all()
-         faces, bodies = False, False
-         for image in images:
-            if image == "imf":
-               faces = True
-            elif image == "imb":
-               bodies = True
-
-         if faces or bodies:
-            epicenters.extend(query_for_images(query_data, faces, bodies))
-
-         if temperature:
-            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
-                        "people_detected", "humidity", "noise_level"] 
-            epicenters.extend(
-               query_local_data("temperature", temp_logic, temperature, temp_list))
-         
-         if humidity:
-            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
-                        "people_detected", "temperature", "noise_level"] 
-            epicenters.extend(
-               query_local_data("humidity", humid_logic, humidity, temp_list))
-
-         if noise_level:
-            temp_list = ["oimage", "fimage", "pimage", "faces_detected",
-                        "people_detected", "humidity", "temperature"] 
-            epicenters.extend(
-               query_local_data("noise_level", noise_logic, noise_level, temp_list))
-
-         beautify_results(epicenters)
-
-         # Query twitter if user asked for it
-         for source in sources:
-            if source == "twt":
-               twitter_epicenters = query_remote(("Twitter",), keywords, images)
-         
-         if twitter_epicenters:
-            epicenters.extend(twitter_epicenters["features"])
+         epicenters = process_form(epicenter_params,
+                        aftershocks=False, coords=None
+                      )
 
          # The package that gets written to file for the visualizer
          package =   {
@@ -411,38 +455,26 @@ def prototype_ui(request):
                      }
 
          # Get aftershocks parameters
-         keywords = aftershocks_form.cleaned_data["keywords"]
-         radius = aftershocks_form.cleaned_data["radius"]
-         text = aftershocks_form.cleaned_data["text"]
-         images = aftershocks_form.cleaned_data["images"]
-         
-         what = None
-         if images and text:
-            what = ("text", "image")
-         elif images:
-            what = ("image",)
-         else:
-            what = ("text",)
+         aftershock_params = {}
+         for k,v in aftershocks_form.cleaned_data.items():
+            aftershock_params[k] = v
          
          # Create epicenters with aftershocks embedded
-         data = []
-         for feature in epicenters:
+         results = []
+         for epicenter in epicenters:
             # Get aftershocks
-            lon = feature["geometry"]["coordinates"][0]
-            lat = feature["geometry"]["coordinates"][1]
-            # TODO: Add try catch
-            aftershocks = retriever.get(
-                              ("Twitter",),
-                              keyword=keywords,
-                              what=what,
-                              where=(lat, lon, radius, "km")
-                          )
-            #logger.debug(feature)
-            feature["properties"]["radius"] = (radius*1000)
-            feature["properties"]["related"] = aftershocks
-            data.append(feature)
+            lon = epicenter["geometry"]["coordinates"][0]
+            lat = epicenter["geometry"]["coordinates"][1]
+            aftershocks = process_form(aftershock_params,
+                           aftershocks=True, coords=[lon, lat])
+            epicenter["properties"]["radius"] = (aftershock_params["radius"]*1000)
+            epicenter["properties"]["related"] = { 
+                                                   "type": "FeatureCollection",
+                                                   "features": aftershocks
+                                                 }
+            results.append(epicenter)
          
-         package["features"] = data
+         package["features"] = results
 
          # Build unique output file name using user ip and timestamp
          ip = ""
