@@ -177,16 +177,16 @@ def index(request):
 
 
 # Choices variables for the forms" select field
-SOURCE_CHOICES = (
-   ("twt", "Twitter"),
+#SOURCE_CHOICES = (
+   #("twt", "Twitter"),
    #("owm", "Open Weather Map"),
    #("gsf", "GSF iOS App"),
-)
+#)
 
 IMAGE_CHOICES = (
-   ("twt", "Images from Twitter"),
-   ("imf", "Images with faces detected"),
-   ("imb", "Images with bodies detected"),
+   ("twt", "From Twitter"),
+   ("imf", "With faces detected"),
+   ("imb", "With bodies detected"),
    
 )
 
@@ -206,10 +206,8 @@ LOGICALS = (
 """
    Shared form fields
 """
-radius   = forms.FloatField(required=True, label="*Radius",
-             help_text="in Kilometers")
-sources  = forms.MultipleChoiceField(required=False, choices=SOURCE_CHOICES,
-             widget=forms.CheckboxSelectMultiple())
+#sources  = forms.MultipleChoiceField(required=False, choices=SOURCE_CHOICES,
+#             widget=forms.CheckboxSelectMultiple())
 images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
              widget=forms.CheckboxSelectMultiple())
 keywords = forms.CharField(required=False, 
@@ -226,9 +224,11 @@ noise_level_logic  = forms.ChoiceField(label="Noise Level",
                   required=False, choices=OPERATORS)
 noise_level = forms.DecimalField(label="",required=False,
                   help_text="eg. Noise level < 80 dB")
+radius   = forms.FloatField(required=True, label="*Aftershock Radius",
+             help_text="in Kilometers")
 
 class EpicentersForm(forms.Form):
-   sources     = sources 
+   #sources     = sources 
    images      = images
    keywords    = keywords
    temperature_logic  = temperature_logic
@@ -242,8 +242,7 @@ class EpicentersForm(forms.Form):
    The Aftershocks UI
 """
 class AftershocksForm(forms.Form):
-   radius      = radius
-   sources     = sources 
+   #sources     = sources 
    images      = images
    keywords    = keywords
    temperature_logic  = temperature_logic
@@ -252,19 +251,21 @@ class AftershocksForm(forms.Form):
    humidity    = humidity
    noise_level_logic = noise_level_logic
    noise_level = noise_level
+   radius      = radius
 
 """
    Passes user query to get data from the retriever
 """
 def query_third_party(sources, keywords, images, where):
-   what = ("text",)
+   what = ()
    for image in images:
       if image == "twt":
          what = what + ("image",)
 
-   #if keywords:
-   #   what = what + ("text",)
-         
+   if keywords:
+      what = what + ("text",)
+   logger.debug(what)
+   logger.debug(keywords)
    # Get results from third party provider
    results = None
    try:
@@ -396,31 +397,34 @@ def process_form(params, aftershocks, coords):
          if aftershocks:
             results.extend(
                query_local_data(
-                  k, param[k+"_logic"], v, temp_list,
+                  k, params[k+"_logic"], v, temp_list,
                   geo=True, coords=coords, radius=params["radius"]
                )
             )
          else:
             results.extend(
                query_local_data(
-                  k, param[k+"_logic"], v, temp_list,
+                  k, params[k+"_logic"], v, temp_list,
                   geo=False, coords=None, radius=None
                )
             )
 
    beautify_results(results)
 
-   # Query twitter if user asked for it
-   for source in params["sources"]:
-      if source == "twt" and aftershocks:
-         where=(coords[1], coords[0], params["radius"], "km")
-         third_party_results = query_third_party(
-            ("Twitter",), params["keywords"], params["images"], where
-         )
-      elif source == "twt":
-         third_party_results = query_third_party(
-            ("Twitter",), params["keywords"], params["images"], None
-         )
+   # Query third party sources if requested by the user
+   thd_party_image_flag = False
+   for choice in params["images"]:
+      if choice in params["images"]:
+         thd_party_image_flag = True
+   if (thd_party_image_flag or params["keywords"]) and aftershocks:
+      where=(coords[1], coords[0], params["radius"], "km")
+      third_party_results = query_third_party(
+         ("Twitter",), params["keywords"], params["images"], where
+      )
+   elif thd_party_image_flag or params["keywords"]:
+      third_party_results = query_third_party(
+         ("Twitter",), params["keywords"], params["images"], None
+      )
    
    if third_party_results:
       results.extend(third_party_results["features"])
@@ -494,8 +498,8 @@ def prototype_ui(request):
             outfile.write(unicode(json.dumps(package,
                indent=4, separators=(",", ": "))))
          
-         # redirect user to the visualizer
-         # if mobile device detected, redirect to touchscreen version
+         # redirect user to the visualizer 
+         #  - if mobile device detected, redirect to touchscreen version
          if request.mobile:
             redr_path = "/static/vizit/index.html?data=" + file_name
             return HttpResponseRedirect(redr_path)
