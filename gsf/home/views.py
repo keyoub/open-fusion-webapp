@@ -256,23 +256,24 @@ class AftershocksForm(forms.Form):
 """
    Passes user query to get data from the retriever
 """
-def query_third_party(sources, keywords, images, where):
-   what = ()
+def query_third_party(sources, keywords, images, location):
+   media = ()
    for image in images:
       if image == "twt":
-         what = what + ("image",)
+         media = media + ("image",)
 
    if keywords:
-      what = what + ("text",)
-   logger.debug(what)
-   logger.debug(keywords)
+      media = media + ("text",)
+   
    # Get results from third party provider
    results = None
    try:
-      results = retriever.get(sources,
-                           keyword=keywords, 
-                           what=what,
-                           where=where)
+      results = retriever.fetch(sources,
+                           media=media,
+                           keyword=keywords,
+                           quantity=15,
+                           location=location,
+                           interval=None)
    except:
       logger.error("the retriever failed")
 
@@ -417,9 +418,9 @@ def process_form(params, aftershocks, coords):
       if choice in params["images"]:
          thd_party_image_flag = True
    if (thd_party_image_flag or params["keywords"]) and aftershocks:
-      where=(coords[1], coords[0], params["radius"], "km")
+      location=(coords[1], coords[0], params["radius"], "km")
       third_party_results = query_third_party(
-         ("Twitter",), params["keywords"], params["images"], where
+         ("Twitter",), params["keywords"], params["images"], location
       )
    elif thd_party_image_flag or params["keywords"]:
       third_party_results = query_third_party(
