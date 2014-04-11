@@ -12,19 +12,33 @@
 <link href="{% static "css/nprogress.css" %}" rel="stylesheet">
 <script src="{% static "js/nprogress.js" %}"></script>
 
-<h1>Fuse Data</h1>
+<h1>Fusion Interface</h1>
 
 <form action="/proto/" method="post" class="form" id="fuseform">
    {% csrf_token %}
    <div class="col-md-5">
       <h2>Epicenters
          <small><a href="#" class="help-link" id="epiModalLink">What's this?</a></small></h2>
-      {% bootstrap_form epicenters_form %}
+      <div class="twitter-form">
+         <h4>Twitter Epicenters</h4>
+         {% bootstrap_form twitter_epicenters_form %}
+      </div>
+      <div class="gsf-form">
+         <h4>Sensory Data Epicenters</h4>
+         {% bootstrap_form gsf_epicenters_form %}
+      </div>
    </div>
    <div class="col-md-5">
       <h2>Aftershocks
          <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
-      {% bootstrap_form aftershocks_form %}
+      <div class="twitter-form">
+         <h4>Twitter Aftershocks</h4>
+         {% bootstrap_form twitter_aftershocks_form %}
+      </div>
+      <div class="gsf-form">
+         <h4>Sensory Data Aftershocks</h4>
+         {% bootstrap_form gsf_aftershocks_form %}
+      </div>
       {% buttons %}
          <p id="sendwrapper">
           <button id="vizit" type="submit" class="btn btn-primary">

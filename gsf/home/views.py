@@ -188,18 +188,23 @@ def index(request):
    return render(request, "home/index.html", {"form":form})
 
 
-# Choices variables for the forms" select field
+# Choices variables for the forms select fields
 #SOURCE_CHOICES = (
    #("twt", "Twitter"),
    #("owm", "Open Weather Map"),
    #("gsf", "GSF iOS App"),
 #)
 
-IMAGE_CHOICES = (
-   ("twt", "From Twitter"),
+TWITTER_CHOICES = (
+   ("", "------------"),
+   ("imgonly", "Search for images only."),
+   ("txtonly", "Search for text only."),
+   ("txtimg", "Search for both images and text."),
+)
+
+GSF_IMAGE_CHOICES = (
    ("imf", "With faces detected"),
    ("imb", "With bodies detected"),
-   
 )
 
 OPERATORS = (
@@ -216,80 +221,68 @@ LOGICALS = (
 )
 
 """
-   Shared form fields
+   The Epicenters form constructor for GSF data querying
 """
-#sources  = forms.MultipleChoiceField(required=False, choices=SOURCE_CHOICES,
-#             widget=forms.CheckboxSelectMultiple())
-images   = forms.MultipleChoiceField(required=False, choices=IMAGE_CHOICES,
+class GSFEpicentersForm(forms.Form):
+   images   = forms.MultipleChoiceField(required=False, choices=GSF_IMAGE_CHOICES,
              widget=forms.CheckboxSelectMultiple())
-keywords = forms.CharField(required=False, 
-            help_text="for twitter search. eg. Wild AND Stallions")
-temperature_logic  = forms.ChoiceField(label="Temperature",
-                  required=False, choices=OPERATORS)
-temperature = forms.DecimalField(label="",required=False,
-                  help_text="eg. Temperature >= 60 &deg;F")
-humidity_logic  = forms.ChoiceField(label="Humidity",
-                  required=False, choices=OPERATORS)
-humidity = forms.DecimalField(label="",required=False,
-               help_text="eg. humidity <= 60 %")
-noise_level_logic  = forms.ChoiceField(label="Noise Level",
-                  required=False, choices=OPERATORS)
-noise_level = forms.DecimalField(label="",required=False,
-                  help_text="eg. Noise level < 80 dB")
-radius   = forms.FloatField(required=True, label="*Aftershock Radius",
-             help_text="in Kilometers")
-
-class EpicentersForm(forms.Form):
-   #sources     = sources 
-   images      = images
-   keywords    = keywords
-   temperature_logic  = temperature_logic
-   temperature = temperature
-   humidity_logic = humidity_logic
-   humidity    = humidity
-   noise_level_logic = noise_level_logic
-   noise_level = noise_level
+   #keywords = forms.CharField(required=False,
+   #            help_text="for twitter search. eg. Wild AND Stallions")
+   temperature_logic  = forms.ChoiceField(label="Temperature",
+                     required=False, choices=OPERATORS)
+   temperature = forms.DecimalField(label="",required=False,
+                     help_text="eg. Temperature >= 60 &deg;F")
+   humidity_logic  = forms.ChoiceField(label="Humidity",
+                     required=False, choices=OPERATORS)
+   humidity = forms.DecimalField(label="",required=False,
+                  help_text="eg. humidity <= 60 %")
+   noise_level_logic  = forms.ChoiceField(label="Noise Level",
+                     required=False, choices=OPERATORS)
+   noise_level = forms.DecimalField(label="",required=False,
+                     help_text="eg. Noise level < 80 dB")
+   
+"""
+   The Aftershocks form constructor for GSF data querying
+"""
+class GSFAftershocksForm(GSFEpicentersForm):
+   radius = forms.FloatField(required=True, label="*Aftershock Radius",
+                help_text="in Kilometers")
 
 """
-   The Aftershocks UI
+   The Epicenters form constructor for Twitter querying
 """
-class AftershocksForm(forms.Form):
-   #sources     = sources 
-   images      = images
-   keywords    = keywords
-   temperature_logic  = temperature_logic
-   temperature = temperature
-   humidity_logic = humidity_logic
-   humidity    = humidity
-   noise_level_logic = noise_level_logic
-   noise_level = noise_level
-   radius      = radius
+class TwitterFusionForm(forms.Form):
+   option = forms.ChoiceField(required=False, choices=TWITTER_CHOICES)
+                #widget=forms.RadioSelect())
+   keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
 
 """
    Passes user query to get data from the retriever
 """
-def query_third_party(sources, keywords, images, location):
+def query_third_party(sources, keyword, option, location):
    media = ()
-   for image in images:
-      if image == "twt":
-         media = media + ("image",)
-
-   if keywords:
-      media = media + ("text",)
    
+   # Create the media variable
+   if option == "imgonly":
+      media = ("image",)
+   if option == "txtonly":
+      media = ("text",)
+   if option == "txtimg":
+      media = ("image", "text")
+
    # Get results from third party provider
-   results = None
+   results = {}
    try:
       results = retriever.fetch(sources,
                            media=media,
-                           keyword=keywords,
+                           keyword=keyword,
                            quantity=15,
                            location=location,
                            interval=None)
    except:
       logger.error("the retriever failed")
 
-   return results
+   return results.get("features")
 
 """
    Drop unwanted fields from query documents
@@ -339,7 +332,7 @@ def query_for_images(faces, bodies, geo, coords, radius):
 """
    Query the local db for non-image data
 """
-def query_local_data(keyword, logic, value, exclude_list, geo, coords, radius):
+def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
    data_set = Features.objects.all()
    if geo:
       data_set = data_set(geometry__geo_within_center=[coords, radius])
@@ -374,7 +367,11 @@ def beautify_results(packages):
          properties["text"] += "<br /><b>Number of Bodies Detected: </b>: " + \
                                str(int(properties["people_detected"]))
 
-def process_form(params, aftershocks, coords):
+"""
+   Process the two UI forms for GSF querying and get 
+   results for each form query parameters
+"""
+def process_gsf_form(params, aftershocks, coords):
    results, third_party_results = [], {}
    faces, bodies = False, False
    for image in params["images"]:
@@ -409,14 +406,14 @@ def process_form(params, aftershocks, coords):
                temp_list.append(elem)
          if aftershocks:
             results.extend(
-               query_local_data(
+               query_numeric_data(
                   k, params[k+"_logic"], v, temp_list,
                   geo=True, coords=coords, radius=params["radius"]
                )
             )
          else:
             results.extend(
-               query_local_data(
+               query_numeric_data(
                   k, params[k+"_logic"], v, temp_list,
                   geo=False, coords=None, radius=None
                )
@@ -424,59 +421,41 @@ def process_form(params, aftershocks, coords):
 
    beautify_results(results)
 
-   # Query third party sources if requested by the user
-   thd_party_image_flag = False
-   for choice in params["images"]:
-      if choice in params["images"]:
-         thd_party_image_flag = True
-   if (thd_party_image_flag or params["keywords"]) and aftershocks:
-      location=(coords[1], coords[0], params["radius"], "km")
-      third_party_results = query_third_party(
-         ("Twitter",), params["keywords"], params["images"], location
-      )
-   elif thd_party_image_flag or params["keywords"]:
-      third_party_results = query_third_party(
-         ("Twitter",), params["keywords"], params["images"], None
-      )
-   
-   if third_party_results:
-      if third_party_results.get("features"):
-         results.extend(third_party_results["features"])
-
    return results
 
 """
-   Helper function that builds the context for index.html 
+   The prototype UI for the Fusion interface 
 """
-def result_errors(no_result_flag, time_flag):
-   epicenters_form = EpicentersForm(prefix="epicenters")
-   aftershocks_form = AftershocksForm(prefix="aftershocks")
-   context = {
-                "epicenters_form": epicenters_form,
-                "aftershocks_form": aftershocks_form,
-                "no_result_flag": no_result_flag,
-                "time_flag": time_flag,
-             }
-   return context
-
 def prototype_ui(request):
    if request.method == "POST":
-      epicenters_form = EpicentersForm(request.POST, prefix="epicenters")
-      aftershocks_form = AftershocksForm(request.POST, prefix="aftershocks")
+      gsf_epicenters_form = GSFEpicentersForm(request.POST, prefix="gsf_epicenters")
+      gsf_aftershocks_form = GSFAftershocksForm(request.POST, prefix="gsf_aftershocks")
+
+      twitter_epicenters_form = TwitterFusionForm(request.POST, prefix="twitter_epicenters")
+      twitter_aftershocks_form = TwitterFusionForm(request.POST, prefix="twitter_aftershocks")
 
       # Get query parameters
-      if epicenters_form.is_valid() and aftershocks_form.is_valid():
-         # Initialize variables and flags
-         no_result_flag = False
+      if gsf_epicenters_form.is_valid() and \
+         gsf_aftershocks_form.is_valid() and \
+         twitter_epicenters_form.is_valid() and \
+         twitter_aftershocks_form.is_valid():
          
-         # Get epicenters parameters
-         epicenter_params = {}
-         for k,v in epicenters_form.cleaned_data.items():
-            epicenter_params[k] = v
+         # Initialize variables
+         epicenters, aftershocks = [], []
 
-         epicenters = process_form(epicenter_params,
-                        aftershocks=False, coords=None
-                      )
+         # Get twitter epicenters
+         twt_params = twitter_epicenters_form.cleaned_data
+         epicenters.extend(query_third_party(
+               ("Twitter",), twt_params["keywords"], twt_params["option"], None
+            )
+         )
+
+         # Get gsf epicenters
+         gsf_epicenter_params = gsf_epicenters_form.cleaned_data
+         epicenters.extend(process_gsf_form(
+               gsf_epicenter_params, aftershocks=False, coords=None
+            )
+         )
 
          if not epicenters:
             message = """Either you gave us a lousy query or
@@ -492,19 +471,32 @@ def prototype_ui(request):
                      }
 
          # Get aftershocks parameters
-         aftershock_params = {}
-         for k,v in aftershocks_form.cleaned_data.items():
-            aftershock_params[k] = v
+         gsf_aftershock_params = gsf_aftershocks_form.cleaned_data
+         twt_params = twitter_aftershocks_form.cleaned_data
          
          # Create epicenters with aftershocks embedded
          results = []
          for epicenter in epicenters:
             # Get aftershocks
+            aftershocks = []
             lon = epicenter["geometry"]["coordinates"][0]
             lat = epicenter["geometry"]["coordinates"][1]
-            aftershocks = process_form(aftershock_params,
-                           aftershocks=True, coords=[lon, lat])
-            epicenter["properties"]["radius"] = (aftershock_params["radius"]*1000)
+
+            # Get twitter aftershocks
+            location=(lat, lon, gsf_aftershock_params["radius"], "km")
+            epicenters.extend(query_third_party(
+                  ("Twitter",), twt_params["keywords"], twt_params["option"], location
+               )
+            )
+
+            # Get gsf aftershocks
+            aftershocks.extend(process_gsf_form(
+                 gsf_aftershock_params, aftershocks=True, coords=[lon, lat]
+               )
+            )
+            
+            # Add the epicenter with added aftershocks to the package
+            epicenter["properties"]["radius"] = (gsf_aftershock_params["radius"]*1000)
             epicenter["properties"]["related"] = { 
                                                    "type": "FeatureCollection",
                                                    "features": aftershocks
@@ -539,12 +531,17 @@ def prototype_ui(request):
          else:
             return render(request, "home/vizit.html", {"file_name":file_name})
    else:
-      epicenters_form = EpicentersForm(prefix="epicenters")
-      aftershocks_form = AftershocksForm(prefix="aftershocks")
+      gsf_epicenters_form = GSFEpicentersForm(prefix="gsf_epicenters")
+      gsf_aftershocks_form = GSFAftershocksForm(prefix="gsf_aftershocks")
+
+      twitter_epicenters_form = TwitterFusionForm(prefix="twitter_epicenters")
+      twitter_aftershocks_form = TwitterFusionForm(prefix="twitter_aftershocks")
 
    return render(request, "home/proto.html",
                  {
-                  "epicenters_form": epicenters_form,
-                  "aftershocks_form": aftershocks_form,
+                  "gsf_epicenters_form": gsf_epicenters_form,
+                  "gsf_aftershocks_form": gsf_aftershocks_form,
+                  "twitter_epicenters_form": twitter_epicenters_form,
+                  "twitter_aftershocks_form": twitter_aftershocks_form,
                  })
    
