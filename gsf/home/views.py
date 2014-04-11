@@ -84,10 +84,14 @@ def index(request):
                lat = float(results[0].coordinates[0])
                lon = float(results[0].coordinates[1])
             except:
-               # If the geocoder API doesn"t return with results
+               # If the geocoder API doesn't return with results
                # return the user to home page with the address error flag
-               return render(request, "home/index.html", 
-                        form_errors(True, no_result_flag, time_flag))
+               message = """The address you gave us is in another
+                            dimension. Try again with an earthly address please."""
+               return render(request, "home/errors.html",
+                        {"url": "", "message": message})
+               #return render(request, "home/index.html", 
+               #         form_errors(True, no_result_flag, time_flag))
 
             # Start building the query for the retriever
             params["where"] = (lat, lon, radius, "km")
@@ -108,8 +112,12 @@ def index(request):
             params["when"] = (t_from, t_to)
          # Return to home page with error if only one field id provided
          elif t_from or t_to:
-            return render(request, "home/index.html", 
-                     form_errors(address_flag, no_result_flag, True))
+            message = """If you expect time interval search you have to 
+                         give us both beginning and end!"""
+            return render(request, "home/errors.html",
+                     {"url": "", "message": message})
+            #return render(request, "home/index.html", 
+            #         form_errors(address_flag, no_result_flag, True))
 
          # Get twitter data
          data = None
@@ -123,8 +131,12 @@ def index(request):
 
          # Return to home page if no tweets were found
          if not data or not data["features"]:
-            return render(request, "home/index.html", 
-                     form_errors(address_flag, True, time_flag))
+            message = """Either you gave us a lousy query or
+                         we sucked at finding results for you."""
+            return render(request, "home/errors.html",
+                     {"url": "", "message": message})
+            #return render(request, "home/index.html", 
+            #         form_errors(address_flag, True, time_flag))
 
          # The center pin for the visualizer
          package =   {
@@ -428,10 +440,24 @@ def process_form(params, aftershocks, coords):
       )
    
    if third_party_results:
-      results.extend(third_party_results["features"])
+      if third_party_results.get("features"):
+         results.extend(third_party_results["features"])
 
    return results
 
+"""
+   Helper function that builds the context for index.html 
+"""
+def result_errors(no_result_flag, time_flag):
+   epicenters_form = EpicentersForm(prefix="epicenters")
+   aftershocks_form = AftershocksForm(prefix="aftershocks")
+   context = {
+                "epicenters_form": epicenters_form,
+                "aftershocks_form": aftershocks_form,
+                "no_result_flag": no_result_flag,
+                "time_flag": time_flag,
+             }
+   return context
 
 def prototype_ui(request):
    if request.method == "POST":
@@ -451,6 +477,12 @@ def prototype_ui(request):
          epicenters = process_form(epicenter_params,
                         aftershocks=False, coords=None
                       )
+
+         if not epicenters:
+            message = """Either you gave us a lousy query or
+                         we sucked at finding results for you."""
+            return render(request, "home/errors.html",
+                     {"url": "/proto/", "message": message})
 
          # The package that gets written to file for the visualizer
          package =   {

@@ -88,7 +88,7 @@
 </div>
 
 <!-- Modals end  -->
-
+{% comment %}
 {% if no_query_flag %}
    <script>
       alert("You must enter something to get results!");
@@ -109,15 +109,15 @@
       alert("Both \"From\" and \"To\" must be provided for time based queries");
    </script>
 {% endif %}
+{% endcomment %}
 
 <script type="text/javascript">
    $(function () {
       $('.date').datetimepicker();
    });
-</script>
 
-<script>
-   $("#fuseform").submit(function(){
+   var frm = $("#fuseform");
+   frm.submit(function(e){
       var valid = 0;
       $(this).find('input, select').each(function(){
                if($(this).val() != ""){ 
@@ -128,7 +128,7 @@
    });
    
    $( window ).unload(function() {
-      NProgress.stop();
+      NProgress.remove();
    });
 
    $("#epiModalLink").click(function(){
