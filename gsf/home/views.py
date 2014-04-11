@@ -250,7 +250,7 @@ class GSFAftershocksForm(GSFEpicentersForm):
    The Epicenters form constructor for Twitter querying
 """
 class TwitterFusionForm(forms.Form):
-   options = forms.ChoiceField(required=False, choices=TWITTER_CHOICES,
+   options = forms.MultipleChoiceField(required=False, choices=TWITTER_CHOICES,
                 widget=forms.CheckboxSelectMultiple())
    keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
 
@@ -490,7 +490,7 @@ def prototype_ui(request):
                location=(lat, lon, gsf_aftershock_params["radius"], "km")
                aftershocks.extend(query_third_party(
                      ("Twitter",), twt_params["keywords"],
-                     twt_params["option"], location
+                     twt_params["options"], location
                   )
                )
 
