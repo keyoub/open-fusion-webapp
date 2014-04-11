@@ -6,6 +6,10 @@ html {
    height: 100%;
 }
 
+a:hover {
+   color:#3b66a4;
+}
+
 .nav {
 	margin-top: 28px; /* this is a faux center fix for the nav options - adjust this if you wish to change the logo height or the font of the menu items */
 }
@@ -58,5 +62,26 @@ html {
    width:45%;
    margin-left:30%;
 }
+}
+
+.twitter-form {
+   /*border: dotted 1px lightblue;*/
+   border-bottom: none;
+   padding: 4%;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+   border-radius: 4px; /* future proofing */
+   -khtml-border-radius: 4px; /* for old Konqueror browsers */
+}
+
+
+.gsf-form {
+   /*border: dotted 1px lightblue;*/
+   border-top: none;
+   padding: 4%;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+   border-radius: 4px; /* future proofing */
+   -khtml-border-radius: 4px; /* for old Konqueror browsers */
 }
 

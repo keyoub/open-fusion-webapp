@@ -196,10 +196,8 @@ def index(request):
 #)
 
 TWITTER_CHOICES = (
-   ("", "------------"),
-   ("imgonly", "Search for images only."),
-   ("txtonly", "Search for text only."),
-   ("txtimg", "Search for both images and text."),
+   ("img", "Images"),
+   ("txt", "Text"),
 )
 
 GSF_IMAGE_CHOICES = (
@@ -252,23 +250,22 @@ class GSFAftershocksForm(GSFEpicentersForm):
    The Epicenters form constructor for Twitter querying
 """
 class TwitterFusionForm(forms.Form):
-   option = forms.ChoiceField(required=False, choices=TWITTER_CHOICES)
-                #widget=forms.RadioSelect())
+   options = forms.ChoiceField(required=False, choices=TWITTER_CHOICES,
+                widget=forms.CheckboxSelectMultiple())
    keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
 
 """
    Passes user query to get data from the retriever
 """
-def query_third_party(sources, keyword, option, location):
+def query_third_party(sources, keyword, options, location):
    media = ()
    
    # Create the media variable
-   if option == "imgonly":
-      media = ("image",)
-   if option == "txtonly":
-      media = ("text",)
-   if option == "txtimg":
-      media = ("image", "text")
+   for option in options:  
+      if option == "img":
+         media = media + ("image",)
+      if option == "txt":
+         media = media + ("text",)
 
    # Get results from third party provider
    results = {}
@@ -445,10 +442,11 @@ def prototype_ui(request):
 
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
-         epicenters.extend(query_third_party(
-               ("Twitter",), twt_params["keywords"], twt_params["option"], None
+         if twt_params["options"]:
+            epicenters.extend(query_third_party(
+                  ("Twitter",), twt_params["keywords"], twt_params["options"], None
+               )
             )
-         )
 
          # Get gsf epicenters
          gsf_epicenter_params = gsf_epicenters_form.cleaned_data
@@ -473,7 +471,12 @@ def prototype_ui(request):
          # Get aftershocks parameters
          gsf_aftershock_params = gsf_aftershocks_form.cleaned_data
          twt_params = twitter_aftershocks_form.cleaned_data
-         
+
+         # Check if we need to do third party queries
+         twt_flag = False
+         if twt_params["options"]:
+            twt_flag = True
+
          # Create epicenters with aftershocks embedded
          results = []
          for epicenter in epicenters:
@@ -483,11 +486,13 @@ def prototype_ui(request):
             lat = epicenter["geometry"]["coordinates"][1]
 
             # Get twitter aftershocks
-            location=(lat, lon, gsf_aftershock_params["radius"], "km")
-            aftershocks.extend(query_third_party(
-                  ("Twitter",), twt_params["keywords"], twt_params["option"], location
+            if twt_flag:
+               location=(lat, lon, gsf_aftershock_params["radius"], "km")
+               aftershocks.extend(query_third_party(
+                     ("Twitter",), twt_params["keywords"],
+                     twt_params["option"], location
+                  )
                )
-            )
 
             # Get gsf aftershocks
             aftershocks.extend(process_gsf_form(

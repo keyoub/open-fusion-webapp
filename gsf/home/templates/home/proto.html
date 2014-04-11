@@ -38,14 +38,23 @@
       <div class="gsf-form">
          <h4>Sensory Data Aftershocks</h4>
          {% bootstrap_form gsf_aftershocks_form %}
+
+         {% buttons %}
+            <p id="sendwrapper">
+             <button id="vizit" type="submit" class="btn btn-primary">
+                {% bootstrap_icon "star" %} Visualize!
+             </button>
+            </p>
+         {% endbuttons %}
       </div>
-      {% buttons %}
+         
+      {% comment %}
          <p id="sendwrapper">
           <button id="vizit" type="submit" class="btn btn-primary">
-             {% bootstrap_icon "star" %} Vizit!
+             {% bootstrap_icon "star" %} Visualize!
           </button>
          </p>
-      {% endbuttons %}
+      {% endcomment %}
 
    </div>
    
