@@ -276,7 +276,7 @@ def query_third_party(sources, keyword, option, location):
       results = retriever.fetch(sources,
                            media=media,
                            keyword=keyword,
-                           quantity=15,
+                           quantity=10,
                            location=location,
                            interval=None)
    except:
@@ -484,7 +484,7 @@ def prototype_ui(request):
 
             # Get twitter aftershocks
             location=(lat, lon, gsf_aftershock_params["radius"], "km")
-            epicenters.extend(query_third_party(
+            aftershocks.extend(query_third_party(
                   ("Twitter",), twt_params["keywords"], twt_params["option"], location
                )
             )
