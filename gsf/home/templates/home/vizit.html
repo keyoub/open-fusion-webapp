@@ -3,13 +3,14 @@
 {% block main %}
 
 <script>
-   document.body.style.overflow = 'hidden';
-   document.body.style.height = '100%';
+   document.body.style.overflow = "hidden";
+   document.body.style.height = "100%";
+   $("#main-container").addClass("container-full").removeClass("container");
 </script>
 
    <div id="h_iframe">
       {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
-      <iframe class="container well well-small span6 fill"
+      <iframe id="map-frame" class="fill"
            src="{{ vizit_url }}">
       </iframe>
       {% endwith %}

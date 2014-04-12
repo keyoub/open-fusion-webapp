@@ -32,9 +32,10 @@ a:hover {
 }
 
 #h_iframe {
-   height: 80%; 
+   height: 90%; 
    min-height: 60%; 
-   display: block
+   display: block;
+   margin-top: -33px;
 }
 
 .fill {
@@ -85,3 +86,7 @@ a:hover {
    -khtml-border-radius: 4px; /* for old Konqueror browsers */
 }
 
+#map-frame {
+   width: 100%;
+   border: none;
+}
