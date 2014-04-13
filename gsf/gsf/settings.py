@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 TEMPLATE_DIRS = (
+      os.path.join(BASE_DIR, 'gmaprouter', 'templates'),
       os.path.join(BASE_DIR, 'home', 'templates'),
       os.path.join(BASE_DIR, 'show', 'templates'),
       os.path.join(BASE_DIR, 'templates'),
