@@ -5,23 +5,23 @@ Open Fusion Web Application
 Installation
 ------------
 
-#. git clone https://github.com/bkeyoumarsi/open-fusion-webapp
+1. git clone https://github.com/bkeyoumarsi/open-fusion-webapp
 
-#. pip install mongoengine
+2. pip install mongoengine
 
-#. pip install ogre
+3. pip install ogre
 
-#. pip install django-bootstrap3-datetimepicker
+4. pip install django-bootstrap3-datetimepicker
 
-#. pip install django-bootstrap3
+5. pip install django-bootstrap3
 
-#. pip install django-admin-bootstrapped
+6. pip install django-admin-bootstrapped
 
-#. pip install minidetector
+7. pip install minidetector
 
-#. pip install pygeocoder
+8. pip install pygeocoder
 
-#. pip install recaptcha-client
+9. pip install recaptcha-client
 
-#. cd gsf/static/; git clone https://github.com/dmtucker/vizit.git
+10. cd gsf/static/; git clone https://github.com/dmtucker/vizit.git
 
