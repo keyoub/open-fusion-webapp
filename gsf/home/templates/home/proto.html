@@ -16,48 +16,60 @@
 
 <form action="/proto/" method="post" class="form" id="fuseform">
    {% csrf_token %}
-   <div class="col-md-5">
-      <h2>Epicenters
-         <small><a href="#" class="help-link" id="epiModalLink">What's this?</a></small></h2>
-      <div class="twitter-form">
-         <h4>Twitter Epicenters</h4>
-         {% bootstrap_form twitter_epicenters_form %}
+   <div class="row">
+      <div class="col-md-5">
+         <h2>Epicenters
+            <small><a href="#" class="help-link" id="epiModalLink">What's this?</a></small></h2>
+      
+         <div class="twitter-toggle" id="twitterEpi">
+            Twitter
+         </div>
+         <div id="twtEpiDiv" class="twitter-form">
+            {% bootstrap_form twitter_epicenters_form %}
+         </div>
+         <div class="gsf-toggle" id="gsfEpi">
+            Sensory Data
+         </div>
+         <div id="gsfEpiDiv" class="gsf-form">
+            {% bootstrap_form gsf_epicenters_form %}
+         </div>
       </div>
-      <div class="gsf-form">
-         <h4>Sensory Data Epicenters</h4>
-         {% bootstrap_form gsf_epicenters_form %}
+      <div class="col-md-5">
+         <h2>Aftershocks
+            <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
+         <div class="twitter-toggle" id="twitterAft">
+            Twitter
+         </div>
+         <div id="twtAftDiv" class="twitter-form">
+            {% bootstrap_form twitter_aftershocks_form %}
+         </div>
+         <div class="gsf-toggle" id="gsfAft">
+            Sensory Data
+         </div>
+         <div id="gsfAftDiv" class="gsf-form">
+            <h4>Sensory Data Aftershocks</h4>
+            {% bootstrap_form gsf_aftershocks_form %}
+
+         </div>
+
       </div>
    </div>
-   <div class="col-md-5">
-      <h2>Aftershocks
-         <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
-      <div class="twitter-form">
-         <h4>Twitter Aftershocks</h4>
-         {% bootstrap_form twitter_aftershocks_form %}
-      </div>
-      <div class="gsf-form">
-         <h4>Sensory Data Aftershocks</h4>
-         {% bootstrap_form gsf_aftershocks_form %}
 
+   <div class="row">
+      <div class="col-md-5">
+      </div>
+      <div class="col-md-5">
          {% buttons %}
             <p id="sendwrapper">
-             <button id="vizit" type="submit" class="btn btn-primary">
+             <button id="vizit" type="submit" style="float:right;" class="btn btn-primary">
                 {% bootstrap_icon "star" %} Visualize!
              </button>
             </p>
          {% endbuttons %}
       </div>
-         
-      {% comment %}
-         <p id="sendwrapper">
-          <button id="vizit" type="submit" class="btn btn-primary">
-             {% bootstrap_icon "star" %} Visualize!
-          </button>
-         </p>
-      {% endcomment %}
-
    </div>
-   
+
+
 </form>
 
 <!-- Help Box Modals -->
@@ -110,30 +122,6 @@
   </div>
 </div>
 
-<!-- Modals end  -->
-{% comment %}
-{% if no_query_flag %}
-   <script>
-      alert("You must enter something to get results!");
-   </script>
-{% endif %}
-{% if address_flag %}
-   <script>
-      alert("Could not find provided Address.");
-   </script>
-{% endif %}
-{% if no_result_flag %}
-   <script>
-      alert("Your query did not return any results.")
-   </script>
-{% endif %}
-{% if time_flag %}
-   <script>
-      alert("Both \"From\" and \"To\" must be provided for time based queries");
-   </script>
-{% endif %}
-{% endcomment %}
-
 <script type="text/javascript">
    $(function () {
       $('.date').datetimepicker();
@@ -142,11 +130,18 @@
    var frm = $("#fuseform");
    frm.submit(function(e){
       var valid = 0;
-      $(this).find('input, select').each(function(){
-               if($(this).val() != ""){ 
-                     valid+=1;
-                     NProgress.start();
+      $(this).find("input").each(function(){
+         var aftershocks_flag = 0;
+         if($(this).val() != ""){
+            if ($(this).prop("id").indexOf("aftershocks") > 0){
+               if ($(this).prop("checked")){
+                  // TODO: fix this
+                  //alert("yah checked");
                }
+            } 
+            valid+=1;
+            NProgress.start();
+         }
       });
    });
    
@@ -160,6 +155,26 @@
 
    $("#aftModalLink").click(function(){
       $('#aftModal').modal();
+   });
+
+   /****   The jQuery Toggle functions ****/
+   var options = {
+      effect: "slide", 
+      duration: 400,
+      easing: "easeOutCubic",
+      direction: "up"
+   }
+   $("#twitterEpi").click(function () {
+      $("#twtEpiDiv").toggle(options);
+   });
+   $("#twitterAft").click(function () {
+      $("#twtAftDiv").toggle(options);
+   });
+   $("#gsfEpi").click(function () {
+      $("#gsfEpiDiv").toggle(options);
+   });
+   $("#gsfAft").click(function () {
+      $("#gsfAftDiv").toggle(options);
    });
 </script>
 

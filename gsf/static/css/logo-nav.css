@@ -1,5 +1,6 @@
 body {
 	margin-top: 125px; /* adjust this if the height of the menu bar changes */
+   font-family: 'Lato', sans-serif;
 }
 
 html {
@@ -44,9 +45,10 @@ a:hover {
 }
 
 .footer {
-  border-top: 1px solid #eee;
-  clear:both;
-  padding-top:30px;
+   border-top: 1px solid #eee;
+   clear:both;
+   padding-top:30px;
+   margin-top:2%;
 } 
 
 .help-link{
@@ -65,28 +67,78 @@ a:hover {
 }
 }
 
-.twitter-form {
-   /*border: dotted 1px lightblue;*/
-   border-bottom: none;
-   padding: 4%;
-   -moz-border-radius: 4px;
-   -webkit-border-radius: 4px;
-   border-radius: 4px; /* future proofing */
-   -khtml-border-radius: 4px; /* for old Konqueror browsers */
-}
-
-
-.gsf-form {
-   /*border: dotted 1px lightblue;*/
-   border-top: none;
-   padding: 4%;
-   -moz-border-radius: 4px;
-   -webkit-border-radius: 4px;
-   border-radius: 4px; /* future proofing */
-   -khtml-border-radius: 4px; /* for old Konqueror browsers */
-}
-
 #map-frame {
    width: 100%;
    border: none;
+}
+
+.gsf-form {
+   display: none;
+   border: solid 1px #28B78D;
+   padding: 4%;
+   -moz-border-radius: 4px;
+   -webkit-border-radius: 4px;
+   border-radius: 4px; /* future proofing */
+   -khtml-border-radius: 4px; /* for old Konqueror browsers */
+}
+
+.gsf-toggle {
+   border: solid 1px #28B78D;
+   background-color: #28B78D;
+   margin-top: 5%;
+   font-weight:bold;
+   font-size:125%;
+   color: white;
+   cursor: pointer;
+   width: 100%;
+   padding: 3%;
+   padding-left: 5%;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;
+   -khtml-border-radius: 6px;
+}
+
+.gsf-toggle:hover{
+   background-color: white;
+   color: #28B78D;
+}
+
+.twitter-form {
+   display: none;
+   border: solid 1px #55acee;
+   padding: 4%;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px; 
+   -khtml-border-radius: 6px;
+}
+
+
+.twitter-toggle {
+   border: solid 1px #55acee;
+   background-color: #55acee;
+   margin-top: 5%;
+   font-weight:bold;
+   font-size:125%;
+   color: white;
+   cursor: pointer;
+   width: 100%;
+   padding: 3%;
+   padding-left: 5%;
+   /*-webkit-border-top-left-radius: 8px;
+   -webkit-border-top-right-radius: 8px;
+   -moz-border-radius-topleft: 8px;
+   -moz-border-radius-topright: 8px;
+   border-top-left-radius: 8px;
+   border-top-right-radius: 8px;*/
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;
+   -khtml-border-radius: 6px; 
+}
+
+.twitter-toggle:hover{
+   background-color: white;
+   color: #55acee;
 }
