@@ -35,6 +35,7 @@
          </div>
       </div>
       <div class="col-md-5">
+         <div class="aftershocks-overlay"></div>
          <h2>Aftershocks
             <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
          <div class="twitter-toggle" id="twitterAft">
@@ -131,43 +132,50 @@
 </div>
 
 <script type="text/javascript">
-   $(function () {
+   /*$(function () {
       $('.date').datetimepicker();
+   });*/
+   // UI interaction between Epicenters and Aftershocks
+   $('form input').change(function(){
+      alert('keyup');
    });
-
+   
+   // Custom form validation
    var frm = $("#fuseform");
    frm.submit(function(e){
       var input_flag = false;
       var valid_aftershocks = true;
+      // Validate input form inputs
       $(this).find("input").each(function(){
-         /*if ($(this).prop("type") == "checkbox"){
-            if ($(this).prop("checked")){
-               input_flag = true;
-            }
+         if ($(this).prop("type") == "hidden"){
+            return;
          }
-         else if($(this).val() != "" && $(this).prop("type") != "hidden"){
+         if ($(this).prop("type") != "checkbox" && 
+             $(this).val() != ""){
+            if ($(this).prop("id").indexOf("aftershocks") >= 0){
+               if ($("#id_gsf_aftershocks-radius").val() == ""){
+                  valid_aftershocks = false;
+               }
+            }
             input_flag = true;
-         }*/
-         //TODO: fix this check issue 
-         if ($(this).prop("id").indexOf("aftershocks") >= 0){
-            if ($(this).prop("type") != "checkbox" && 
-                $(this).val() != ""){
+         }
+         if ($(this).prop("type") == "checkbox" && 
+             $(this).prop("checked")){
+            if ($(this).prop("id").indexOf("aftershocks") >= 0){
                if ($("#id_gsf_aftershocks-radius").val() == ""){
                   valid_aftershocks = false;
                }
             }
-            if ($(this).prop("type") == "checkbox" && 
-                $(this).prop("checked")){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-
-         } 
+            alert($(this).val());
+            input_flag = true;
+         }
       });
       if (!valid_aftershocks){
          e.preventDefault();
          alert("To get aftershocks you must enter a Radius");
+      }else if (!input_flag){
+         e.preventDefault();
+         alert("You must enter something for us to be able to find it for you.");
       }else{
          NProgress.start();
       }
