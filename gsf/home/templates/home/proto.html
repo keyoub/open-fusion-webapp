@@ -16,7 +16,7 @@
 
 <form action="/proto/" method="post" class="form" id="fuseform">
    {% csrf_token %}
-   <div class="row">
+   <div id="fusionTopRow" class="row">
       <div class="col-md-5">
          <h2>Epicenters
             <small><a href="#" class="help-link" id="epiModalLink">What's this?</a></small></h2>
@@ -47,18 +47,26 @@
             Sensory Data
          </div>
          <div id="gsfAftDiv" class="gsf-form">
-            <h4>Sensory Data Aftershocks</h4>
-            {% bootstrap_form gsf_aftershocks_form %}
+         {% for field in gsf_aftershocks_form %}
+            {# bootstrap_form gsf_aftershocks_form #}
+            {% if field.label != "Aftershock Radius" %}
+               {% bootstrap_field field %}
+            {% else %}
+               </div></div></div>
+               <div class="row">
+                  <div class="col-md-5"></div>
+                  <div class="col-md-5">
+               {% bootstrap_field field %}
+            {% endif %}
+         {% endfor %}
 
-         </div>
-
-      </div>
+      <!--</div>
    </div>
 
    <div class="row">
       <div class="col-md-5">
       </div>
-      <div class="col-md-5">
+      <div class="col-md-5">-->
          {% buttons %}
             <p id="sendwrapper">
              <button id="vizit" type="submit" style="float:right;" class="btn btn-primary">
@@ -129,20 +137,40 @@
 
    var frm = $("#fuseform");
    frm.submit(function(e){
-      var valid = 0;
+      var input_flag = false;
+      var valid_aftershocks = true;
       $(this).find("input").each(function(){
-         var aftershocks_flag = 0;
-         if($(this).val() != ""){
-            if ($(this).prop("id").indexOf("aftershocks") > 0){
-               if ($(this).prop("checked")){
-                  // TODO: fix this
-                  //alert("yah checked");
-               }
-            } 
-            valid+=1;
-            NProgress.start();
+         /*if ($(this).prop("type") == "checkbox"){
+            if ($(this).prop("checked")){
+               input_flag = true;
+            }
          }
+         else if($(this).val() != "" && $(this).prop("type") != "hidden"){
+            input_flag = true;
+         }*/
+         //TODO: fix this check issue 
+         if ($(this).prop("id").indexOf("aftershocks") >= 0){
+            if ($(this).prop("type") != "checkbox" && 
+                $(this).val() != ""){
+               if ($("#id_gsf_aftershocks-radius").val() == ""){
+                  valid_aftershocks = false;
+               }
+            }
+            if ($(this).prop("type") == "checkbox" && 
+                $(this).prop("checked")){
+               if ($("#id_gsf_aftershocks-radius").val() == ""){
+                  valid_aftershocks = false;
+               }
+            }
+
+         } 
       });
+      if (!valid_aftershocks){
+         e.preventDefault();
+         alert("To get aftershocks you must enter a Radius");
+      }else{
+         NProgress.start();
+      }
    });
    
    $( window ).unload(function() {

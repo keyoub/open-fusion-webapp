@@ -243,7 +243,7 @@ class GSFEpicentersForm(forms.Form):
    The Aftershocks form constructor for GSF data querying
 """
 class GSFAftershocksForm(GSFEpicentersForm):
-   radius = forms.FloatField(required=True, label="*Aftershock Radius",
+   radius = forms.FloatField(required=False, label="Aftershock Radius",
                 help_text="in Kilometers")
 
 """
@@ -279,7 +279,7 @@ def query_third_party(sources, keyword, options, location):
    except:
       logger.error("the retriever failed")
 
-   return results.get("features")
+   return results.get("features") if results.get("features") else []
 
 """
    Drop unwanted fields from query documents
@@ -477,36 +477,41 @@ def prototype_ui(request):
          if twt_params["options"]:
             twt_flag = True
 
-         # Create epicenters with aftershocks embedded
          results = []
-         for epicenter in epicenters:
-            # Get aftershocks
-            aftershocks = []
-            lon = epicenter["geometry"]["coordinates"][0]
-            lat = epicenter["geometry"]["coordinates"][1]
+         # Create epicenters with aftershocks embedded if radius given
+         if gsf_aftershock_params["radius"]:
+            for epicenter in epicenters:
+               # Get aftershocks
+               aftershocks = []
+               lon = epicenter["geometry"]["coordinates"][0]
+               lat = epicenter["geometry"]["coordinates"][1]
 
-            # Get twitter aftershocks
-            if twt_flag:
-               location=(lat, lon, gsf_aftershock_params["radius"], "km")
-               aftershocks.extend(query_third_party(
-                     ("Twitter",), twt_params["keywords"],
-                     twt_params["options"], location
+               # Get twitter aftershocks
+               if twt_flag:
+                  location=(lat, lon, gsf_aftershock_params["radius"], "km")
+                  aftershocks.extend(query_third_party(
+                        ("Twitter",), twt_params["keywords"],
+                        twt_params["options"], location
+                     )
+                  )
+
+               # Get gsf aftershocks
+               aftershocks.extend(process_gsf_form(
+                    gsf_aftershock_params, aftershocks=True, coords=[lon, lat]
                   )
                )
-
-            # Get gsf aftershocks
-            aftershocks.extend(process_gsf_form(
-                 gsf_aftershock_params, aftershocks=True, coords=[lon, lat]
+               
+               # Add the epicenter with added aftershocks to the package
+               epicenter["properties"]["radius"] = (
+                  gsf_aftershock_params["radius"]*1000
                )
-            )
-            
-            # Add the epicenter with added aftershocks to the package
-            epicenter["properties"]["radius"] = (gsf_aftershock_params["radius"]*1000)
-            epicenter["properties"]["related"] = { 
-                                                   "type": "FeatureCollection",
-                                                   "features": aftershocks
-                                                 }
-            results.append(epicenter)
+               epicenter["properties"]["related"] = { 
+                                                      "type": "FeatureCollection",
+                                                      "features": aftershocks
+                                                    }
+               results.append(epicenter)
+         else:
+            results = epicenters
          
          package["features"] = results
 
