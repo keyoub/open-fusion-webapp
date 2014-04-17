@@ -129,84 +129,10 @@
    /*$(function () {
       $('.date').datetimepicker();
    });*/
-   // UI interaction between Epicenters and Aftershocks
-   $("#aftEnable").click(function (){
-      alert("gottcha");
-   });
-   // Custom form validation
-   var frm = $("#fuseform");
-   frm.submit(function(e){
-      var input_flag = false;
-      var valid_aftershocks = true;
-      // Validate input form inputs
-      $(this).find("input").each(function(){
-         if ($(this).prop("type") == "hidden"){
-            return;
-         }
-         if ($(this).prop("type") != "checkbox" && 
-             $(this).val() != ""){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            input_flag = true;
-         }
-         if ($(this).prop("type") == "checkbox" && 
-             $(this).prop("checked")){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            input_flag = true;
-         }
-      });
-      if (!valid_aftershocks){
-         e.preventDefault();
-         alert("To get aftershocks you must enter a Radius");
-      }else if (!input_flag){
-         e.preventDefault();
-         alert("You must enter something for us to be able to find it for you.");
-      }else{
-         NProgress.start();
-      }
-   });
-   
-   $( window ).unload(function() {
-      NProgress.remove();
-   });
-
-   $("#epiModalLink").click(function(){
-      $('#epiModal').modal();
-   });
-
-   $("#aftModalLink").click(function(){
-      $('#aftModal').modal();
-   });
-
-   /****   The jQuery Toggle functions ****/
-   var options = {
-      effect: "slide", 
-      duration: 400,
-      easing: "easeOutCubic",
-      direction: "up"
-   }
-   $("#twitterEpi").click(function () {
-      $("#twtEpiDiv").toggle(options);
-   });
-   $("#twitterAft").click(function () {
-      $("#twtAftDiv").toggle(options);
-   });
-   $("#gsfEpi").click(function () {
-      $("#gsfEpiDiv").toggle(options);
-   });
-   $("#gsfAft").click(function () {
-      $("#gsfAftDiv").toggle(options);
-   });
 </script>
 
 <script src="{% static "js/moment.js" %}"></script>
+<script src="{% static "js/fusion-ui.js" %}"></script>
 <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
 
