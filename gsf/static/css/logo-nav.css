@@ -60,13 +60,6 @@ a:hover {
    margin-left:40%;
 }
 
-@media (max-width: 699px){
-.form-operators {
-   width:45%;
-   margin-left:30%;
-}
-}
-
 #map-frame {
    width: 100%;
    border: none;
@@ -93,6 +86,7 @@ a:hover {
    width: 100%;
    padding: 3%;
    padding-left: 5%;
+   margin-bottom: 3%;
    -moz-border-radius: 6px;
    -webkit-border-radius: 6px;
    border-radius: 6px;
@@ -126,12 +120,6 @@ a:hover {
    width: 100%;
    padding: 3%;
    padding-left: 5%;
-   /*-webkit-border-top-left-radius: 8px;
-   -webkit-border-top-right-radius: 8px;
-   -moz-border-radius-topleft: 8px;
-   -moz-border-radius-topright: 8px;
-   border-top-left-radius: 8px;
-   border-top-right-radius: 8px;*/
    -moz-border-radius: 6px;
    -webkit-border-radius: 6px;
    border-radius: 6px;
@@ -148,10 +136,39 @@ a:hover {
 }
 
 .aftershocks-overlay {
+   cursor: pointer;
    height: 100%;
    width: 100%;
    background-color: #808080;
    z-index: 999999;
    position: absolute;
    opacity: 0.7;
+   text-align: center;
+   padding-top: 26%;
+   color: black;
+   font-weight: bolder;
+   font-size: 2.5em;
+   margin-left: -15px;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;
+   -khtml-border-radius: 6px;
 }
+
+.aftershocks-overlay:hover {
+   color: white;
+}
+/******** Mobile specific CSS ********/
+@media (max-width: 699px){
+.form-operators {
+   width:45%;
+   margin-left:30%;
+}
+
+.aftershocks-overlay {
+   padding-top: 30%;
+   /*margin:0px;*/
+}
+
+}
+
