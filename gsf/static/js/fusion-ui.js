@@ -1,5 +1,6 @@
 $( document ).ready(function() {
    
+   // Check if epicenters form is field out
    function check_epicenters(form_id){
       var id = new Array();
       var valid_epi = false;
@@ -8,23 +9,18 @@ $( document ).ready(function() {
             if ($(this).prop("type") != "checkbox" &&
                 $(this).val() != ""){
                valid_epi = true;
-               id.push("kir");
+               id.push($(this).prop("id"));
             }
             if ($(this).prop("type") == "checkbox" &&
                 $(this).prop("checked")){
                valid_epi = true;
-               id.push("chor");
+               id.push($(this).prop("id"));
             }
          }
       });
       return (form_id ? id : valid_epi);
    }
    
-   var id = check_epicenters(true);
-   if (id.length > 0){
-      alert(id);
-   }
-
    // UI interaction between Epicenters and Aftershocks
    $("#aftEnable").click(function (){
       var valid_epi = check_epicenters(false);
@@ -106,5 +102,28 @@ $( document ).ready(function() {
    $("#gsfAft").click(function () {
       $("#gsfAftDiv").toggle(options);
    });
+
+   var id = check_epicenters(true);
+   if (id.length > 0){
+      var twt = false;
+      var gsf = false
+      for (var i = 0; i < id.length; i++){
+         if (id[i].indexOf("twitter_epicenters") >= 0){
+            twt = true;
+         }
+         if (id[i].indexOf("gsf_epicenters") >= 0){
+            gsf = true;
+         }
+      }
+      if (twt){
+         $("#twitterEpi").trigger("click");
+      }
+      if (gsf){
+         $("#gsfEpi").trigger("click");
+      }
+      if (gsf || twt){
+         $("#aftEnable").trigger("click");
+      }
+   }
 
 });
