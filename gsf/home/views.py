@@ -280,10 +280,10 @@ def query_third_party(sources, keyword, options, location, quantity):
                            quantity=quantity,
                            location=location,
                            interval=None)
-   except:
-      logger.error("the retriever failed")
+   except Exception as inst:
+      logger.error(type(inst))
 
-   return results.get("features") if results.get("features") else []
+   return results.get("features", [])
 
 """
    Drop unwanted fields from query documents
@@ -448,8 +448,8 @@ def prototype_ui(request):
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
             epicenters.extend(query_third_party(
-                  ("Twitter",), twt_params["keywords"], twt_params["options"], None,
-                  (twt_params["number"] if twt_params["number"] else 1)
+                  ("Twitter",), twt_params["keywords"], twt_params["options"], 
+                  None, int(twt_params.get("number", 1))
                )
             )
 
@@ -497,7 +497,7 @@ def prototype_ui(request):
                   aftershocks.extend(query_third_party(
                         ("Twitter",), twt_params["keywords"],
                         twt_params["options"], location,
-                        (twt_params["number"] if twt_params["number"] else 1)
+                        int(twt_params.get("number", 1))
                      )
                   )
 
