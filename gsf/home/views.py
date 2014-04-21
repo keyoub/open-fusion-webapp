@@ -449,7 +449,7 @@ def prototype_ui(request):
          if twt_params["options"]:
             epicenters.extend(query_third_party(
                   ("Twitter",), twt_params["keywords"], twt_params["options"], 
-                  None, int(twt_params.get("number", 1))
+                  None, int(twt_params["number"] if twt_params["number"] else 1)
                )
             )
 
@@ -497,7 +497,7 @@ def prototype_ui(request):
                   aftershocks.extend(query_third_party(
                         ("Twitter",), twt_params["keywords"],
                         twt_params["options"], location,
-                        int(twt_params.get("number", 1))
+                        int(twt_params["number"] if twt_params["number"] else 1)
                      )
                   )
 
