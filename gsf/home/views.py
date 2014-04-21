@@ -224,27 +224,28 @@ LOGICALS = (
 class GSFEpicentersForm(forms.Form):
    images   = forms.MultipleChoiceField(required=False, choices=GSF_IMAGE_CHOICES,
              widget=forms.CheckboxSelectMultiple())
-   #keywords = forms.CharField(required=False,
-   #            help_text="for twitter search. eg. Wild AND Stallions")
    temperature_logic  = forms.ChoiceField(label="Temperature",
                      required=False, choices=OPERATORS)
    temperature = forms.DecimalField(label="",required=False,
-                     help_text="eg. Temperature >= 60 &deg;F")
+                     help_text="eg. Temperature >= 60 &deg;F",
+                     min_value=1, max_value=150)
    humidity_logic  = forms.ChoiceField(label="Humidity",
                      required=False, choices=OPERATORS)
    humidity = forms.DecimalField(label="",required=False,
-                  help_text="eg. humidity <= 60 %")
+                  help_text="eg. humidity <= 60 %",
+                  min_value=0, max_value=100)
    noise_level_logic  = forms.ChoiceField(label="Noise Level",
                      required=False, choices=OPERATORS)
    noise_level = forms.DecimalField(label="",required=False,
-                     help_text="eg. Noise level < 80 dB")
+                     help_text="eg. Noise level < 80 dB",
+                     min_value=-120, max_value=100)
    
 """
    The Aftershocks form constructor for GSF data querying
 """
 class GSFAftershocksForm(GSFEpicentersForm):
    radius = forms.FloatField(required=False, label="Aftershock Radius",
-                help_text="in Kilometers")
+                help_text="in Kilometers", min_value = 0.1, max_value=5)
 
 """
    The Epicenters form constructor for Twitter querying
@@ -253,11 +254,14 @@ class TwitterFusionForm(forms.Form):
    options = forms.MultipleChoiceField(required=False, choices=TWITTER_CHOICES,
                 widget=forms.CheckboxSelectMultiple())
    keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
+   number = forms.DecimalField(required=False, label="Number of Tweets",
+            min_value = 1, max_value = 15, help_text="""Default 1, Max 15. 
+            Beware that large requests take a long time to get back from twitter""")
 
 """
    Passes user query to get data from the retriever
 """
-def query_third_party(sources, keyword, options, location):
+def query_third_party(sources, keyword, options, location, quantity):
    media = ()
    
    # Create the media variable
@@ -273,7 +277,7 @@ def query_third_party(sources, keyword, options, location):
       results = retriever.fetch(sources,
                            media=media,
                            keyword=keyword,
-                           quantity=10,
+                           quantity=quantity,
                            location=location,
                            interval=None)
    except:
@@ -444,7 +448,8 @@ def prototype_ui(request):
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
             epicenters.extend(query_third_party(
-                  ("Twitter",), twt_params["keywords"], twt_params["options"], None
+                  ("Twitter",), twt_params["keywords"], twt_params["options"], None,
+                  (twt_params["number"] if twt_params["number"] else 1)
                )
             )
 
@@ -491,7 +496,8 @@ def prototype_ui(request):
                   location=(lat, lon, gsf_aftershock_params["radius"], "km")
                   aftershocks.extend(query_third_party(
                         ("Twitter",), twt_params["keywords"],
-                        twt_params["options"], location
+                        twt_params["options"], location,
+                        (twt_params["number"] if twt_params["number"] else 1)
                      )
                   )
 

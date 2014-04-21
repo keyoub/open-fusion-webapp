@@ -1,30 +1,26 @@
 $( document ).ready(function() {
-   
-   // Check if epicenters form is field out
-   function check_epicenters(form_id){
-      var id = new Array();
-      var valid_epi = false;
+
+   // Check the form for any cached data
+   function check_form(form_name){
+      var valid = false;
       $("#fuseform").find("input").each(function(){
-         if ($(this).prop("id").indexOf("epicenters") >= 0){
+         if ($(this).prop("id").indexOf(form_name) >= 0){
             if ($(this).prop("type") != "checkbox" &&
                 $(this).val() != ""){
-               valid_epi = true;
-               id.push($(this).prop("id"));
+               valid = true;
             }
             if ($(this).prop("type") == "checkbox" &&
                 $(this).prop("checked")){
-               valid_epi = true;
-               id.push($(this).prop("id"));
+               valid = true;
             }
          }
       });
-      return (form_id ? id : valid_epi);
+      return valid;
    }
    
    // UI interaction between Epicenters and Aftershocks
    $("#aftEnable").click(function (){
-      var valid_epi = check_epicenters(false);
-      if (!valid_epi){
+      if (!check_form("epicenters")){
          alert("In order to get Aftershocks, you must have Epicenters.");
       }else{
          $(this).css("display", "none");
@@ -103,27 +99,19 @@ $( document ).ready(function() {
       $("#gsfAftDiv").toggle(options);
    });
 
-   var id = check_epicenters(true);
-   if (id.length > 0){
-      var twt = false;
-      var gsf = false
-      for (var i = 0; i < id.length; i++){
-         if (id[i].indexOf("twitter_epicenters") >= 0){
-            twt = true;
-         }
-         if (id[i].indexOf("gsf_epicenters") >= 0){
-            gsf = true;
-         }
-      }
-      if (twt){
-         $("#twitterEpi").trigger("click");
-      }
-      if (gsf){
-         $("#gsfEpi").trigger("click");
-      }
-      if (gsf || twt){
-         $("#aftEnable").trigger("click");
-      }
+   // Check the forms on load and open them if they have cached data
+   if (check_form("twitter_epicenters")){
+      $("#aftEnable").trigger("click");
+      $("#twtEpiDiv").toggle(options);
    }
-
+   if (check_form("gsf_epicenters")){
+      $("#aftEnable").trigger("click");
+      $("#gsfEpiDiv").toggle(options);
+   }
+   if (check_form("twitter_aftershocks")){
+      $("#twtAftDiv").toggle(options);
+   }
+   if (check_form("gsf_aftershocks")){
+      $("#gsfAftDiv").toggle(options);
+   }
 });
