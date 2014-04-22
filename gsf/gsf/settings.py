@@ -109,6 +109,7 @@ STATICFILES_DIRS = (
 STATIC_URL = '/static/'
 
 ########## DJANGO-DEBUG CONFIGURATION
+#TODO: Add admin email handler
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

@@ -10,6 +10,7 @@ from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
 from api.models import Features
 from pygeocoder import Geocoder
 from ogre import OGRe
+from twython import TwythonRateLimitError, TwythonError
 import os, io, json, time, hashlib, datetime, logging
 
 logger = logging.getLogger(__name__)
@@ -273,6 +274,7 @@ def query_third_party(sources, keyword, options, location, quantity):
 
    # Get results from third party provider
    results = {}
+   error = ""
    try:
       results = retriever.fetch(sources,
                            media=media,
@@ -280,10 +282,16 @@ def query_third_party(sources, keyword, options, location, quantity):
                            quantity=quantity,
                            location=location,
                            interval=None)
-   except Exception as inst:
-      logger.error(inst)
+   except TwythonRateLimitError, e:
+      logger.error(e)
+      error = """Unfortunately our Twitter retriever has been rate
+         limited. We cannot do anything but wait for Twitter's tyranny to fall."""
+   except TwythonError, e:
+      logger.error(e)
+   except Exception as e:
+      logger.error(e)
 
-   return results.get("features", [])
+   return (error, results.get("features", []))
 
 """
    Drop unwanted fields from query documents
@@ -451,11 +459,14 @@ def prototype_ui(request):
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
-            epicenters.extend(query_third_party(
-                  ("Twitter",), twt_params["keywords"], twt_params["options"], 
-                  None, int(twt_params["number"] if twt_params["number"] else 1)
-               )
+            result = query_third_party(
+               ("Twitter",), twt_params["keywords"], twt_params["options"], 
+               None, int(twt_params["number"] if twt_params["number"] else 1)
             )
+            if result[0] != "":
+               return render(request, "home/errors.html",
+                  {"url": "/proto/", "message": result[0]})
+            epicenters.extend(result[1])
 
          # Get gsf epicenters
          gsf_epicenter_params = gsf_epicenters_form.cleaned_data
@@ -498,12 +509,24 @@ def prototype_ui(request):
                # Get twitter aftershocks
                if twt_flag:
                   location=(lat, lon, gsf_aftershock_params["radius"], "km")
-                  aftershocks.extend(query_third_party(
+                  result = query_third_party(
+                     ("Twitter",), twt_params["keywords"],
+                     twt_params["options"], location, 
+                     int(twt_params["number"] if twt_params["number"] else 1)
+                  )
+                  if result[0] != "":
+                     #TODO: Add special error message for aftershocks failure 
+                     pass
+                     #return render(request, "home/errors.html",
+                     #   {"url": "/proto/", "message": result[0]})
+                  aftershocks.extend(result[1])
+
+                  """aftershocks.extend(query_third_party(
                         ("Twitter",), twt_params["keywords"],
                         twt_params["options"], location,
                         int(twt_params["number"] if twt_params["number"] else 1)
                      )
-                  )
+                  )"""
 
                # Get gsf aftershocks
                aftershocks.extend(process_gsf_form(
