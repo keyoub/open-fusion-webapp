@@ -281,7 +281,7 @@ def query_third_party(sources, keyword, options, location, quantity):
                            location=location,
                            interval=None)
    except Exception as inst:
-      logger.error(type(inst))
+      logger.error(inst)
 
    return results.get("features", [])
 
@@ -516,9 +516,9 @@ def prototype_ui(request):
                   gsf_aftershock_params["radius"]*1000
                )
                epicenter["properties"]["related"] = { 
-                                                      "type": "FeatureCollection",
-                                                      "features": aftershocks
-                                                    }
+                  "type": "FeatureCollection",
+                  "features": aftershocks
+               }
                results.append(epicenter)
          else:
             results = epicenters

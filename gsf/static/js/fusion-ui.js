@@ -34,17 +34,19 @@ $( document ).ready(function() {
          if($("#id_gsf_aftershocks-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
+            return;
          }else if (!check_form("epicenters")){
             e.preventDefault();
             alert("In order to get Aftershocks, you must have Epicenters.");
+            return; 
          }
       }
       else if (!check_form("id")){
          e.preventDefault();
          alert("You can't expect results from nothing.");
-      }else{
-         NProgress.start();
+         return;
       }
+      NProgress.start();
    });
    
    $( window ).unload(function() {
