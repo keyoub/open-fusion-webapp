@@ -222,7 +222,7 @@ LOGICALS = (
 """
    The Epicenters form constructor for GSF data querying
 """
-class GSFEpicentersForm(forms.Form):
+class GSFFusionForm(forms.Form):
    images   = forms.MultipleChoiceField(required=False, choices=GSF_IMAGE_CHOICES,
              widget=forms.CheckboxSelectMultiple())
    temperature_logic  = forms.ChoiceField(label="Temperature",
@@ -244,7 +244,7 @@ class GSFEpicentersForm(forms.Form):
 """
    The Aftershocks form constructor for GSF data querying
 """
-class GSFAftershocksForm(GSFEpicentersForm):
+class MiscForm(forms.Form):
    radius = forms.FloatField(required=False, label="Aftershock Radius",
                 help_text="in Kilometers", min_value = 0.1, max_value=5)
 
@@ -285,7 +285,7 @@ def query_third_party(sources, keyword, options, location, quantity):
    except TwythonRateLimitError, e:
       logger.error(e)
       error = """Unfortunately our Twitter retriever has been rate
-         limited. We cannot do anything but wait for Twitter's tyranny to fall."""
+         limited. We cannot do anything but wait for Twitter's tyranny to end."""
    except TwythonError, e:
       logger.error(e)
    except Exception as e:
@@ -380,7 +380,7 @@ def beautify_results(packages):
    Process the two UI forms for GSF querying and get 
    results for each form query parameters
 """
-def process_gsf_form(params, aftershocks, coords):
+def process_gsf_form(params, aftershocks, coords, radius):
    results, third_party_results = [], {}
    faces, bodies = False, False
    for image in params["images"]:
@@ -393,7 +393,7 @@ def process_gsf_form(params, aftershocks, coords):
       results.extend(
          query_for_images(
             faces, bodies, geo=True,
-            coords=coords, radius=params["radius"]
+            coords=coords, radius=radius
          )
       )
    elif faces or bodies:
@@ -417,7 +417,7 @@ def process_gsf_form(params, aftershocks, coords):
             results.extend(
                query_numeric_data(
                   k, params[k+"_logic"], v, temp_list,
-                  geo=True, coords=coords, radius=params["radius"]
+                  geo=True, coords=coords, radius=radius
                )
             )
          else:
@@ -437,9 +437,9 @@ def process_gsf_form(params, aftershocks, coords):
 """
 def prototype_ui(request):
    if request.method == "POST":
-      gsf_epicenters_form = GSFEpicentersForm(request.POST,
+      gsf_epicenters_form = GSFFusionForm(request.POST,
          prefix="gsf_epicenters")
-      gsf_aftershocks_form = GSFAftershocksForm(request.POST,
+      gsf_aftershocks_form = GSFFusionForm(request.POST,
          prefix="gsf_aftershocks")
 
       twitter_epicenters_form = TwitterFusionForm(request.POST,
@@ -447,14 +447,18 @@ def prototype_ui(request):
       twitter_aftershocks_form = TwitterFusionForm(request.POST,
          prefix="twitter_aftershocks")
 
+      misc_form = MiscForm(request.POST, prefix="misc_form")
+
       # Get query parameters
       if gsf_epicenters_form.is_valid() and \
          gsf_aftershocks_form.is_valid() and \
          twitter_epicenters_form.is_valid() and \
-         twitter_aftershocks_form.is_valid():
+         twitter_aftershocks_form.is_valid() and \
+         misc_form.is_valid():
          
          # Initialize variables
          epicenters, aftershocks = [], []
+         radius = misc_form.cleaned_data["radius"]
 
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
@@ -471,7 +475,7 @@ def prototype_ui(request):
          # Get gsf epicenters
          gsf_epicenter_params = gsf_epicenters_form.cleaned_data
          epicenters.extend(process_gsf_form(
-               gsf_epicenter_params, aftershocks=False, coords=None
+               gsf_epicenter_params, aftershocks=False, coords=None, radius=None
             )
          )
 
@@ -499,7 +503,7 @@ def prototype_ui(request):
 
          results = []
          # Create epicenters with aftershocks embedded if radius given
-         if gsf_aftershock_params["radius"]:
+         if radius:
             for epicenter in epicenters:
                # Get aftershocks
                aftershocks = []
@@ -508,7 +512,7 @@ def prototype_ui(request):
 
                # Get twitter aftershocks
                if twt_flag:
-                  location=(lat, lon, gsf_aftershock_params["radius"], "km")
+                  location=(lat, lon, radius, "km")
                   result = query_third_party(
                      ("Twitter",), twt_params["keywords"],
                      twt_params["options"], location, 
@@ -521,23 +525,15 @@ def prototype_ui(request):
                      #   {"url": "/proto/", "message": result[0]})
                   aftershocks.extend(result[1])
 
-                  """aftershocks.extend(query_third_party(
-                        ("Twitter",), twt_params["keywords"],
-                        twt_params["options"], location,
-                        int(twt_params["number"] if twt_params["number"] else 1)
-                     )
-                  )"""
-
                # Get gsf aftershocks
                aftershocks.extend(process_gsf_form(
-                    gsf_aftershock_params, aftershocks=True, coords=[lon, lat]
+                    gsf_aftershock_params, aftershocks=True,
+                    coords=[lon, lat], radius=radius
                   )
                )
                
                # Add the epicenter with added aftershocks to the package
-               epicenter["properties"]["radius"] = (
-                  gsf_aftershock_params["radius"]*1000
-               )
+               epicenter["properties"]["radius"] = radius*1000               
                epicenter["properties"]["related"] = { 
                   "type": "FeatureCollection",
                   "features": aftershocks
@@ -574,11 +570,13 @@ def prototype_ui(request):
          else:
             return render(request, "home/vizit.html", {"file_name":file_name})
    else:
-      gsf_epicenters_form = GSFEpicentersForm(prefix="gsf_epicenters")
-      gsf_aftershocks_form = GSFAftershocksForm(prefix="gsf_aftershocks")
+      gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
+      gsf_aftershocks_form = GSFFusionForm(prefix="gsf_aftershocks")
 
       twitter_epicenters_form = TwitterFusionForm(prefix="twitter_epicenters")
       twitter_aftershocks_form = TwitterFusionForm(prefix="twitter_aftershocks")
+      
+      misc_form = MiscForm(prefix="misc_form")
 
    return render(request, "home/proto.html",
                  {
@@ -586,5 +584,6 @@ def prototype_ui(request):
                   "gsf_aftershocks_form": gsf_aftershocks_form,
                   "twitter_epicenters_form": twitter_epicenters_form,
                   "twitter_aftershocks_form": twitter_aftershocks_form,
+                  "misc_form": misc_form,
                  })
    

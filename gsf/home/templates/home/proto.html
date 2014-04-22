@@ -48,14 +48,11 @@
             Sensory Data
          </div>
          <div id="gsfAftDiv" class="gsf-form">
-         {% for field in gsf_aftershocks_form %}
-            {% if field.label != "Aftershock Radius" %}
-               {% bootstrap_field field %}
-            {% else %}
-               </div>
-               {% bootstrap_field field %}
-            {% endif %}
-         {% endfor %}
+            {% bootstrap_form gsf_aftershocks_form %}
+         </div>
+         <div class="misc-form">
+            {% bootstrap_form misc_form %}
+         </div>
       </div>
    </div>
 

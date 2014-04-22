@@ -31,7 +31,7 @@ $( document ).ready(function() {
    var frm = $("#fuseform");
    frm.submit(function(e){
       if (check_form("aftershocks")){
-         if($("#id_gsf_aftershocks-radius").val() == ""){
+         if($("#id_misc_form-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
             return;
