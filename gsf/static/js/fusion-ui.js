@@ -27,39 +27,19 @@ $( document ).ready(function() {
       }
    });
 
-   // Custom form validation
+   // Custom form validation on submit
    var frm = $("#fuseform");
    frm.submit(function(e){
-      var input_flag = false;
-      var valid_aftershocks = true;
-      // Validate input form inputs
-      $(this).find("input").each(function(){
-         if ($(this).prop("type") == "hidden"){
-            return;
+      if (check_form("aftershocks")){
+         if($("#id_gsf_aftershocks-radius").val() == ""){
+            e.preventDefault();
+            alert("To get aftershocks you must enter a Radius.");
+         }else if (!check_form("epicenters")){
+            e.preventDefault();
+            alert("In order to get Aftershocks, you must have Epicenters.");
          }
-         if ($(this).prop("type") != "checkbox" && 
-             $(this).val() != ""){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            input_flag = true;
-         }
-         if ($(this).prop("type") == "checkbox" && 
-             $(this).prop("checked")){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            input_flag = true;
-         }
-      });
-      if (!valid_aftershocks){
-         e.preventDefault();
-         alert("To get aftershocks you must enter a Radius.");
-      }else if (!input_flag){
+      }
+      else if (!check_form("id")){
          e.preventDefault();
          alert("You can't expect results from nothing.");
       }else{

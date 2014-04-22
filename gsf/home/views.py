@@ -429,11 +429,15 @@ def process_gsf_form(params, aftershocks, coords):
 """
 def prototype_ui(request):
    if request.method == "POST":
-      gsf_epicenters_form = GSFEpicentersForm(request.POST, prefix="gsf_epicenters")
-      gsf_aftershocks_form = GSFAftershocksForm(request.POST, prefix="gsf_aftershocks")
+      gsf_epicenters_form = GSFEpicentersForm(request.POST,
+         prefix="gsf_epicenters")
+      gsf_aftershocks_form = GSFAftershocksForm(request.POST,
+         prefix="gsf_aftershocks")
 
-      twitter_epicenters_form = TwitterFusionForm(request.POST, prefix="twitter_epicenters")
-      twitter_aftershocks_form = TwitterFusionForm(request.POST, prefix="twitter_aftershocks")
+      twitter_epicenters_form = TwitterFusionForm(request.POST,
+         prefix="twitter_epicenters")
+      twitter_aftershocks_form = TwitterFusionForm(request.POST,
+         prefix="twitter_aftershocks")
 
       # Get query parameters
       if gsf_epicenters_form.is_valid() and \
