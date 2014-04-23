@@ -35,9 +35,9 @@
          </div>
       </div>
       <div class="col-md-5">
-         <div class="aftershocks-overlay"></div>
          <h2>Aftershocks
             <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
+         <div id="aftEnable" class="aftershocks-overlay"><span>Enable Aftershocks</span></div>
          <div class="twitter-toggle" id="twitterAft">
             Twitter
          </div>
@@ -48,26 +48,18 @@
             Sensory Data
          </div>
          <div id="gsfAftDiv" class="gsf-form">
-         {% for field in gsf_aftershocks_form %}
-            {# bootstrap_form gsf_aftershocks_form #}
-            {% if field.label != "Aftershock Radius" %}
-               {% bootstrap_field field %}
-            {% else %}
-               </div></div></div>
-               <div class="row">
-                  <div class="col-md-5"></div>
-                  <div class="col-md-5">
-               {% bootstrap_field field %}
-            {% endif %}
-         {% endfor %}
-
-      <!--</div>
+            {% bootstrap_form gsf_aftershocks_form %}
+         </div>
+         <div class="misc-form">
+            {% bootstrap_form misc_form %}
+         </div>
+      </div>
    </div>
 
    <div class="row">
       <div class="col-md-5">
       </div>
-      <div class="col-md-5">-->
+      <div class="col-md-5">
          {% buttons %}
             <p id="sendwrapper">
              <button id="vizit" type="submit" style="float:right;" class="btn btn-primary">
@@ -77,7 +69,6 @@
          {% endbuttons %}
       </div>
    </div>
-
 
 </form>
 
@@ -135,86 +126,10 @@
    /*$(function () {
       $('.date').datetimepicker();
    });*/
-   // UI interaction between Epicenters and Aftershocks
-   $('form input').change(function(){
-      alert('keyup');
-   });
-   
-   // Custom form validation
-   var frm = $("#fuseform");
-   frm.submit(function(e){
-      var input_flag = false;
-      var valid_aftershocks = true;
-      // Validate input form inputs
-      $(this).find("input").each(function(){
-         if ($(this).prop("type") == "hidden"){
-            return;
-         }
-         if ($(this).prop("type") != "checkbox" && 
-             $(this).val() != ""){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            input_flag = true;
-         }
-         if ($(this).prop("type") == "checkbox" && 
-             $(this).prop("checked")){
-            if ($(this).prop("id").indexOf("aftershocks") >= 0){
-               if ($("#id_gsf_aftershocks-radius").val() == ""){
-                  valid_aftershocks = false;
-               }
-            }
-            alert($(this).val());
-            input_flag = true;
-         }
-      });
-      if (!valid_aftershocks){
-         e.preventDefault();
-         alert("To get aftershocks you must enter a Radius");
-      }else if (!input_flag){
-         e.preventDefault();
-         alert("You must enter something for us to be able to find it for you.");
-      }else{
-         NProgress.start();
-      }
-   });
-   
-   $( window ).unload(function() {
-      NProgress.remove();
-   });
-
-   $("#epiModalLink").click(function(){
-      $('#epiModal').modal();
-   });
-
-   $("#aftModalLink").click(function(){
-      $('#aftModal').modal();
-   });
-
-   /****   The jQuery Toggle functions ****/
-   var options = {
-      effect: "slide", 
-      duration: 400,
-      easing: "easeOutCubic",
-      direction: "up"
-   }
-   $("#twitterEpi").click(function () {
-      $("#twtEpiDiv").toggle(options);
-   });
-   $("#twitterAft").click(function () {
-      $("#twtAftDiv").toggle(options);
-   });
-   $("#gsfEpi").click(function () {
-      $("#gsfEpiDiv").toggle(options);
-   });
-   $("#gsfAft").click(function () {
-      $("#gsfAftDiv").toggle(options);
-   });
 </script>
 
 <script src="{% static "js/moment.js" %}"></script>
+<script src="{% static "js/fusion-ui.js" %}"></script>
 <script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
 
 
