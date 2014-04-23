@@ -1,19 +1,67 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <title>Geotagged Sensor Fusion Project</title>
 
-{% block main %}
+   {% load staticfiles %}
 
-<script>
-   document.body.style.overflow = "hidden";
-   document.body.style.height = "100%";
-   $("#main-container").addClass("container-full").removeClass("container");
-</script>
+   <link rel="icon" type="image/png" href="{% static "vizit/img/icon.png" %}">
+   <!--[if IE]><link rel="shortcut icon" href="{% static "vizit/favicon.ico" %}"/><![endif]-->
+   <link rel="apple-touch-icon" href="{% static "vizit/apple-touch-icon-precomposed.png" %}">
+   <link rel="apple-touch-icon" sizes="57x57"   
+                        href="{% static "vizit/apple-touch-icon-57x57-precomposed.png" %}">
+   <link rel="apple-touch-icon" sizes="72x72"   
+                        href="{% static "vizit/apple-touch-icon-72x72-precomposed.png" %}">
+   <link rel="apple-touch-icon" sizes="114x114" 
+                        href="{% static "vizit/apple-touch-icon-114x114-precomposed.png" %}">
+   <link rel="apple-touch-icon" sizes="144x144" 
+                        href="{% static "vizit/apple-touch-icon-144x144-precomposed.png" %}">
 
-   <div id="h_iframe">
-      {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
-      <iframe id="map-frame" class="fill"
-           src="{{ vizit_url }}">
-      </iframe>
-      {% endwith %}
-   </div> 
+   <link rel="author"  type="text/plain" href="{% static "vizit/humans.txt" %}">
+   <link rel="license" type="text/plain" href="http://www.gnu.org/licenses/gpl.txt">
 
-{% endblock %}
+   <link href="http://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+
+   <style>
+      body{
+         margin:0;
+         width: 100%;
+         height: 100%;
+         font-family: 'Lato', sans-serif;
+      }
+      iframe {
+         border: none;
+         width: 100%;
+         height: 100%;
+      }
+      .back-button{
+         color: white;
+         font-size: 1.1em;
+         text-decoration: none;
+         background-color: #0078A8;
+         position: fixed;
+         z-index: 100;
+         top: 20px;
+         left: 55px;
+         padding: 7px;
+         -moz-border-radius: 6px;
+         -webkit-border-radius: 6px;
+         border-radius: 6px;
+      }
+      .back-button:hover{
+         background-color: white;
+         color: #0078A8;
+      }
+   </style>
+
+</head>
+
+<body>
+   <a href="/proto/" class="back-button">back for more?!</a>
+   {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
+   <iframe src="{{ vizit_url }}">
+   </iframe>
+   {% endwith %}
+<body>
+
+</html>

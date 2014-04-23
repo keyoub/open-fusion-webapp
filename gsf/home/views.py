@@ -305,37 +305,20 @@ def exclude_fields(data, keys):
    Query the local db for images
 """
 def query_for_images(faces, bodies, geo, coords, radius):
-   data_set = Features.objects.all()
+   data_set = Features.objects(properties__image__exists=True)
    if geo:
       data_set = data_set(geometry__geo_within_center=[coords, radius])
    EXCLUDE = [
-      "oimage",
       "humidity",
       "noise_level",
       "temperature"
    ]
    data = []
    if faces:
-      data = json.loads(
-               data_set(Q(properties__fimage__exists=True) &
-                  Q(properties__faces_detected__gt=0)).to_json()
-             )
-      if data:
-         exclude_fields(data, EXCLUDE)
-         for d in data:
-            d["properties"]["image"] = d["properties"].pop("fimage")
-            d["properties"].pop("pimage", None)
+      data.extend(json.loads(data_set(properties__faces_detected__gt=0).to_json()))
    if bodies:
-      lis = json.loads(
-               data_set(Q(properties__pimage__exists=True) &
-                  Q(properties__people_detected__gt=0)).to_json()
-            )
-      if lis:
-         exclude_fields(lis, EXCLUDE)
-         for d in lis:
-            d["properties"]["image"] = d["properties"].pop("pimage")
-            d["properties"].pop("fimage", None)
-         data.extend(lis)
+      data.extend(json.loads(data_set(properties__people_detected__gt=0).to_json()))
+   exclude_fields(data, EXCLUDE)
    return data
 
 """
@@ -405,8 +388,8 @@ def process_gsf_form(params, aftershocks, coords, radius):
       )
 
    generic_list = ["temperature", "humidity", "noise_level"]
-   exclude_list = ["oimage", "fimage", "pimage", "faces_detected",
-                   "people_detected", "humidity", "noise_level", "temperature"] 
+   exclude_list = ["image", "faces_detected", "people_detected",
+                   "humidity", "noise_level", "temperature"] 
    for k,v in params.items():
       if (k in generic_list) and v:
          temp_list = []
@@ -470,6 +453,10 @@ def prototype_ui(request):
             if result[0] != "":
                return render(request, "home/errors.html",
                   {"url": "/proto/", "message": result[0]})
+            if result[1]:
+               for data in result[1]:
+                  feature = Features(**data)
+                  feature.save()
             epicenters.extend(result[1])
 
          # Get gsf epicenters
@@ -487,7 +474,7 @@ def prototype_ui(request):
 
          # The package that gets written to file for the visualizer
          package =   {
-                        "OpenFusion": "1",
+                        "OpenFusion": "5",
                         "type": "FeatureCollection",
                         "features": []
                      }
@@ -518,11 +505,10 @@ def prototype_ui(request):
                      twt_params["options"], location, 
                      int(twt_params["number"] if twt_params["number"] else 1)
                   )
-                  if result[0] != "":
-                     #TODO: Add special error message for aftershocks failure 
-                     pass
-                     #return render(request, "home/errors.html",
-                     #   {"url": "/proto/", "message": result[0]})
+                  if result[1]:
+                     for data in result[1]:
+                        feature = Features(**data)
+                        feature.save()
                   aftershocks.extend(result[1])
 
                # Get gsf aftershocks

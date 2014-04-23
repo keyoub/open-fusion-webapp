@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+<script>
+   document.body.style.overflow = "hidden";
+   document.body.style.height = "100%";
+   $("#main-container").removeClass("container");
+</script>
+
+   <div id="h_iframe">
+      {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
+      <iframe id="map-frame" class="fill"
+           src="{{ vizit_url }}">
+      </iframe>
+      {% endwith %}
+   </div> 
+
+{% endblock %}
