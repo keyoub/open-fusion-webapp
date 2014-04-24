@@ -197,8 +197,8 @@ def index(request):
 #)
 
 TWITTER_CHOICES = (
-   ("img", "Images"),
-   ("txt", "Text"),
+   ("image", "Images"),
+   ("text", "Text"),
 )
 
 GSF_IMAGE_CHOICES = (
@@ -260,24 +260,23 @@ class TwitterFusionForm(forms.Form):
             Beware that large requests take a long time to get back from twitter""")
 
 """
+   Query the local db for cached third party data before
+   passing requests to the retriever
+"""
+def query_cached_third_party():
+   pass
+
+"""
    Passes user query to get data from the retriever
 """
 def query_third_party(sources, keyword, options, location, quantity):
-   media = ()
-   
-   # Create the media variable
-   for option in options:  
-      if option == "img":
-         media = media + ("image",)
-      if option == "txt":
-         media = media + ("text",)
-
+   # TODO: add local twitter data search
    # Get results from third party provider
-   results = {}
+   outside_data = {}
    error = ""
    try:
-      results = retriever.fetch(sources,
-                           media=media,
+      outside_data = retriever.fetch(sources,
+                           media=options,
                            keyword=keyword,
                            quantity=quantity,
                            location=location,
@@ -291,7 +290,12 @@ def query_third_party(sources, keyword, options, location, quantity):
    except Exception as e:
       logger.error(e)
 
-   return (error, results.get("features", []))
+   # Cache the data in local db
+   for data in outside_data.get("features", []):
+      feature = Features(**data)
+      feature.save()
+
+   return (error, outside_data.get("features", []))
 
 """
    Drop unwanted fields from query documents
@@ -453,10 +457,6 @@ def prototype_ui(request):
             if result[0] != "":
                return render(request, "home/errors.html",
                   {"url": "/proto/", "message": result[0]})
-            if result[1]:
-               for data in result[1]:
-                  feature = Features(**data)
-                  feature.save()
             epicenters.extend(result[1])
 
          # Get gsf epicenters
@@ -505,10 +505,6 @@ def prototype_ui(request):
                      twt_params["options"], location, 
                      int(twt_params["number"] if twt_params["number"] else 1)
                   )
-                  if result[1]:
-                     for data in result[1]:
-                        feature = Features(**data)
-                        feature.save()
                   aftershocks.extend(result[1])
 
                # Get gsf aftershocks
