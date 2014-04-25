@@ -11,7 +11,7 @@ from api.models import Features
 from pygeocoder import Geocoder
 from ogre import OGRe
 from twython import TwythonRateLimitError, TwythonError
-import os, io, json, time, hashlib, datetime, logging
+import os, io, json, time, hashlib, datetime, logging, random
 
 logger = logging.getLogger(__name__)
 
@@ -263,47 +263,75 @@ class TwitterFusionForm(forms.Form):
    Query the local db for cached third party data before
    passing requests to the retriever
 """
-def query_cached_third_party():
-   pass
-
+def query_cached_third_party(source, keyword, options, location, quantity):
+   data_set = Features.objects(properties__source=source)
+   if location:
+      coords = [location[1], location[0]]
+      radius = location[2]
+      logger.debug(coords)
+      logger.debug(radius)
+      data_set = data_set(geometry__geo_within_center=[coords, radius])
+   if keyword:
+      data_set = data_set(properties__text__icontains=keyword)
+   if "image" in options:
+      data_set = data_set(properties__image__exists=True)
+   data_set = list(data_set.as_pymongo())
+   random.shuffle(data_set)
+   logger.debug(len(data_set))
+   return data_set[:quantity]
+      
 """
-   Passes user query to get data from the retriever
+   Passes user query to get third party data
 """
 def query_third_party(sources, keyword, options, location, quantity):
-   # TODO: add local twitter data search
-   # Get results from third party provider
-   outside_data = {}
+   results = []
    error = ""
-   try:
-      outside_data = retriever.fetch(sources,
-                           media=options,
-                           keyword=keyword,
-                           quantity=quantity,
-                           location=location,
-                           interval=None)
-   except TwythonRateLimitError, e:
-      logger.error(e)
-      error = """Unfortunately our Twitter retriever has been rate
-         limited. We cannot do anything but wait for Twitter's tyranny to end."""
-   except TwythonError, e:
-      logger.error(e)
-   except Exception as e:
-      logger.error(e)
+   # Get data from local cache first
+   for source in sources:
+      results.extend(query_cached_third_party(
+            source, keyword, options, location, quantity
+         )
+      )
 
-   # Cache the data in local db
-   for data in outside_data.get("features", []):
-      feature = Features(**data)
-      feature.save()
+   # Get results from third party provider if needed
+   if len(results) < quantity:
+      quantity = quantity - len(results)
+      logger.debug(quantity)
+      outside_data = {}
+      try:
+         outside_data = retriever.fetch(sources,
+                              media=options,
+                              keyword=keyword,
+                              quantity=quantity,
+                              location=location,
+                              interval=None)
+      except TwythonRateLimitError, e:
+         logger.error(e)
+         error = """Unfortunately our Twitter retriever has been rate
+            limited. We cannot do anything but wait for Twitter's tyranny to end."""
+      except TwythonError, e:
+         logger.error(e)
+      except Exception as e:
+         logger.error(e)
 
-   return (error, outside_data.get("features", []))
+      # Cache the data in local db
+      for data in outside_data.get("features", []):
+         feature = Features(**data)
+         feature.save()
+      results.extend(outside_data.get("features", []))
+
+   return (error, results)
 
 """
    Drop unwanted fields from query documents
 """
 def exclude_fields(data, keys):
    for d in data:
-      for k in keys:
-         d["properties"].pop(k, None)
+      if keys:
+         for k in keys:
+            d["properties"].pop(k, None)
+      else:
+         d.pop("_id", None)
 
 """
    Query the local db for images
@@ -319,9 +347,9 @@ def query_for_images(faces, bodies, geo, coords, radius):
    ]
    data = []
    if faces:
-      data.extend(json.loads(data_set(properties__faces_detected__gt=0).to_json()))
+      data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
    if bodies:
-      data.extend(json.loads(data_set(properties__people_detected__gt=0).to_json()))
+      data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
    exclude_fields(data, EXCLUDE)
    return data
 
@@ -334,7 +362,7 @@ def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius)
       data_set = data_set(geometry__geo_within_center=[coords, radius])
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
-   data = json.loads(data_set.filter(**kwargs).to_json())
+   data = data_set.filter(**kwargs).as_pymongo()
    exclude_fields(data, exclude_list)
    return data
 
@@ -454,7 +482,7 @@ def prototype_ui(request):
                ("Twitter",), twt_params["keywords"], twt_params["options"], 
                None, int(twt_params["number"] if twt_params["number"] else 1)
             )
-            if result[0] != "":
+            if (result[0] != "") and (len(result[1]) == 0):
                return render(request, "home/errors.html",
                   {"url": "/proto/", "message": result[0]})
             epicenters.extend(result[1])
@@ -524,6 +552,7 @@ def prototype_ui(request):
          else:
             results = epicenters
          
+         exclude_fields(results, None)
          package["features"] = results
 
          # Build unique output file name using user ip and timestamp

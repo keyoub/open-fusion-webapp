@@ -10,7 +10,7 @@ connect(MONGODB_NAME)
    The properties of a location
 """
 class Properties(EmbeddedDocument):
-   date_added  = DateTimeField(default=datetime.datetime.now)
+   date_added  = StringField(default=datetime.datetime.utcnow().isoformat(' '))
    source      = StringField(required=True, max_length=50)
    time        = StringField(required=True)
    altitude    = DecimalField(precision=5)

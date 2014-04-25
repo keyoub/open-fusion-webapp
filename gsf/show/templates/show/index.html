@@ -56,8 +56,10 @@
        </td>
    	 <td id="data"><b>text:</b> {{ d.properties.text }}<br />
            <b>image:</b><div class='images'>
+                        {% if d.properties.image %}
                         <img id='base64image' 
                         src='data:image/png;base64, {{ d.properties.image }}' /><br /> 
+                        {% endif %}
                         </div>
             
                {% comment %}

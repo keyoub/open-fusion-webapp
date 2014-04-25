@@ -111,8 +111,9 @@ def upload(request):
       for dictionary in features_list:
          try:
             # Set up variables to store proper data in the db
-            feature = Features().from_json(json.dumps(dictionary))
-            feature.properties['source'] = "iPhone"
+            #feature = Features().from_json(json.dumps(dictionary))
+            feature = Features(**dictionary)
+            feature.properties["source"] = "iPhone"
             try:
                feature.save()
             except:
