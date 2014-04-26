@@ -190,12 +190,6 @@ def index(request):
 
 
 # Choices variables for the forms select fields
-#SOURCE_CHOICES = (
-   #("twt", "Twitter"),
-   #("owm", "Open Weather Map"),
-   #("gsf", "GSF iOS App"),
-#)
-
 TWITTER_CHOICES = (
    ("image", "Images"),
    ("text", "Text"),
@@ -270,7 +264,8 @@ def query_cached_third_party(source, keyword, options, location, quantity):
       radius = location[2]
       logger.debug(coords)
       logger.debug(radius)
-      data_set = data_set(geometry__geo_within_center=[coords, radius])
+      #data_set = data_set(geometry__geo_within_center=[coords, radius*0.6213])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
    if "image" in options:
@@ -332,6 +327,7 @@ def exclude_fields(data, keys):
             d["properties"].pop(k, None)
       else:
          d.pop("_id", None)
+         d["properties"].pop("date_added", None)
 
 """
    Query the local db for images
@@ -339,7 +335,8 @@ def exclude_fields(data, keys):
 def query_for_images(faces, bodies, geo, coords, radius):
    data_set = Features.objects(properties__image__exists=True)
    if geo:
-      data_set = data_set(geometry__geo_within_center=[coords, radius])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
    EXCLUDE = [
       "humidity",
       "noise_level",
@@ -359,7 +356,8 @@ def query_for_images(faces, bodies, geo, coords, radius):
 def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
    data_set = Features.objects.all()
    if geo:
-      data_set = data_set(geometry__geo_within_center=[coords, radius])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
    data = data_set.filter(**kwargs).as_pymongo()
@@ -542,6 +540,7 @@ def prototype_ui(request):
                   )
                )
                
+               exclude_fields(aftershocks, None)
                # Add the epicenter with added aftershocks to the package
                epicenter["properties"]["radius"] = radius*1000               
                epicenter["properties"]["related"] = { 
