@@ -26,13 +26,14 @@ class Properties(EmbeddedDocument):
    humidity    = DecimalField(precision=5)
    faces_detected  = IntField()
    people_detected = IntField()
-
+   
 """
    The main geoJSON formated data 
 """
 class Features(Document):
    type        = StringField(default="Feature")
-   geometry    = PointField(required=True)
+   geometry    = PointField(required=True,
+      unique_with=["properties.time", "properties.text"])
    properties  = EmbeddedDocumentField(Properties)
 
 """

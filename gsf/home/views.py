@@ -141,7 +141,7 @@ def index(request):
 
          # The center pin for the visualizer
          package =   {
-                        "OpenFusion": "1",
+                        "OpenFusion": "5",
                         "type": "FeatureCollection",
                         "features": [
                            { 
@@ -308,11 +308,15 @@ def query_third_party(sources, keyword, options, location, quantity):
          logger.error(e)
       except Exception as e:
          logger.error(e)
-
+      
+      #logger.debug(outside_data.get("features", []))
       # Cache the data in local db
       for data in outside_data.get("features", []):
          feature = Features(**data)
-         feature.save()
+         try:
+            feature.save()
+         except Exception, e:
+            logger.debug(e)  
       results.extend(outside_data.get("features", []))
 
    return (error, results)
