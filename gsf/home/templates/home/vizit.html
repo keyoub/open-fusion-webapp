@@ -57,6 +57,11 @@
 </head>
 
 <body>
+   {% if user.is_superuser %}
+      {% if admin_flag %}
+         Hello Admin. 
+      {% endif %}
+   {% endif %}
    <a href="/proto/" class="back-button">back for more?!</a>
    {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
    <iframe src="{{ vizit_url }}">

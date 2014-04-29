@@ -575,6 +575,13 @@ def prototype_ui(request):
          with io.open(path, "w") as outfile:
             outfile.write(unicode(json.dumps(package,
                indent=4, separators=(",", ": "))))
+
+         # Check if the admin is logged in and make a list of
+         # active phones available to send coordinates to
+         # TODO: add preparing coordinates functionality 
+         admin_flag = False
+         if request.user.is_superuser:
+            admin_flag = True
          
          # redirect user to the visualizer 
          #  - if mobile device detected, redirect to touchscreen version
@@ -582,7 +589,11 @@ def prototype_ui(request):
             redr_path = "/static/vizit/index.html?data=" + file_name
             return HttpResponseRedirect(redr_path)
          else:
-            return render(request, "home/vizit.html", {"file_name":file_name})
+            return render(request, "home/vizit.html",
+                {
+                  "file_name":file_name,
+                  "admin_flag":admin_flag
+                })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
       gsf_aftershocks_form = GSFFusionForm(prefix="gsf_aftershocks")
