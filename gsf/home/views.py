@@ -7,7 +7,7 @@ from django.forms.formsets import formset_factory
 from mongoengine.queryset import Q
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
-from api.models import Features
+from api.models import Features, APIKey
 from pygeocoder import Geocoder
 from ogre import OGRe
 from twython import TwythonRateLimitError, TwythonError
@@ -450,6 +450,31 @@ def process_gsf_form(params, aftershocks, coords, radius):
    return results
 
 """
+   Write the Geojson data to the filesystem   
+"""
+def dump_data_to_file(name, base_path, package):
+   # Build unique output file name using user ip and timestamp
+   ip = ""
+   try:
+      ip = request.get_host()
+   except:
+      pass
+   now = str(datetime.datetime.now())
+
+   file_name = name + \
+      str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
+
+   # Write data to the file
+   path = os.path.join(base_path, file_name)
+   
+   with io.open(path, "w") as outfile:
+      outfile.write(unicode(json.dumps(package,
+         indent=4, separators=(",", ": "))))
+
+   return file_name
+
+
+"""
    The prototype UI for the Fusion interface 
 """
 def prototype_ui(request):
@@ -558,41 +583,44 @@ def prototype_ui(request):
          exclude_fields(results, None)
          package["features"] = results
 
-         # Build unique output file name using user ip and timestamp
-         ip = ""
-         try:
-            ip = request.get_host()
-         except:
-            pass
-         now = str(datetime.datetime.now())
-
-         file_name = "points_" + \
-            str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
+         # Creat the path for the visualizer data and write to file
+         base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
+         vizit_file = dump_data_to_file("points_", base_path, package)
          
-         # Write data to the file
-         path = os.path.join(BASE_DIR, "static", "vizit", 
-                              "data", file_name)
-         with io.open(path, "w") as outfile:
-            outfile.write(unicode(json.dumps(package,
-               indent=4, separators=(",", ": "))))
-
          # Check if the admin is logged in and make a list of
          # active phones available to send coordinates to
          # TODO: add preparing coordinates functionality 
-         admin_flag = False
+         coords_file, field_agents = None, None
          if request.user.is_superuser:
             admin_flag = True
+            coords_package = {
+               "type": "FeatureCollection",
+               "geometries": []
+            }
+            for p in package["features"]:
+               coords_package["geometries"].append(p["geometry"])
+
+            # Write the coordinates to the filesystem
+            base_path = os.path.join(BASE_DIR, "static", "coordinates")
+            coords_file = dump_data_to_file("coordinates_", base_path, coords_package)
+         
+            # Get list of field agents
+            field_agents = APIKey.objects.filter(organization="LLNL")
+            
+            
          
          # redirect user to the visualizer 
          #  - if mobile device detected, redirect to touchscreen version
          if request.mobile:
-            redr_path = "/static/vizit/index.html?data=" + file_name
+            redr_path = "/static/vizit/index.html?data=" + vizit_file
             return HttpResponseRedirect(redr_path)
          else:
             return render(request, "home/vizit.html",
                 {
-                  "file_name":file_name,
-                  "admin_flag":admin_flag
+                  "vizit_file":vizit_file,
+                  "admin_flag":admin_flag,
+                  "coords_file":coords_file,
+                  "field_agents":field_agents,
                 })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
@@ -612,3 +640,13 @@ def prototype_ui(request):
                   "misc_form": misc_form,
                  })
    
+def send_coordinates(request):
+   if request.user.is_superuser:
+      key = request.GET.get("key")
+      coords_file = request.GET.get("file")
+      logger.debug(key)
+      logger.debug(coords_file)
+   return HttpResponse("Hola")
+
+
+

@@ -57,7 +57,7 @@ def dev_signup(request):
          # Generate API key
          key_req = APIKey(application=app_name)
          key_req.organization = organization
-         key_req.dev_name = dev_name
+         key_req.full_name = dev_name
          key_req.email = email
          key_req.key = generate_key()
 

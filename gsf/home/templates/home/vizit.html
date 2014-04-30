@@ -22,6 +22,15 @@
 
    <link href="http://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
 
+   <!-- Bootstrap core CSS -->
+   <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+
+   <!-- JavaScript -->
+   <!--<script src="//code.jquery.com/jquery-1.11.0.js"></script>-->
+   <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+   <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>-->
+
+
    <style>
       body{
          margin:0;
@@ -58,12 +67,23 @@
 
 <body>
    {% if user.is_superuser %}
-      {% if admin_flag %}
-         Hello Admin. 
-      {% endif %}
+      <!--<div class="dropdown">
+         <button class="btn dropdown-toggle sr-only" 
+                 type="button" id="dropdownMenu1" data-toggle="dropdown">
+          Field Agents
+          <span class="caret"></span>
+         </button>-->
+         <ul style="z-index:100; top:50px; right:55px; position:fixed;">
+         {% for agent in field_agents %}
+            <li>
+               <a href="/sendcoordinates/?key={{ agent.key }}&file={{ coords_file }}">{{ agent.full_name }}</a>
+            </li> 
+         {% endfor %}
+         </ul>
+      <!--</div>-->
    {% endif %}
    <a href="/proto/" class="back-button">back for more?!</a>
-   {% with "/static/vizit/index.html?data="|add:file_name as vizit_url %}
+   {% with "/static/vizit/index.html?data="|add:vizit_file as vizit_url %}
    <iframe src="{{ vizit_url }}">
    </iframe>
    {% endwith %}

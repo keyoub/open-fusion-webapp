@@ -19,8 +19,6 @@ class Properties(EmbeddedDocument):
    v_accuracy  = DecimalField(precision=5)
    text        = StringField(max_length=1000)
    image       = StringField()
-   #pimage      = StringField()
-   #fimage      = StringField()
    noise_level = DecimalField(precision=5)
    temperature = DecimalField(precision=5)
    humidity    = DecimalField(precision=5)
@@ -41,11 +39,22 @@ class Features(Document):
    admin library can be used
 """
 class APIKey(models.Model):
+   CARRIER_CHOICES = (
+      ("@txt.att.net", "AT&T"),
+      ("@vtext.com", "Verizon"),
+      ("@messaging.sprintpcs.com", "Sprint"),
+      ("@tmomail.net", "T-Mobile"),
+   )
+
    date_created = models.DateTimeField(default=datetime.datetime.now)
    key          = models.CharField(max_length=38, unique=True)
    application  = models.CharField(max_length=200)
    organization = models.CharField(max_length=200)
-   dev_name     = models.CharField(max_length=200)
+   full_name    = models.CharField(max_length=200)
+   phone_number = models.CharField(max_length=10, 
+      help_text="Only 10 digit number. No spaces or dashes. Eg. 8008889999")
+   cell_carrier = models.CharField(max_length=50,
+                                   choices=CARRIER_CHOICES)
    email        = models.EmailField()
    upload       = models.BooleanField(default=False)
    download     = models.BooleanField(default=True)
