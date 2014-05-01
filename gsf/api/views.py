@@ -151,3 +151,33 @@ def download(request):
    else:
       return HttpResponseBadRequest("Only GET requests are processed\n")
 
+def coordinates(request):
+   if request.method == "GET":
+      doc_id = request.GET.get("id")
+      package = {
+         "type": "GeometryCollection",
+         "geometries": [
+            {
+               "type": "Point",
+               "coordinates": [-122.0617279, 37.0032456]
+            },
+            {
+               "type": "Point",
+               "coordinates": [-122.0213875, 37.0072211]
+            }, 
+            {
+               "type": "Point",
+               "coordinates": [-121.9918617, 36.9878901]
+            },
+            {
+               "type": "Point",
+               "coordinates": [-122.0047363, 36.9791141]
+            },
+            {
+               "type": "Point",
+               "coordinates": [-122.0375236, 36.9596388]
+            }
+         ]
+      }
+      return HttpResponse(json.dumps(package), content_type='application/json')
+      
