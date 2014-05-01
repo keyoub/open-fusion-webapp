@@ -592,8 +592,7 @@ def prototype_ui(request):
          # TODO: add preparing coordinates functionality 
          coords_file, field_agents = None, None
          if request.user.is_superuser:
-            admin_flag = True
-            coords_package = {
+            """coords_package = {
                "type": "FeatureCollection",
                "geometries": []
             }
@@ -605,7 +604,7 @@ def prototype_ui(request):
             coords_file = dump_data_to_file("coordinates_", base_path, coords_package)
          
             # Get list of field agents
-            field_agents = APIKey.objects.filter(organization="LLNL")
+            field_agents = APIKey.objects.filter(organization="LLNL")"""
             
             
          
@@ -618,9 +617,8 @@ def prototype_ui(request):
             return render(request, "home/vizit.html",
                 {
                   "vizit_file":vizit_file,
-                  "admin_flag":admin_flag,
-                  "coords_file":coords_file,
-                  "field_agents":field_agents,
+                  #"coords_file":coords_file,
+                  #"field_agents":field_agents,
                 })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
