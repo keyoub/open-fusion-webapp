@@ -8,5 +8,6 @@ urlpatterns = patterns('',
 	url(r'^upload/$', views.upload, name='upload'),
 	url(r'^download/$', views.download, name='download'),
 	url(r'^devsignup/$', views.dev_signup, name='devsignup'),
+	url(r'^coordinates/$', views.coordinates, name='coordinates'),
 )
 
