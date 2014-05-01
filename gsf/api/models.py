@@ -35,6 +35,14 @@ class Features(Document):
    properties  = EmbeddedDocumentField(Properties)
 
 """
+   Coordinates to be sent to field agents
+"""
+class Coordinates(Document):
+   type        = StringField(default="GeometryCollection")
+   geometries  = ListField(PointField())
+   date_added  = DateTimeField(default=datetime.datetime.utcnow())
+
+"""
    The SQL model for API Keys so that Django
    admin library can be used
 """

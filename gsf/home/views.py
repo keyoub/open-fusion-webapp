@@ -4,10 +4,11 @@ from django.core.exceptions import ValidationError
 from bootstrap3_datetime.widgets import DateTimePicker
 from django import forms
 from django.forms.formsets import formset_factory
+from django.core.mail import send_mail
 from mongoengine.queryset import Q
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
-from api.models import Features, APIKey
+from api.models import Features, APIKey, Coordinates
 from pygeocoder import Geocoder
 from ogre import OGRe
 from twython import TwythonRateLimitError, TwythonError
@@ -589,24 +590,18 @@ def prototype_ui(request):
          
          # Check if the admin is logged in and make a list of
          # active phones available to send coordinates to
-         # TODO: add preparing coordinates functionality 
-         coords_file, field_agents = None, None
+         field_agents, coords_id = None, None
          if request.user.is_superuser:
-            """coords_package = {
-               "type": "FeatureCollection",
-               "geometries": []
-            }
+            points = []
             for p in package["features"]:
-               coords_package["geometries"].append(p["geometry"])
+               points.append(p["geometry"])
+            
+            coordinates = Coordinates(geometries=points)
+            coordinates.save()
+            coords_id = coordinates.id
 
-            # Write the coordinates to the filesystem
-            base_path = os.path.join(BASE_DIR, "static", "coordinates")
-            coords_file = dump_data_to_file("coordinates_", base_path, coords_package)
-         
             # Get list of field agents
-            field_agents = APIKey.objects.filter(organization="LLNL")"""
-            
-            
+            field_agents = APIKey.objects.filter(organization="LLNL")
          
          # redirect user to the visualizer 
          #  - if mobile device detected, redirect to touchscreen version
@@ -617,8 +612,8 @@ def prototype_ui(request):
             return render(request, "home/vizit.html",
                 {
                   "vizit_file":vizit_file,
-                  #"coords_file":coords_file,
-                  #"field_agents":field_agents,
+                  "coords_id":coords_id,
+                  "field_agents":field_agents,
                 })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
@@ -641,10 +636,21 @@ def prototype_ui(request):
 def send_coordinates(request):
    if request.user.is_superuser:
       key = request.GET.get("key")
-      coords_file = request.GET.get("file")
-      logger.debug(key)
-      logger.debug(coords_file)
-   return HttpResponse("Hola")
+      coords_id = request.GET.get("id")
+      agent = APIKey.objects.get(key=key)
+
+      # Send text message with the coordinates id to the agent
+      sender = "GSF Admin"
+      message = "comsdpllnl://?" + str(coords_id)
+      recipient = [agent.phone_number+agent.cell_carrier]
+ 
+      send_mail("", message, sender, recipient)
+
+   return render(request, "home/coords-sent.html",
+                 {
+                  "agent":agent,
+                 })
+      
 
 
 
