@@ -17,8 +17,7 @@ class Properties(EmbeddedDocument):
    altitude    = DecimalField(precision=5)
    h_accuracy  = DecimalField(precision=5)
    v_accuracy  = DecimalField(precision=5)
-   text        = StringField(max_length=1000,
-      unique_with=["time"])
+   text        = StringField(max_length=1000)
    image       = StringField()
    noise_level = DecimalField(precision=5)
    temperature = DecimalField(precision=5)

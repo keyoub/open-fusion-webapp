@@ -93,8 +93,8 @@ def upload(request):
    if request.method == 'POST':
       try:
          json_data_top_level = json.loads(request.body)
-      except:
-         logger.error("Failed to load json from request body")
+      except Exception, e:
+         logger.error(e)
          return HttpResponseBadRequest(
             "The request cannot be processed. We couldn't find json in the body.\n")
       
@@ -104,8 +104,8 @@ def upload(request):
             return HttpResponseBadRequest(
                "The request cannot be processed. Your geoJSON is malformed\n")
          features_list = json_data_top_level['features']
-      except KeyError:
-         logger.error("Failed to match type or features key")
+      except KeyError, e:
+         logger.error(e)
          return HttpResponseBadRequest(
             "The request cannot be processed. Your geoJSON is malformed\n")
       for dictionary in features_list:
@@ -116,13 +116,12 @@ def upload(request):
             feature.properties["source"] = "iPhone"
             try:
                feature.save()
-            except:
-               logger.error("Failed to save the sent data")
+            except Exception, e:
+               logger.error(e)
                return HttpResponseBadRequest(
                   "The request cannot be processed due to bad data types.\n")
-         except KeyError:
-            logger.error(
-               "Failed to match keys from one or all of the dict in the list")
+         except KeyError, e:
+            logger.error(e)
             return HttpResponseBadRequest(
                "The request cannot be processed due malformed geoJSON.\n")
       return HttpResponse("Data was received\n", status=201)
