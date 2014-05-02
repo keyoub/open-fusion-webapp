@@ -158,8 +158,11 @@ def index(request):
                            }
                         ]
                      }
+         # Creat the path for the visualizer data and write to file
+         base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
+         vizit_file = dump_data_to_file("points_", base_path, package)
 
-         # Build unique output file name using user ip and timestamp
+         """# Build unique output file name using user ip and timestamp
          ip = ""
          try:
             ip = request.get_host()
@@ -175,7 +178,7 @@ def index(request):
                               "data", file_name)
          with io.open(path, "w") as outfile:
             outfile.write(unicode(json.dumps(package,
-               indent=4, separators=(",", ": "))))
+               indent=4, separators=(",", ": "))))"""
          
          # redirect user to the visualizer
          # if mobile device detected, redirect to touchscreen version
@@ -183,7 +186,7 @@ def index(request):
             redr_path = "/static/vizit/index.html?data=" + file_name
             return HttpResponseRedirect(redr_path)
          else:
-            return render(request, "home/vizit.html", {"file_name":file_name})
+            return render(request, "home/vizit.html", {"vizit_file":vizit_file})
    else:
       form = TwitterForm()
 
