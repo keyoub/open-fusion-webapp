@@ -4,14 +4,15 @@ from django.core.exceptions import ValidationError
 from bootstrap3_datetime.widgets import DateTimePicker
 from django import forms
 from django.forms.formsets import formset_factory
+from django.core.mail import send_mail
 from mongoengine.queryset import Q
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
-from api.models import Features
+from api.models import Features, APIKey, Coordinates
 from pygeocoder import Geocoder
 from ogre import OGRe
 from twython import TwythonRateLimitError, TwythonError
-import os, io, json, time, hashlib, datetime, logging
+import os, io, json, time, hashlib, datetime, logging, random
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +142,7 @@ def index(request):
 
          # The center pin for the visualizer
          package =   {
-                        "OpenFusion": "1",
+                        "OpenFusion": "5",
                         "type": "FeatureCollection",
                         "features": [
                            { 
@@ -190,15 +191,9 @@ def index(request):
 
 
 # Choices variables for the forms select fields
-#SOURCE_CHOICES = (
-   #("twt", "Twitter"),
-   #("owm", "Open Weather Map"),
-   #("gsf", "GSF iOS App"),
-#)
-
 TWITTER_CHOICES = (
-   ("img", "Images"),
-   ("txt", "Text"),
+   ("image", "Images"),
+   ("text", "Text"),
 )
 
 GSF_IMAGE_CHOICES = (
@@ -260,82 +255,104 @@ class TwitterFusionForm(forms.Form):
             Beware that large requests take a long time to get back from twitter""")
 
 """
-   Passes user query to get data from the retriever
+   Query the local db for cached third party data before
+   passing requests to the retriever
+"""
+def query_cached_third_party(source, keyword, options, location, quantity):
+   data_set = Features.objects(properties__source=source)
+   if location:
+      coords = [location[1], location[0]]
+      radius = location[2]
+      logger.debug(coords)
+      logger.debug(radius)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius*0.6213])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+   if keyword:
+      data_set = data_set(properties__text__icontains=keyword)
+   if "image" in options:
+      data_set = data_set(properties__image__exists=True)
+   data_set = list(data_set.as_pymongo())
+   random.shuffle(data_set)
+   logger.debug(len(data_set))
+   return data_set[:quantity]
+      
+"""
+   Passes user query to get third party data
 """
 def query_third_party(sources, keyword, options, location, quantity):
-   media = ()
-   
-   # Create the media variable
-   for option in options:  
-      if option == "img":
-         media = media + ("image",)
-      if option == "txt":
-         media = media + ("text",)
-
-   # Get results from third party provider
-   results = {}
+   results = []
    error = ""
-   try:
-      results = retriever.fetch(sources,
-                           media=media,
-                           keyword=keyword,
-                           quantity=quantity,
-                           location=location,
-                           interval=None)
-   except TwythonRateLimitError, e:
-      logger.error(e)
-      error = """Unfortunately our Twitter retriever has been rate
-         limited. We cannot do anything but wait for Twitter's tyranny to end."""
-   except TwythonError, e:
-      logger.error(e)
-   except Exception as e:
-      logger.error(e)
+   # Get data from local cache first
+   for source in sources:
+      results.extend(query_cached_third_party(
+            source, keyword, options, location, quantity
+         )
+      )
 
-   return (error, results.get("features", []))
+   # Get results from third party provider if needed
+   if len(results) < quantity:
+      quantity = quantity - len(results)
+      logger.debug(quantity)
+      outside_data = {}
+      try:
+         outside_data = retriever.fetch(sources,
+                              media=options,
+                              keyword=keyword,
+                              quantity=quantity,
+                              location=location,
+                              interval=None)
+      except TwythonRateLimitError, e:
+         logger.error(e)
+         error = """Unfortunately our Twitter retriever has been rate
+            limited. We cannot do anything but wait for Twitter's tyranny to end."""
+      except TwythonError, e:
+         logger.error(e)
+      except Exception as e:
+         logger.error(e)
+      
+      #logger.debug(outside_data.get("features", []))
+      # Cache the data in local db
+      for data in outside_data.get("features", []):
+         feature = Features(**data)
+         try:
+            feature.save()
+         except Exception, e:
+            logger.debug(e)  
+      results.extend(outside_data.get("features", []))
+
+   return (error, results)
 
 """
    Drop unwanted fields from query documents
 """
 def exclude_fields(data, keys):
    for d in data:
-      for k in keys:
-         d["properties"].pop(k, None)
+      if keys:
+         for k in keys:
+            d["properties"].pop(k, None)
+      else:
+         d.pop("_id", None)
+         d["properties"].pop("date_added", None)
 
 """
    Query the local db for images
 """
 def query_for_images(faces, bodies, geo, coords, radius):
-   data_set = Features.objects.all()
+   data_set = Features.objects(properties__image__exists=True)
    if geo:
-      data_set = data_set(geometry__geo_within_center=[coords, radius])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
    EXCLUDE = [
-      "oimage",
       "humidity",
       "noise_level",
       "temperature"
    ]
    data = []
    if faces:
-      data = json.loads(
-               data_set(Q(properties__fimage__exists=True) &
-                  Q(properties__faces_detected__gt=0)).to_json()
-             )
-      if data:
-         exclude_fields(data, EXCLUDE)
-         for d in data:
-            d["properties"]["image"] = d["properties"].pop("fimage")
-            d["properties"].pop("pimage", None)
+      data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
    if bodies:
-      lis = json.loads(
-               data_set(Q(properties__pimage__exists=True) &
-                  Q(properties__people_detected__gt=0)).to_json()
-            )
-      if lis:
-         exclude_fields(lis, EXCLUDE)
-         for d in lis:
-            d["properties"]["image"] = d["properties"].pop("pimage")
-            d["properties"].pop("fimage", None)
-         data.extend(lis)
+      data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
+   exclude_fields(data, EXCLUDE)
    return data
 
 """
@@ -344,10 +361,11 @@ def query_for_images(faces, bodies, geo, coords, radius):
 def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
    data_set = Features.objects.all()
    if geo:
-      data_set = data_set(geometry__geo_within_center=[coords, radius])
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
-   data = json.loads(data_set.filter(**kwargs).to_json())
+   data = data_set.filter(**kwargs).as_pymongo()
    exclude_fields(data, exclude_list)
    return data
 
@@ -405,8 +423,8 @@ def process_gsf_form(params, aftershocks, coords, radius):
       )
 
    generic_list = ["temperature", "humidity", "noise_level"]
-   exclude_list = ["oimage", "fimage", "pimage", "faces_detected",
-                   "people_detected", "humidity", "noise_level", "temperature"] 
+   exclude_list = ["image", "faces_detected", "people_detected",
+                   "humidity", "noise_level", "temperature"] 
    for k,v in params.items():
       if (k in generic_list) and v:
          temp_list = []
@@ -431,6 +449,31 @@ def process_gsf_form(params, aftershocks, coords, radius):
    beautify_results(results)
 
    return results
+
+"""
+   Write the Geojson data to the filesystem   
+"""
+def dump_data_to_file(name, base_path, package):
+   # Build unique output file name using user ip and timestamp
+   ip = ""
+   try:
+      ip = request.get_host()
+   except:
+      pass
+   now = str(datetime.datetime.now())
+
+   file_name = name + \
+      str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
+
+   # Write data to the file
+   path = os.path.join(base_path, file_name)
+   
+   with io.open(path, "w") as outfile:
+      outfile.write(unicode(json.dumps(package,
+         indent=4, separators=(",", ": "))))
+
+   return file_name
+
 
 """
    The prototype UI for the Fusion interface 
@@ -467,7 +510,7 @@ def prototype_ui(request):
                ("Twitter",), twt_params["keywords"], twt_params["options"], 
                None, int(twt_params["number"] if twt_params["number"] else 1)
             )
-            if result[0] != "":
+            if (result[0] != "") and (len(result[1]) == 0):
                return render(request, "home/errors.html",
                   {"url": "/proto/", "message": result[0]})
             epicenters.extend(result[1])
@@ -487,7 +530,7 @@ def prototype_ui(request):
 
          # The package that gets written to file for the visualizer
          package =   {
-                        "OpenFusion": "1",
+                        "OpenFusion": "5",
                         "type": "FeatureCollection",
                         "features": []
                      }
@@ -518,11 +561,6 @@ def prototype_ui(request):
                      twt_params["options"], location, 
                      int(twt_params["number"] if twt_params["number"] else 1)
                   )
-                  if result[0] != "":
-                     #TODO: Add special error message for aftershocks failure 
-                     pass
-                     #return render(request, "home/errors.html",
-                     #   {"url": "/proto/", "message": result[0]})
                   aftershocks.extend(result[1])
 
                # Get gsf aftershocks
@@ -532,6 +570,7 @@ def prototype_ui(request):
                   )
                )
                
+               exclude_fields(aftershocks, None)
                # Add the epicenter with added aftershocks to the package
                epicenter["properties"]["radius"] = radius*1000               
                epicenter["properties"]["related"] = { 
@@ -542,33 +581,40 @@ def prototype_ui(request):
          else:
             results = epicenters
          
+         exclude_fields(results, None)
          package["features"] = results
 
-         # Build unique output file name using user ip and timestamp
-         ip = ""
-         try:
-            ip = request.get_host()
-         except:
-            pass
-         now = str(datetime.datetime.now())
-
-         file_name = "points_" + \
-            str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
+         # Creat the path for the visualizer data and write to file
+         base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
+         vizit_file = dump_data_to_file("points_", base_path, package)
          
-         # Write data to the file
-         path = os.path.join(BASE_DIR, "static", "vizit", 
-                              "data", file_name)
-         with io.open(path, "w") as outfile:
-            outfile.write(unicode(json.dumps(package,
-               indent=4, separators=(",", ": "))))
+         # Check if the admin is logged in and make a list of
+         # active phones available to send coordinates to
+         field_agents, coords_id = None, None
+         if request.user.is_superuser:
+            points = []
+            for p in package["features"]:
+               points.append(p["geometry"])
+            
+            coordinates = Coordinates(geometries=points)
+            coordinates.save()
+            coords_id = coordinates.id
+
+            # Get list of field agents
+            field_agents = APIKey.objects.filter(organization="LLNL")
          
          # redirect user to the visualizer 
          #  - if mobile device detected, redirect to touchscreen version
          if request.mobile:
-            redr_path = "/static/vizit/index.html?data=" + file_name
+            redr_path = "/static/vizit/index.html?data=" + vizit_file
             return HttpResponseRedirect(redr_path)
          else:
-            return render(request, "home/vizit.html", {"file_name":file_name})
+            return render(request, "home/vizit.html",
+                {
+                  "vizit_file":vizit_file,
+                  "coords_id":coords_id,
+                  "field_agents":field_agents,
+                })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
       gsf_aftershocks_form = GSFFusionForm(prefix="gsf_aftershocks")
@@ -586,4 +632,33 @@ def prototype_ui(request):
                   "twitter_aftershocks_form": twitter_aftershocks_form,
                   "misc_form": misc_form,
                  })
-   
+"""
+   Allow the site admin to send set of coordinates to field
+   agents available in the database
+"""   
+def send_coordinates(request):
+   if request.user.is_superuser:
+      key = request.GET.get("key")
+      coords_id = request.GET.get("id")
+      agent = APIKey.objects.get(key=key)
+
+      # Send text message with the coordinates id to the agent
+      sender = "GSF Admin"
+      message = "comsdpllnl://?" + str(coords_id)
+      address = agent.phone_number+agent.cell_carrier
+      if agent.cell_carrier == "@tmomail.net":
+         address = "1" + address
+      recipient = [address]
+ 
+      send_mail("", message, sender, recipient)
+
+      return render(request, "home/coords-sent.html",
+                 {
+                  "agent":agent,
+                 })
+   else:
+      return render(request, "403.html")
+      
+
+
+

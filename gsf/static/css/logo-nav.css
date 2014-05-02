@@ -34,9 +34,9 @@ a:hover {
 
 #h_iframe {
    height: 90%; 
-   min-height: 60%; 
+   min-height: 60%;
    display: block;
-   margin-top: -33px;
+   margin-top: 60px;
 }
 
 .fill {

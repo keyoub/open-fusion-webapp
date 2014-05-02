@@ -55,7 +55,15 @@
            <b>vertical accuracy:</b> {{ d.properties.v_accuracy }}<br />
        </td>
    	 <td id="data"><b>text:</b> {{ d.properties.text }}<br />
-           <b>images:</b> {% if d.properties.oimage or d.properties.pimage or d.properties.fimage %}
+           <b>image:</b><div class='images'>
+                        {% if d.properties.image %}
+                        <img id='base64image' 
+                        src='data:image/png;base64, {{ d.properties.image }}' /><br /> 
+                        {% endif %}
+                        </div>
+            
+               {% comment %}
+               {% if d.properties.oimage or d.properties.pimage or d.properties.fimage %}
                      
                   <div class="accordion">
                      {% if d.properties.oimage %}
@@ -83,6 +91,7 @@
                   {% else %}
                   None <br />
                   {% endif %}
+                  {% endcomment %}
            <b>noise_level:</b> {{ d.properties.noise_level}}<br /> 
            <b>temperature:</b> {{ d.properties.temperature}}<br /> 
            <b>humidity:</b> {{ d.properties.humidity}}<br /> 
