@@ -632,7 +632,10 @@ def prototype_ui(request):
                   "twitter_aftershocks_form": twitter_aftershocks_form,
                   "misc_form": misc_form,
                  })
-   
+"""
+   Allow the site admin to send set of coordinates to field
+   agents available in the database
+"""   
 def send_coordinates(request):
    if request.user.is_superuser:
       key = request.GET.get("key")
@@ -642,14 +645,19 @@ def send_coordinates(request):
       # Send text message with the coordinates id to the agent
       sender = "GSF Admin"
       message = "comsdpllnl://?" + str(coords_id)
-      recipient = [agent.phone_number+agent.cell_carrier]
+      address = agent.phone_number+agent.cell_carrier
+      if agent.cell_carrier == "@tmomail.net":
+         address = "1" + address
+      recipient = [address]
  
       send_mail("", message, sender, recipient)
 
-   return render(request, "home/coords-sent.html",
+      return render(request, "home/coords-sent.html",
                  {
                   "agent":agent,
                  })
+   else:
+      return render(request, "403.html")
       
 
 

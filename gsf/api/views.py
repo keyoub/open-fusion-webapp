@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, \
                         HttpResponseServerError, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django import forms
-from api.models import Features, Properties, APIKey
+from api.models import Features, Properties, APIKey, Coordinates
 from gsf.settings import reCAPTCHA_KEY
 from recaptcha.client import captcha
 import json, logging, base64, hashlib, random
@@ -140,45 +140,43 @@ def download(request):
    if request.method == 'GET':
       query_string = request.GET.get('query')
       if not query_string:
-         logger.error("Failed to pull the query from the url")
+         logger.debug("Failed to pull the query from the url")
          return HttpResponseBadRequest("No query string provided\n")
       try:
          query = json.loads(query_string)
          data = Features.objects(__raw__=query).to_json(indent=4, separators=(",", ": "))
          return HttpResponse(data, content_type='application/json')
       except:
-         logger.error("Failed to run the query")
+         logger.debug("Failed to run the query")
          return HttpResponseBadRequest("Bad query!\n")
    else:
       return HttpResponseBadRequest("Only GET requests are processed\n")
 
+"""
+   Return a set of coordinates to the iOS app for the field agents
+"""
 def coordinates(request):
    if request.method == "GET":
       doc_id = request.GET.get("id")
-      package = {
-         "type": "GeometryCollection",
-         "geometries": [
-            {
-               "type": "Point",
-               "coordinates": [-122.0617279, 37.0032456]
-            },
-            {
-               "type": "Point",
-               "coordinates": [-122.0213875, 37.0072211]
-            }, 
-            {
-               "type": "Point",
-               "coordinates": [-121.9918617, 36.9878901]
-            },
-            {
-               "type": "Point",
-               "coordinates": [-122.0047363, 36.9791141]
-            },
-            {
-               "type": "Point",
-               "coordinates": [-122.0375236, 36.9596388]
-            }
-         ]
-      }
-      return HttpResponse(json.dumps(package), content_type='application/json')
+      if not doc_id:
+         logger.debug("no id")
+         return HttpResponseBadRequest("You didn't give us an id.\n")
+      
+      package = None      
+      try:
+         package = Coordinates.objects.all().as_pymongo()
+         package = package(pk=doc_id).first()
+      except Exception, e:
+         logger.debug(e)
+         return HttpResponseBadRequest("We couldn't find the coordinates you asked for.\n")
+
+      if package:
+         package.pop("_id", None)
+         package.pop("date_added", None)
+         return HttpResponse(json.dumps(package), content_type='application/json')
+      else:
+         logger.debug("Invalid coordinates id")
+         return HttpResponseBadRequest("We couldn't find the coordinates you asked for.\n")
+   else:
+      return HttpResponseBadRequest("GET requests are only supported on this API call.\n")
       
