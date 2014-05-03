@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load bootstrap3 %}
+
+{% load staticfiles %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block main %}
+
+<link href="{% static "css/nprogress.css" %}" rel="stylesheet">
+<script src="{% static "js/nprogress.js" %}"></script>
+
+<h1>Search Tweets</h1>
+
+<div class="col-md-5">
+   <form action="/twitter/" method="post" class="form" id="twitterform">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+
+      {% buttons %}
+         <p id="sendwrapper">
+          <button id="vizit" type="submit" class="btn btn-primary">
+             {% bootstrap_icon "star" %} Visualize!
+          </button>
+         </p>
+      {% endbuttons %}
+   </form>
+</div>
+<div class="col-md-5"></div>
+
+
+<script type="text/javascript">
+   $(function () {
+      $('.date').datetimepicker();
+   });
+</script>
+
+<script>
+   $("#twitterform").submit(function(){
+      var valid = 0;
+      $(this).find('input, select').each(function(){
+               if($(this).val() != ""){ 
+                     valid+=1;
+                     NProgress.start();
+               }
+      });
+   });
+   
+   $( window ).unload(function() {
+      NProgress.stop();
+   });  
+</script>
+
+<script src="{% static "js/moment.js" %}"></script>
+<script src="{% static "js/bootstrap-datetimepicker.js" %}"></script>
+
+
+{% endblock %}

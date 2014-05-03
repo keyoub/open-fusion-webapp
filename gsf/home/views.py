@@ -5,6 +5,7 @@ from bootstrap3_datetime.widgets import DateTimePicker
 from django import forms
 from django.forms.formsets import formset_factory
 from django.core.mail import send_mail
+from django.core.exceptions import PermissionDenied
 from mongoengine.queryset import Q
 from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
                          TWITTER_ACCESS_TOKEN
@@ -22,176 +23,6 @@ retriever = OGRe ({
       "access_token": TWITTER_ACCESS_TOKEN,
    }
 })
-
-"""
-   The UI input form for the twitter retriever
-"""
-class TwitterForm(forms.Form):
-   keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   addr     = forms.CharField(required=True, max_length=500, label="*Address",
-                help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
-   radius   = forms.FloatField(required=True, label="*Radius",
-                help_text="in Kilometers")
-   t_from   = forms.DateTimeField(required=False, label="From",
-               help_text="Enter starting date and time",
-               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-   t_to     = forms.DateTimeField(required=False, label="To",
-               help_text="Enter ending date and time",
-               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-   text     = forms.BooleanField(required=False)
-   images   = forms.BooleanField(required=False)
-
-"""
-   Helper function that builds the context for index.html 
-"""
-def form_errors(address_flag, no_result_flag, time_flag):
-   form = TwitterForm()
-   context = {
-                "form": form,
-                "address_flag": address_flag,
-                "no_result_flag": no_result_flag,
-                "time_flag": time_flag,
-             }
-   return context
-
-"""
-   The home page query UI controller.
-      - Handles queries on local db
-      - Handles queries for the retriever
-"""
-def index(request):
-   if request.method == "POST":
-      form = TwitterForm(request.POST)
-
-      # Get query parameters
-      if form.is_valid():
-         # Initialize variables and flags
-         address_flag, no_result_flag, time_flag = False, False, False
-         lat, lon = 0.0, 0.0
-         params = {"what":None,"where":None}
-         
-         # Get data from the from
-         keywords = form.cleaned_data["keywords"]
-         addr = form.cleaned_data["addr"]
-         radius = form.cleaned_data["radius"]
-         t_from = form.cleaned_data["t_from"]
-         t_to = form.cleaned_data["t_to"]
-         text = form.cleaned_data["text"]
-         images = form.cleaned_data["images"]
-
-         # Get coordinates from the address entered
-         if addr:
-            try:
-               results = Geocoder.geocode(addr)
-               lat = float(results[0].coordinates[0])
-               lon = float(results[0].coordinates[1])
-            except:
-               # If the geocoder API doesn't return with results
-               # return the user to home page with the address error flag
-               message = """The address you gave us is in another
-                            dimension. Try again with an earthly address please."""
-               return render(request, "home/errors.html",
-                        {"url": "", "message": message})
-               #return render(request, "home/index.html", 
-               #         form_errors(True, no_result_flag, time_flag))
-
-            # Start building the query for the retriever
-            params["where"] = (lat, lon, radius, "km")
-
-         if images and text:
-            params["what"] = ("text", "image")
-         elif images:
-            params["what"] = ("image",)
-         else:
-            params["what"] = ("text",)
-
-         # Get time span and convert to epoch time
-         if t_from and t_to:
-            t_from = int(time.mktime(
-               time.strptime(str(t_from)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
-            t_to   = int(time.mktime(
-               time.strptime(str(t_to)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
-            params["when"] = (t_from, t_to)
-         # Return to home page with error if only one field id provided
-         elif t_from or t_to:
-            message = """If you expect time interval search you have to 
-                         give us both beginning and end!"""
-            return render(request, "home/errors.html",
-                     {"url": "", "message": message})
-            #return render(request, "home/index.html", 
-            #         form_errors(address_flag, no_result_flag, True))
-
-         # Get twitter data
-         data = None
-         try:
-            data = retriever.get(("Twitter",),
-                                 keyword=keywords, 
-                                 what=params["what"],
-                                 where=params["where"])
-         except:
-            pass
-
-         # Return to home page if no tweets were found
-         if not data or not data["features"]:
-            message = """Either you gave us a lousy query or
-                         we sucked at finding results for you."""
-            return render(request, "home/errors.html",
-                     {"url": "", "message": message})
-            #return render(request, "home/index.html", 
-            #         form_errors(address_flag, True, time_flag))
-
-         # The center pin for the visualizer
-         package =   {
-                        "OpenFusion": "5",
-                        "type": "FeatureCollection",
-                        "features": [
-                           { 
-                              "type": "Feature",
-                              "geometry": {
-                                 "type": "Point",
-                                 "coordinates": [lon, lat]
-                              },
-                              "properties": {
-                                 "radius": (radius*1000),
-                                 "related": data,
-                              }
-                           }
-                        ]
-                     }
-         # Creat the path for the visualizer data and write to file
-         base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
-         vizit_file = dump_data_to_file("points_", base_path, package)
-
-         """# Build unique output file name using user ip and timestamp
-         ip = ""
-         try:
-            ip = request.get_host()
-         except:
-            pass
-         now = str(datetime.datetime.now())
-
-         file_name = "points_" + \
-            str(hashlib.sha1(ip+now).hexdigest()) + ".geojson"
-         
-         # Write data to the file
-         path = os.path.join(BASE_DIR, "static", "vizit", 
-                              "data", file_name)
-         with io.open(path, "w") as outfile:
-            outfile.write(unicode(json.dumps(package,
-               indent=4, separators=(",", ": "))))"""
-         
-         # redirect user to the visualizer
-         # if mobile device detected, redirect to touchscreen version
-         if request.mobile:
-            redr_path = "/static/vizit/index.html?data=" + file_name
-            return HttpResponseRedirect(redr_path)
-         else:
-            return render(request, "home/vizit.html", {"vizit_file":vizit_file})
-   else:
-      form = TwitterForm()
-
-   return render(request, "home/index.html", {"form":form})
-
 
 # Choices variables for the forms select fields
 TWITTER_CHOICES = (
@@ -312,15 +143,21 @@ def query_third_party(sources, keyword, options, location, quantity):
          logger.error(e)
       except Exception as e:
          logger.error(e)
-      
-      #logger.debug(outside_data.get("features", []))
-      # Cache the data in local db
+
+      # Cache the data in db
       for data in outside_data.get("features", []):
-         feature = Features(**data)
-         try:
-            feature.save()
-         except Exception, e:
-            logger.debug(e)  
+         kwargs = {
+                  "geometry": data["geometry"],
+                  "properties__time": data["properties"]["time"],
+                  "properties__text": data["properties"]["text"],
+                  }
+         if not Features.objects.filter(**kwargs):
+            feature = Features(**data)
+            try:
+               feature.save()
+            except Exception, e:
+               logger.debug(e)
+
       results.extend(outside_data.get("features", []))
 
    return (error, results)
@@ -481,7 +318,7 @@ def dump_data_to_file(name, base_path, package):
 """
    The prototype UI for the Fusion interface 
 """
-def prototype_ui(request):
+def index(request):
    if request.method == "POST":
       gsf_epicenters_form = GSFFusionForm(request.POST,
          prefix="gsf_epicenters")
@@ -515,7 +352,7 @@ def prototype_ui(request):
             )
             if (result[0] != "") and (len(result[1]) == 0):
                return render(request, "home/errors.html",
-                  {"url": "/proto/", "message": result[0]})
+                  {"url": "/", "message": result[0]})
             epicenters.extend(result[1])
 
          # Get gsf epicenters
@@ -529,7 +366,7 @@ def prototype_ui(request):
             message = """Either you gave us a lousy query or
                          we sucked at finding results for you."""
             return render(request, "home/errors.html",
-                     {"url": "/proto/", "message": message})
+                     {"url": "/", "message": message})
 
          # The package that gets written to file for the visualizer
          package =   {
@@ -617,6 +454,7 @@ def prototype_ui(request):
                   "vizit_file":vizit_file,
                   "coords_id":coords_id,
                   "field_agents":field_agents,
+                  "back_url":"/"
                 })
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
@@ -627,7 +465,7 @@ def prototype_ui(request):
       
       misc_form = MiscForm(prefix="misc_form")
 
-   return render(request, "home/proto.html",
+   return render(request, "home/index.html",
                  {
                   "gsf_epicenters_form": gsf_epicenters_form,
                   "gsf_aftershocks_form": gsf_aftershocks_form,
@@ -643,6 +481,7 @@ def send_coordinates(request):
    if request.user.is_superuser:
       key = request.GET.get("key")
       coords_id = request.GET.get("id")
+      #TODO: add error checking
       agent = APIKey.objects.get(key=key)
 
       # Send text message with the coordinates id to the agent
@@ -660,8 +499,142 @@ def send_coordinates(request):
                   "agent":agent,
                  })
    else:
-      return render(request, "403.html")
+      raise PermissionDenied
       
+"""
+   The UI input form for the twitter retriever
+"""
+class TwitterForm(forms.Form):
+   keywords = forms.CharField(required=False, help_text="Space separated keywords")
+   addr     = forms.CharField(required=True, max_length=500, label="*Address",
+                help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
+   radius   = forms.FloatField(required=True, label="*Radius",
+                help_text="in Kilometers")
+   t_from   = forms.DateTimeField(required=False, label="From",
+               help_text="Enter starting date and time",
+               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
+   t_to     = forms.DateTimeField(required=False, label="To",
+               help_text="Enter ending date and time",
+               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
+   text     = forms.BooleanField(required=False)
+   images   = forms.BooleanField(required=False)
 
 
+"""
+   The home page query UI controller.
+      - Handles queries on local db
+      - Handles queries for the retriever
+"""
+def twitter(request):
+   if request.method == "POST":
+      form = TwitterForm(request.POST)
+
+      # Get query parameters
+      if form.is_valid():
+         # Initialize variables and flags
+         address_flag, no_result_flag, time_flag = False, False, False
+         lat, lon = 0.0, 0.0
+         params = {"what":None,"where":None}
+         
+         # Get data from the from
+         keywords = form.cleaned_data["keywords"]
+         addr = form.cleaned_data["addr"]
+         radius = form.cleaned_data["radius"]
+         t_from = form.cleaned_data["t_from"]
+         t_to = form.cleaned_data["t_to"]
+         text = form.cleaned_data["text"]
+         images = form.cleaned_data["images"]
+
+         # Get coordinates from the address entered
+         if addr:
+            try:
+               results = Geocoder.geocode(addr)
+               lat = float(results[0].coordinates[0])
+               lon = float(results[0].coordinates[1])
+            except:
+               # If the geocoder API doesn't return with results
+               # return the user to home page with the address error flag
+               message = """The address you gave us is in another
+                            dimension. Try again with an earthly address please."""
+               return render(request, "home/errors.html",
+                        {"url": "/twitter/", "message": message})
+
+            # Start building the query for the retriever
+            params["where"] = (lat, lon, radius, "km")
+
+         if images and text:
+            params["what"] = ("text", "image")
+         elif images:
+            params["what"] = ("image",)
+         else:
+            params["what"] = ("text",)
+
+         # Get time span and convert to epoch time
+         if t_from and t_to:
+            t_from = int(time.mktime(
+               time.strptime(str(t_from)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+            t_to   = int(time.mktime(
+               time.strptime(str(t_to)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+            params["when"] = (t_from, t_to)
+         # Return to home page with error if only one field id provided
+         elif t_from or t_to:
+            message = """If you expect time interval search you have to 
+                         give us both beginning and end!"""
+            return render(request, "home/errors.html",
+                     {"url": "/twitter/", "message": message})
+
+         # Get twitter data
+         data = None
+         try:
+            data = retriever.get(("Twitter",),
+                                 keyword=keywords, 
+                                 what=params["what"],
+                                 where=params["where"])
+         except:
+            pass
+
+         # Return to home page if no tweets were found
+         if not data or not data["features"]:
+            message = """Either you gave us a lousy query or
+                         we sucked at finding results for you."""
+            return render(request, "home/errors.html",
+                     {"url": "/twitter/", "message": message})
+
+         # The center pin for the visualizer
+         package =   {
+                        "OpenFusion": "5",
+                        "type": "FeatureCollection",
+                        "features": [
+                           { 
+                              "type": "Feature",
+                              "geometry": {
+                                 "type": "Point",
+                                 "coordinates": [lon, lat]
+                              },
+                              "properties": {
+                                 "radius": (radius*1000),
+                                 "related": data,
+                              }
+                           }
+                        ]
+                     }
+         # Creat the path for the visualizer data and write to file
+         base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
+         vizit_file = dump_data_to_file("points_", base_path, package)
+
+         # redirect user to the visualizer
+         # if mobile device detected, redirect to touchscreen version
+         if request.mobile:
+            redr_path = "/static/vizit/index.html?data=" + vizit_file
+            return HttpResponseRedirect(redr_path)
+         else:
+            return render(request, "home/vizit.html", 
+               {
+                  "vizit_file":vizit_file,
+                  "back_url":"/twitter/",
+               })
+   else:
+      form = TwitterForm()
+
+   return render(request, "home/twitter.html", {"form":form})
 
