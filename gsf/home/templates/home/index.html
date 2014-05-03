@@ -123,6 +123,13 @@
 </div>
 
 <script type="text/javascript">
+   if(top.location.protocol=="https:"){
+      if (location.replace){ 
+         top.location.replace("http:"+top.location.href.substr(6));
+      } else {
+         top.location="http:"+top.location.href.substr(6);
+      }
+   }
    /*$(function () {
       $('.date').datetimepicker();
    });*/
