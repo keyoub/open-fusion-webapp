@@ -97,9 +97,6 @@ def query_cached_third_party(source, keyword, options, location, quantity):
    if location:
       coords = [location[1], location[0]]
       radius = location[2]
-      logger.debug(coords)
-      logger.debug(radius)
-      #data_set = data_set(geometry__geo_within_center=[coords, radius*0.6213])
       data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
@@ -107,7 +104,7 @@ def query_cached_third_party(source, keyword, options, location, quantity):
       data_set = data_set(properties__image__exists=True)
    data_set = list(data_set.as_pymongo())
    random.shuffle(data_set)
-   logger.debug(len(data_set))
+   logger.debug("Number of tweets found on db: %d" % len(data_set))
    return data_set[:quantity]
       
 """
@@ -126,7 +123,7 @@ def query_third_party(sources, keyword, options, location, quantity):
    # Get results from third party provider if needed
    if len(results) < quantity:
       quantity = quantity - len(results)
-      logger.debug(quantity)
+      logger.debug("Number of tweets requested from twitter %d" % quantity)
       outside_data = {}
       try:
          outside_data = retriever.fetch(sources,
