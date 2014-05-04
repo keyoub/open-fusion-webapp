@@ -165,6 +165,45 @@ a:hover {
 .aftershocks-overlay:hover {
    color: white;
 }
+
+/******** vizit admin css **********/
+.back-button{
+   /*color: white;
+   font-size: 1.1em;
+   text-decoration: none;
+   background-color: #0078A8;*/
+   position: fixed;
+   z-index: 100;
+   top: 17px;
+   left: 55px;
+   /*padding: 7px;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;*/
+}
+
+/*.back-button:hover{
+   background-color: white;
+   color: #0078A8;
+}*/
+
+.agents-box {
+   /*width:210px;
+   height:160px;*/
+   z-index:100; 
+   top:50px; 
+   right:55px; 
+   position:fixed;
+   /*font-size: 1.1em;
+   text-decoration: none;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;
+   border: 1px solid #0078A8;
+   background: white;
+   padding: 15px;*/
+}
+
 /******** Mobile specific CSS ********/
 @media (max-width: 699px){
 .form-operators {

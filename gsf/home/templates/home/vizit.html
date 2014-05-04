@@ -22,14 +22,9 @@
 
    <link href="//fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
 
-   <!-- Bootstrap core CSS -->
+   <!-- CSS -->
+   <link href="{% static "css/logo-nav.css" %}" rel="stylesheet">
    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-
-   <!-- JavaScript -->
-   <!--<script src="//code.jquery.com/jquery-1.11.0.js"></script>-->
-   <!--<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>-->
-   <!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>-->
-
 
    <style>
       html{
@@ -49,46 +44,24 @@
          width: 100%;
          height: 100%;
       }
-      .back-button{
-         color: white;
-         font-size: 1.1em;
-         text-decoration: none;
-         background-color: #0078A8;
-         position: fixed;
-         z-index: 100;
-         top: 20px;
-         left: 55px;
-         padding: 7px;
-         -moz-border-radius: 6px;
-         -webkit-border-radius: 6px;
-         border-radius: 6px;
-      }
-      .back-button:hover{
-         background-color: white;
-         color: #0078A8;
-      }
    </style>
 
 </head>
 
 <body>
    {% if user.is_superuser %}
-      <!--<div class="dropdown">
-         <button class="btn dropdown-toggle sr-only" 
-                 type="button" id="dropdownMenu1" data-toggle="dropdown">
-          Field Agents
-          <span class="caret"></span>
-         </button>-->
-         <ul style="z-index:100; top:50px; right:55px; position:fixed;">
+      <div class="agents-box">
+      <b> Available Agents </b>
+         <div class="list-group">
          {% for agent in field_agents %}
-            <li>
-               <a href="/sendcoordinates/?key={{ agent.key }}&id={{ coords_id }}">{{ agent.full_name }}</a>
-            </li> 
+         <a class="list-group-item" href="/sendcoordinates/?key={{ agent.key }}&id={{ coords_id }}">{{ agent.full_name }}</a>
          {% endfor %}
-         </ul>
-      <!--</div>-->
+         </div>
+      </div>
    {% endif %}
-   <a href="{{ back_url }}" class="back-button">back for more?!</a>
+   <div class="list-group back-button">
+      <a href="{{ back_url }}" class="list-group-item">back for more?!</a>
+   </div>
    {% with "/static/vizit/index.html?data="|add:vizit_file as vizit_url %}
    <iframe src="{{ vizit_url }}">
    </iframe>
