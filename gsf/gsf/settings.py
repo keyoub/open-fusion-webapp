@@ -17,21 +17,8 @@ try:
 except ImportError:
     pass
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = []
-
-
-# Application definition
-
+# Application definitions
 TEMPLATE_DIRS = (
-      os.path.join(BASE_DIR, 'gmaprouter', 'templates'),
       os.path.join(BASE_DIR, 'home', 'templates'),
       os.path.join(BASE_DIR, 'show', 'templates'),
       os.path.join(BASE_DIR, 'templates'),
@@ -79,18 +66,12 @@ SESSION_ENGINE = 'mongoengine.django.sessions'
 
 mongoengine.connect(MONGODB_NAME, host=MONGODB_DATABASE_HOST)
 
-#AUTHENTICATION_BACKENDS = (
-#    'mongoengine.django.auth.MongoEngineBackend',
-#)
-
 TEST_RUNNER = 'gsf.tests.NoSQLTestRunner'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -101,15 +82,12 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-#STATIC_ROOT = '/web/open-fusion-webapp/gsf/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = (
    os.path.join(BASE_DIR, "static"),
 )
 STATIC_URL = '/static/'
 
 ########## DJANGO-DEBUG CONFIGURATION
-#TODO: Add admin email handler
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -129,12 +107,22 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'gsf.log'),
             'formatter': 'verbose'
         },
+    'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'include_html': True,
+        },
     },
     'loggers': {
         'django': {
             'handlers':['file'],
             'propagate': True,
-            'level':'DEBUG',
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['mail_admins', 'file'],
+            'level': 'ERROR',
+            'propagate': False,
         },
         'api': {
             'handlers': ['file'],
