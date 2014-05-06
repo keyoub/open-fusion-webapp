@@ -3,7 +3,7 @@ $( document ).ready(function() {
    // Check the form for any cached data
    function check_form(form_name){
       var valid = false;
-      $("#fuseform").find("input").each(function(){
+      $("#fuseform").find("input, textarea").each(function(){
          if ($(this).prop("id").indexOf(form_name) >= 0){
             if ($(this).prop("type") != "checkbox" &&
                 $(this).val() != ""){
@@ -80,6 +80,9 @@ $( document ).ready(function() {
    $("#gsfAft").click(function () {
       $("#gsfAftDiv").toggle(options);
    });
+   $("#addrToggle").click(function () {
+      $("#addrDiv").toggle(options);
+   });
 
    // Check the forms on load and open them if they have cached data
    if (check_form("twitter_epicenters")){
@@ -89,6 +92,10 @@ $( document ).ready(function() {
    if (check_form("gsf_epicenters")){
       $("#aftEnable").trigger("click");
       $("#gsfEpiDiv").toggle(options);
+   }
+   if (check_form("addresses")){
+      $("#aftEnable").trigger("click");
+      $("#addrDiv").toggle(options);
    }
    if (check_form("twitter_aftershocks")){
       $("#twtAftDiv").toggle(options);

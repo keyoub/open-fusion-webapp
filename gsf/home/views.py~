@@ -1,16 +1,142 @@
-import os, io, json, time, hashlib, datetime, logging
+import os, io, json, time, hashlib, datetime, logging, random
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
-from gsf.settings import BASE_DIR
+from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
+                         TWITTER_ACCESS_TOKEN
+from twython import TwythonRateLimitError, TwythonError
 from api.models import Features, APIKey, Coordinates
-from uiforms import *
-from localquery import *
-from remotequery import *
+from queryforms import *
 from pygeocoder import Geocoder
+from ogre import OGRe
 
 logger = logging.getLogger(__name__)
+
+retriever = OGRe ({
+   "Twitter": {
+      "consumer_key": TWITTER_CONSUMER_KEY,
+      "access_token": TWITTER_ACCESS_TOKEN,
+   }
+})
+
+"""
+   Query the local db for cached third party data before
+   passing requests to the retriever
+"""
+def query_cached_third_party(source, keyword, options, location, quantity):
+   data_set = Features.objects(properties__source=source)
+   if location:
+      coords = [location[1], location[0]]
+      radius = location[2]
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+   if keyword:
+      data_set = data_set(properties__text__icontains=keyword)
+   if "image" in options:
+      data_set = data_set(properties__image__exists=True)
+   data_set = list(data_set.as_pymongo())
+   random.shuffle(data_set)
+   logger.debug("Number of tweets found on db: %d" % len(data_set))
+   return data_set[:quantity]
+      
+"""
+   Passes user query to get third party data
+"""
+def query_third_party(sources, keyword, options, location, quantity):
+   results = []
+   error = ""
+   # Get data from local cache first
+   for source in sources:
+      results.extend(query_cached_third_party(
+            source, keyword, options, location, quantity
+         )
+      )
+
+   # Get results from third party provider if needed
+   if len(results) < quantity:
+      quantity = quantity - len(results)
+      logger.debug("Number of tweets requested from twitter %d" % quantity)
+      outside_data = {}
+      try:
+         outside_data = retriever.fetch(sources,
+                              media=options,
+                              keyword=keyword,
+                              quantity=quantity,
+                              location=location,
+                              interval=None)
+      except TwythonRateLimitError, e:
+         logger.error(e)
+         error = """Unfortunately our Twitter retriever has been rate
+            limited. We cannot do anything but wait for Twitter's tyranny to end."""
+      except TwythonError, e:
+         logger.error(e)
+      except Exception as e:
+         logger.error(e)
+
+      # Cache the data in db
+      for data in outside_data.get("features", []):
+         kwargs = {
+                  "geometry": data["geometry"],
+                  "properties__time": data["properties"]["time"],
+                  "properties__text": data["properties"]["text"],
+                  }
+         if not Features.objects.filter(**kwargs):
+            feature = Features(**data)
+            try:
+               feature.save()
+            except Exception, e:
+               logger.debug(e)
+
+      results.extend(outside_data.get("features", []))
+
+   return (error, results)
+
+"""
+   Drop unwanted fields from query documents
+"""
+def exclude_fields(data, keys):
+   for d in data:
+      if keys:
+         for k in keys:
+            d["properties"].pop(k, None)
+      else:
+         d.pop("_id", None)
+         d["properties"].pop("date_added", None)
+
+"""
+   Query the local db for images
+"""
+def query_for_images(faces, bodies, geo, coords, radius):
+   data_set = Features.objects(properties__image__exists=True)
+   if geo:
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
+   EXCLUDE = [
+      "humidity",
+      "noise_level",
+      "temperature"
+   ]
+   data = []
+   if faces:
+      data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
+   if bodies:
+      data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
+   exclude_fields(data, EXCLUDE)
+   return data
+
+"""
+   Query the local db for non-image data
+"""
+def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
+   data_set = Features.objects.all()
+   if geo:
+      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      #data_set = data_set(geometry__geo_within_center=[coords, radius])
+   query_string = "properties__" + keyword + logic
+   kwargs = { query_string: value }
+   data = data_set.filter(**kwargs).as_pymongo()
+   exclude_fields(data, exclude_list)
+   return data
 
 """
    Add all the local data fields as html to the text key
@@ -114,39 +240,9 @@ def dump_data_to_file(name, base_path, package):
    with io.open(path, "w") as outfile:
       outfile.write(unicode(json.dumps(package,
          indent=4, separators=(",", ": "))))
-         
-   outfile.close()
 
    return file_name
 
-"""
-   Get epicenters from user inputed addresses
-"""
-def create_epicenters_from_addresses(addresses):
-   logger.debug(addresses.rstrip("\r\n").split())
-   # Get geo location from addresses 
-   epicenters = []
-   address_list = addresses.rstrip("\r\n").split("\n")
-   for address in address_list:
-      logger.debug(address)
-      try:
-         results = Geocoder.geocode(address)
-         lat = float(results[0].coordinates[0])
-         lon = float(results[0].coordinates[1])
-         epicenter = {
-            "type": "Feature",
-            "geometry": {
-               "type": "Point",
-               "coordinates": [lon, lat]
-            },
-            "properties": {
-               "text": address,
-            }
-         }
-         epicenters.append(epicenter)
-      except Exception, e:
-         logger.debug(e)
-   return epicenters
 
 """
    The prototype UI for the Fusion interface 
@@ -175,10 +271,6 @@ def index(request):
          # Initialize variables
          epicenters, aftershocks = [], []
          radius = misc_form.cleaned_data["radius"]
-         addresses = misc_form.cleaned_data["addresses"]
-         
-         if addresses:
-            epicenters.extend(create_epicenters_from_addresses(addresses))
 
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
@@ -301,7 +393,6 @@ def index(request):
       twitter_aftershocks_form = TwitterFusionForm(prefix="twitter_aftershocks")
       
       misc_form = MiscForm(prefix="misc_form")
-      misc_fields = list(misc_form)
 
    return render(request, "home/index.html",
                  {
@@ -309,9 +400,35 @@ def index(request):
                   "gsf_aftershocks_form": gsf_aftershocks_form,
                   "twitter_epicenters_form": twitter_epicenters_form,
                   "twitter_aftershocks_form": twitter_aftershocks_form,
-                  "radius": misc_fields[0],
-                  "addresses": misc_fields[1],
+                  "misc_form": misc_form,
                  })
+"""
+   Allow the site admin to send set of coordinates to field
+   agents available in the database
+"""   
+def send_coordinates(request):
+   if request.user.is_superuser:
+      key = request.GET.get("key")
+      coords_id = request.GET.get("id")
+      #TODO: add error checking
+      agent = APIKey.objects.get(key=key)
+
+      # Send text message with the coordinates id to the agent
+      sender = "GSF Admin"
+      message = "comsdpllnl://?" + str(coords_id)
+      address = agent.phone_number+agent.cell_carrier
+      if agent.cell_carrier == "@tmomail.net":
+         address = "1" + address
+      recipient = [address]
+ 
+      send_mail("", message, sender, recipient)
+
+      return render(request, "home/coords-sent.html",
+                 {
+                  "agent":agent,
+                 })
+   else:
+      raise PermissionDenied
 
 """
    The home page query UI controller.
@@ -344,10 +461,9 @@ def twitter(request):
                results = Geocoder.geocode(addr)
                lat = float(results[0].coordinates[0])
                lon = float(results[0].coordinates[1])
-            except Exception, e:
+            except:
                # If the geocoder API doesn't return with results
                # return the user to home page with the address error flag
-               logger.error(e)
                message = """The address you gave us is in another
                             dimension. Try again with an earthly address please."""
                return render(request, "home/errors.html",
@@ -387,7 +503,7 @@ def twitter(request):
          except:
             pass
 
-         # Return to error page if no tweets were found
+         # Return to home page if no tweets were found
          if not data or not data["features"]:
             message = """Either you gave us a lousy query or
                          we sucked at finding results for you."""
@@ -431,33 +547,4 @@ def twitter(request):
       form = TwitterForm()
 
    return render(request, "home/twitter.html", {"form":form})
-
-"""
-   Allow the site admin to send set of coordinates to field
-   agents available in the database
-"""   
-def send_coordinates(request):
-   if request.user.is_superuser:
-      key = request.GET.get("key")
-      coords_id = request.GET.get("id")
-      # TODO: add error checking
-      agent = APIKey.objects.get(key=key)
-
-      # Send text message with the coordinates id to the agent
-      sender = "GSF Admin"
-      message = "comsdpllnl://?" + str(coords_id)
-      address = agent.phone_number+agent.cell_carrier
-      if agent.cell_carrier == "@tmomail.net":
-         address = "1" + address
-      recipient = [address]
- 
-      send_mail("", message, sender, recipient)
-
-      return render(request, "home/coords-sent.html",
-                 {
-                  "agent":agent,
-                 })
-   else:
-      raise PermissionDenied
-      
 

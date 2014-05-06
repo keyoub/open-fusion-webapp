@@ -134,6 +134,38 @@ a:hover {
    color: #55acee;
 }
 
+.addr {
+   display: none;
+   border: solid 1px lightcoral;
+   padding: 4%;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px; 
+   -khtml-border-radius: 6px;
+}
+
+.addr-toggle {
+   border: solid 1px lightcoral;
+   background-color: lightcoral;
+   margin-top: 5%;
+   font-weight:bold;
+   font-size:125%;
+   color: white;
+   cursor: pointer;
+   width: 100%;
+   padding: 3%;
+   padding-left: 5%;
+   -moz-border-radius: 6px;
+   -webkit-border-radius: 6px;
+   border-radius: 6px;
+   -khtml-border-radius: 6px; 
+}
+
+.addr-toggle:hover{
+   background-color: white;
+   color: lightcoral;
+}
+
 .misc-form {
    margin-top: 10px;
 }

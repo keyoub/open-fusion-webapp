@@ -19,7 +19,11 @@
    <div id="fusionTopRow" class="row">
       <div class="col-md-5">
          <h2>Epicenters
-            <small><a href="#" class="help-link" id="epiModalLink">What's this?</a></small></h2>
+            <small><a href="#" class="help-link" id="epiModalLink">
+               What's this?
+               </a>
+            </small>
+         </h2>
       
          <div class="twitter-toggle" id="twitterEpi">
             Twitter
@@ -33,11 +37,22 @@
          <div id="gsfEpiDiv" class="gsf-form">
             {% bootstrap_form gsf_epicenters_form %}
          </div>
+         <div class="addr-toggle" id="addrToggle">
+            Locations
+         </div>
+         <div id="addrDiv" class="addr">
+            {% bootstrap_field addresses %}
+         </div>
       </div>
       <div class="col-md-5">
          <h2>Aftershocks
-            <small><a href="#" class="help-link" id="aftModalLink">What's this?</a></small></h2>
-         <div id="aftEnable" class="aftershocks-overlay"><span>Enable Aftershocks</span></div>
+            <small><a href="#" class="help-link" id="aftModalLink">
+               What's this?</a>
+            </small>
+         </h2>
+         <div id="aftEnable" class="aftershocks-overlay">
+            <span>Enable Aftershocks</span>
+         </div>
          <div class="twitter-toggle" id="twitterAft">
             Twitter
          </div>
@@ -51,7 +66,7 @@
             {% bootstrap_form gsf_aftershocks_form %}
          </div>
          <div class="misc-form">
-            {% bootstrap_form misc_form %}
+            {% bootstrap_field radius %}
          </div>
       </div>
    </div>
