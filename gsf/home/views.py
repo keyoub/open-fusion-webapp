@@ -1,210 +1,16 @@
+import os, io, json, time, hashlib, datetime, logging
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect
-from django.core.exceptions import ValidationError
-from bootstrap3_datetime.widgets import DateTimePicker
-from django import forms
-from django.forms.formsets import formset_factory
+from django.http import HttpResponseRedirect
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
-from mongoengine.queryset import Q
-from gsf.settings import BASE_DIR, TWITTER_CONSUMER_KEY, \
-                         TWITTER_ACCESS_TOKEN
+from gsf.settings import BASE_DIR
 from api.models import Features, APIKey, Coordinates
+from uiforms import *
+from localquery import *
+from remotequery import *
 from pygeocoder import Geocoder
-from ogre import OGRe
-from twython import TwythonRateLimitError, TwythonError
-import os, io, json, time, hashlib, datetime, logging, random
 
 logger = logging.getLogger(__name__)
-
-retriever = OGRe ({
-   "Twitter": {
-      "consumer_key": TWITTER_CONSUMER_KEY,
-      "access_token": TWITTER_ACCESS_TOKEN,
-   }
-})
-
-# Choices variables for the forms select fields
-TWITTER_CHOICES = (
-   ("image", "Images"),
-   ("text", "Text"),
-)
-
-GSF_IMAGE_CHOICES = (
-   ("imf", "With faces detected"),
-   ("imb", "With bodies detected"),
-)
-
-OPERATORS = (
-   ("", "="),
-   ("__gt", ">"),
-   ("__lt", "<"),
-   ("__gte", ">="),
-   ("__lte", "<="),
-)
-
-LOGICALS = (
-   (0, "OR"),
-   (1, "AND"), 
-)
-
-"""
-   The Epicenters form constructor for GSF data querying
-"""
-class GSFFusionForm(forms.Form):
-   images   = forms.MultipleChoiceField(required=False, choices=GSF_IMAGE_CHOICES,
-             widget=forms.CheckboxSelectMultiple())
-   temperature_logic  = forms.ChoiceField(label="Temperature",
-                     required=False, choices=OPERATORS)
-   temperature = forms.DecimalField(label="",required=False,
-                     help_text="eg. Temperature >= 60 &deg;F",
-                     min_value=1, max_value=150)
-   humidity_logic  = forms.ChoiceField(label="Humidity",
-                     required=False, choices=OPERATORS)
-   humidity = forms.DecimalField(label="",required=False,
-                  help_text="eg. humidity <= 60 %",
-                  min_value=0, max_value=100)
-   noise_level_logic  = forms.ChoiceField(label="Noise Level",
-                     required=False, choices=OPERATORS)
-   noise_level = forms.DecimalField(label="",required=False,
-                     help_text="eg. Noise level < 80 dB",
-                     min_value=-120, max_value=100)
-   
-"""
-   The Aftershocks form constructor for GSF data querying
-"""
-class MiscForm(forms.Form):
-   radius = forms.FloatField(required=False, label="Aftershock Radius",
-                help_text="in Kilometers", min_value = 0.1, max_value=5)
-
-"""
-   The Epicenters form constructor for Twitter querying
-"""
-class TwitterFusionForm(forms.Form):
-   options = forms.MultipleChoiceField(required=False, choices=TWITTER_CHOICES,
-                widget=forms.CheckboxSelectMultiple())
-   keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
-   number = forms.DecimalField(required=False, label="Number of Tweets",
-            min_value = 1, max_value = 15, help_text="""Default 1, Max 15. 
-            Beware that large requests take a long time to get back from twitter""")
-
-"""
-   Query the local db for cached third party data before
-   passing requests to the retriever
-"""
-def query_cached_third_party(source, keyword, options, location, quantity):
-   data_set = Features.objects(properties__source=source)
-   if location:
-      coords = [location[1], location[0]]
-      radius = location[2]
-      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
-   if keyword:
-      data_set = data_set(properties__text__icontains=keyword)
-   if "image" in options:
-      data_set = data_set(properties__image__exists=True)
-   data_set = list(data_set.as_pymongo())
-   random.shuffle(data_set)
-   logger.debug("Number of tweets found on db: %d" % len(data_set))
-   return data_set[:quantity]
-      
-"""
-   Passes user query to get third party data
-"""
-def query_third_party(sources, keyword, options, location, quantity):
-   results = []
-   error = ""
-   # Get data from local cache first
-   for source in sources:
-      results.extend(query_cached_third_party(
-            source, keyword, options, location, quantity
-         )
-      )
-
-   # Get results from third party provider if needed
-   if len(results) < quantity:
-      quantity = quantity - len(results)
-      logger.debug("Number of tweets requested from twitter %d" % quantity)
-      outside_data = {}
-      try:
-         outside_data = retriever.fetch(sources,
-                              media=options,
-                              keyword=keyword,
-                              quantity=quantity,
-                              location=location,
-                              interval=None)
-      except TwythonRateLimitError, e:
-         logger.error(e)
-         error = """Unfortunately our Twitter retriever has been rate
-            limited. We cannot do anything but wait for Twitter's tyranny to end."""
-      except TwythonError, e:
-         logger.error(e)
-      except Exception as e:
-         logger.error(e)
-
-      # Cache the data in db
-      for data in outside_data.get("features", []):
-         kwargs = {
-                  "geometry": data["geometry"],
-                  "properties__time": data["properties"]["time"],
-                  "properties__text": data["properties"]["text"],
-                  }
-         if not Features.objects.filter(**kwargs):
-            feature = Features(**data)
-            try:
-               feature.save()
-            except Exception, e:
-               logger.debug(e)
-
-      results.extend(outside_data.get("features", []))
-
-   return (error, results)
-
-"""
-   Drop unwanted fields from query documents
-"""
-def exclude_fields(data, keys):
-   for d in data:
-      if keys:
-         for k in keys:
-            d["properties"].pop(k, None)
-      else:
-         d.pop("_id", None)
-         d["properties"].pop("date_added", None)
-
-"""
-   Query the local db for images
-"""
-def query_for_images(faces, bodies, geo, coords, radius):
-   data_set = Features.objects(properties__image__exists=True)
-   if geo:
-      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
-      #data_set = data_set(geometry__geo_within_center=[coords, radius])
-   EXCLUDE = [
-      "humidity",
-      "noise_level",
-      "temperature"
-   ]
-   data = []
-   if faces:
-      data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
-   if bodies:
-      data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
-   exclude_fields(data, EXCLUDE)
-   return data
-
-"""
-   Query the local db for non-image data
-"""
-def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
-   data_set = Features.objects.all()
-   if geo:
-      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
-      #data_set = data_set(geometry__geo_within_center=[coords, radius])
-   query_string = "properties__" + keyword + logic
-   kwargs = { query_string: value }
-   data = data_set.filter(**kwargs).as_pymongo()
-   exclude_fields(data, exclude_list)
-   return data
 
 """
    Add all the local data fields as html to the text key
@@ -308,9 +114,10 @@ def dump_data_to_file(name, base_path, package):
    with io.open(path, "w") as outfile:
       outfile.write(unicode(json.dumps(package,
          indent=4, separators=(",", ": "))))
+         
+   outfile.close()
 
    return file_name
-
 
 """
    The prototype UI for the Fusion interface 
@@ -339,6 +146,10 @@ def index(request):
          # Initialize variables
          epicenters, aftershocks = [], []
          radius = misc_form.cleaned_data["radius"]
+         addresses = misc_form.cleaned_data["addresses"]
+         
+         if addresses:
+            epicenters.extend(create_epicenters_from_addresses(addresses))
 
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
@@ -461,6 +272,7 @@ def index(request):
       twitter_aftershocks_form = TwitterFusionForm(prefix="twitter_aftershocks")
       
       misc_form = MiscForm(prefix="misc_form")
+      misc_fields = list(misc_form)
 
    return render(request, "home/index.html",
                  {
@@ -468,54 +280,9 @@ def index(request):
                   "gsf_aftershocks_form": gsf_aftershocks_form,
                   "twitter_epicenters_form": twitter_epicenters_form,
                   "twitter_aftershocks_form": twitter_aftershocks_form,
-                  "misc_form": misc_form,
+                  "radius": misc_fields[0],
+                  "addresses": misc_fields[1],
                  })
-"""
-   Allow the site admin to send set of coordinates to field
-   agents available in the database
-"""   
-def send_coordinates(request):
-   if request.user.is_superuser:
-      key = request.GET.get("key")
-      coords_id = request.GET.get("id")
-      #TODO: add error checking
-      agent = APIKey.objects.get(key=key)
-
-      # Send text message with the coordinates id to the agent
-      sender = "GSF Admin"
-      message = "comsdpllnl://?" + str(coords_id)
-      address = agent.phone_number+agent.cell_carrier
-      if agent.cell_carrier == "@tmomail.net":
-         address = "1" + address
-      recipient = [address]
- 
-      send_mail("", message, sender, recipient)
-
-      return render(request, "home/coords-sent.html",
-                 {
-                  "agent":agent,
-                 })
-   else:
-      raise PermissionDenied
-      
-"""
-   The UI input form for the twitter retriever
-"""
-class TwitterForm(forms.Form):
-   keywords = forms.CharField(required=False, help_text="Space separated keywords")
-   addr     = forms.CharField(required=True, max_length=500, label="*Address",
-                help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
-   radius   = forms.FloatField(required=True, label="*Radius",
-                help_text="in Kilometers")
-   t_from   = forms.DateTimeField(required=False, label="From",
-               help_text="Enter starting date and time",
-               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-   t_to     = forms.DateTimeField(required=False, label="To",
-               help_text="Enter ending date and time",
-               widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-   text     = forms.BooleanField(required=False)
-   images   = forms.BooleanField(required=False)
-
 
 """
    The home page query UI controller.
@@ -548,9 +315,10 @@ def twitter(request):
                results = Geocoder.geocode(addr)
                lat = float(results[0].coordinates[0])
                lon = float(results[0].coordinates[1])
-            except:
+            except Exception, e:
                # If the geocoder API doesn't return with results
                # return the user to home page with the address error flag
+               logger.error(e)
                message = """The address you gave us is in another
                             dimension. Try again with an earthly address please."""
                return render(request, "home/errors.html",
@@ -590,7 +358,7 @@ def twitter(request):
          except:
             pass
 
-         # Return to home page if no tweets were found
+         # Return to error page if no tweets were found
          if not data or not data["features"]:
             message = """Either you gave us a lousy query or
                          we sucked at finding results for you."""
@@ -634,4 +402,33 @@ def twitter(request):
       form = TwitterForm()
 
    return render(request, "home/twitter.html", {"form":form})
+
+"""
+   Allow the site admin to send set of coordinates to field
+   agents available in the database
+"""   
+def send_coordinates(request):
+   if request.user.is_superuser:
+      key = request.GET.get("key")
+      coords_id = request.GET.get("id")
+      # TODO: add error checking
+      agent = APIKey.objects.get(key=key)
+
+      # Send text message with the coordinates id to the agent
+      sender = "GSF Admin"
+      message = "comsdpllnl://?" + str(coords_id)
+      address = agent.phone_number+agent.cell_carrier
+      if agent.cell_carrier == "@tmomail.net":
+         address = "1" + address
+      recipient = [address]
+ 
+      send_mail("", message, sender, recipient)
+
+      return render(request, "home/coords-sent.html",
+                 {
+                  "agent":agent,
+                 })
+   else:
+      raise PermissionDenied
+      
 

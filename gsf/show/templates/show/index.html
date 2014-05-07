@@ -47,8 +47,8 @@
 	{% for d in data %}
 	  <tr>
 	    <td>{{ d.properties.source }}</td>
-	    <td>{# d.properties.date_added|date:"Y-m-d G:i:s" #}<br />
-           {{ d.properties.timestamp }}</td>
+	    <td>{{ d.properties.date_added|date:"Y-m-d G:i:s" }}<br />
+           {{ d.properties.time }}</td>
 	    <td><b>location:</b> {{ d.geometry }}<br />
            <b>altitude:</b> {{ d.properties.altitude }}<br />
            <b>horizontal accuracy:</b> {{ d.properties.h_accuracy }}<br />
