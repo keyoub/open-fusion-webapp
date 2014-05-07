@@ -2,7 +2,7 @@ from mongoengine import *
 from gsf.settings import MONGODB_NAME
 from django.db import models
 
-import datetime
+import datetime, dateutil.parser
 
 connect(MONGODB_NAME)
 
@@ -10,8 +10,7 @@ connect(MONGODB_NAME)
    The properties of a location
 """
 class Properties(EmbeddedDocument):
-   #date_added  = StringField(default=datetime.datetime.utcnow().isoformat(' '))
-   date_added  = DateTimeField(default=datetime.datetime.utcnow())
+   date_added  = DateTimeField()
    source      = StringField(required=True, max_length=50)
    time        = StringField(required=True)
    altitude    = DecimalField(precision=5)
@@ -24,6 +23,11 @@ class Properties(EmbeddedDocument):
    humidity    = DecimalField(precision=5)
    faces_detected  = IntField()
    people_detected = IntField()
+   
+   def clean(self):
+      """Saves the ISO time string as django DateTimeField"""
+      self.date_added = dateutil.parser.parse(self.time)
+      
    
 """
    The main geoJSON formated data 
