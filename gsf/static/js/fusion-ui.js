@@ -20,7 +20,8 @@ $( document ).ready(function() {
    
    // UI interaction between Epicenters and Aftershocks
    $("#aftEnable").click(function (){
-      if (!check_form("epicenters")){
+      if (!check_form("epicenters") &&
+          !check_form("addresses")){
          alert("In order to get Aftershocks, you must have Epicenters.");
       }else{
          $(this).css("display", "none");
@@ -35,7 +36,8 @@ $( document ).ready(function() {
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
             return;
-         }else if (!check_form("epicenters")){
+         }else if (!check_form("epicenters") &&
+                   !check_form("addresses")){
             e.preventDefault();
             alert("In order to get Aftershocks, you must have Epicenters.");
             return; 

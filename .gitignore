@@ -1,11 +1,9 @@
 *.log
 *.pot
 *.pyc
+*.py~
 *.geojson
 *.swp
 .DS_Store
-gsf.log
 local_settings.py
 db.sqlite3
-credentials.py
-ogre-test.py

@@ -120,35 +120,6 @@ def dump_data_to_file(name, base_path, package):
    return file_name
 
 """
-   Get epicenters from user inputed addresses
-"""
-def create_epicenters_from_addresses(addresses):
-   logger.debug(addresses.rstrip("\r\n").split())
-   # Get geo location from addresses 
-   epicenters = []
-   address_list = addresses.rstrip("\r\n").split("\n")
-   for address in address_list:
-      logger.debug(address)
-      try:
-         results = Geocoder.geocode(address)
-         lat = float(results[0].coordinates[0])
-         lon = float(results[0].coordinates[1])
-         epicenter = {
-            "type": "Feature",
-            "geometry": {
-               "type": "Point",
-               "coordinates": [lon, lat]
-            },
-            "properties": {
-               "text": address,
-            }
-         }
-         epicenters.append(epicenter)
-      except Exception, e:
-         logger.debug(e)
-   return epicenters
-
-"""
    The prototype UI for the Fusion interface 
 """
 def index(request):
