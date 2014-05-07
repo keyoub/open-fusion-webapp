@@ -156,7 +156,8 @@ def index(request):
          if twt_params["options"]:
             result = query_third_party(
                ("Twitter",), twt_params["keywords"], twt_params["options"], 
-               None, int(twt_params["number"] if twt_params["number"] else 1)
+               None, int(twt_params["number"] if twt_params["number"] else 1),
+               cache_flag = True
             )
             if (result[0] != "") and (len(result[1]) == 0):
                return render(request, "home/errors.html",
@@ -207,7 +208,8 @@ def index(request):
                   result = query_third_party(
                      ("Twitter",), twt_params["keywords"],
                      twt_params["options"], location, 
-                     int(twt_params["number"] if twt_params["number"] else 1)
+                     int(twt_params["number"] if twt_params["number"] else 1),
+                     cache_flag = True
                   )
                   aftershocks.extend(result[1])
 

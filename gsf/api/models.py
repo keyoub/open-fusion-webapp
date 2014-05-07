@@ -28,7 +28,6 @@ class Properties(EmbeddedDocument):
       """Saves the ISO time string as django DateTimeField"""
       self.date_added = dateutil.parser.parse(self.time)
       
-   
 """
    The main geoJSON formated data 
 """
@@ -44,6 +43,22 @@ class Coordinates(Document):
    type        = StringField(default="GeometryCollection")
    geometries  = ListField(PointField())
    date_added  = DateTimeField(default=datetime.datetime.utcnow())
+   
+"""  
+   Retriever queries enterd by users, stored to use for 
+   building the local cache of open data
+"""
+class OgreQueries(Document):
+   date_added = DateTimeField(default=datetime.datetime.utcnow())
+   sources    = ListField(StringField())
+   media      = ListField(StringField())
+   keyword    = StringField()
+   location   = ListField(FloatField())
+   
+   @queryset_manager
+   def objects(doc_cls, queryset):
+      return queryset.order_by("-date_added")
+      
 
 """
    The SQL model for API Keys so that Django
