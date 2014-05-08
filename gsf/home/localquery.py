@@ -1,6 +1,7 @@
 from api.models import Features, Coordinates
-from api.views import logger
-import random
+import random, logging
+
+logger = logging.getLogger(__name__)
 
 """
    Drop unwanted fields from query documents
@@ -27,10 +28,10 @@ def query_cached_third_party(source, keyword, options, location, quantity):
          geometry__near=coords,
          geometry__max_distance=radius*1000
       )
+   if "image" in options and "text" not in options:
+      data_set = data_set(properties__image__exists=True)
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
-   if "image" in options:
-      data_set = data_set(properties__image__exists=True)
    data_set = list(data_set.as_pymongo())
    random.shuffle(data_set)
    logger.debug("Number of tweets found on db: %d" % len(data_set))
@@ -59,13 +60,13 @@ def query_for_images(faces, bodies, geo, coords, radius):
 """
    Query the local db for non-image data
 """
-def query_numeric_data(keyword, logic, value, exclude_list, geo, coords, radius):
+def query_numeric_data(keyword, logic, value,
+                       exclude_list, geo, coords, radius):
    data_set = Features.objects.all()
    if geo:
-      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
-      #data_set = data_set(geometry__geo_within_center=[coords, radius])
+      data_set = data_set(geometry__near=coords,
+         geometry__max_distance=radius*1000)
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
-   data = data_set.filter(**kwargs).as_pymongo()
    exclude_fields(data, exclude_list)
    return data
