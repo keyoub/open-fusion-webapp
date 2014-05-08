@@ -30,6 +30,16 @@ def query_third_party(
    results = []
    error = ""
    
+   # Save the user query for cache buliding system
+   try:         
+      query = OgreQueries(sources=sources,
+         media=options,
+         keyword=keyword,
+         location=location[:-1] if location else None)
+      query.save()
+   except Exception, e:
+      logger.debug(e)
+   
    # Get data from local cache if the option is True
    if cache_flag:
       for source in sources:
@@ -58,16 +68,6 @@ def query_third_party(
          logger.error(e)
       except Exception, e:
          logger.error(e)
-         
-      # Save the user query for cache buliding system
-      try:         
-         query = OgreQueries(sources=sources,
-            media=options,
-            keyword=keyword,
-            location=location[:-1] if location else None)
-         query.save()
-      except Exception, e:
-         logger.debug(e)
 
       # Cache the data in db
       for data in outside_data.get("features", []):
