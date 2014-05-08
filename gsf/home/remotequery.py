@@ -1,10 +1,12 @@
+import logging
 from ogre import OGRe
-from api.views import logger
 from pygeocoder import Geocoder
 from api.models import Features, OgreQueries
 from localquery import query_cached_third_party
 from twython import TwythonRateLimitError, TwythonError
 from gsf.settings import TWITTER_CONSUMER_KEY, TWITTER_ACCESS_TOKEN
+
+logger = logging.getLogger(__name__)
 
 retriever = OGRe ({
    "Twitter": {
@@ -62,7 +64,7 @@ def query_third_party(
          query = OgreQueries(sources=sources,
             media=options,
             keyword=keyword,
-            location=location[:-1])
+            location=location[:-1] if location else None)
          query.save()
       except Exception, e:
          logger.debug(e)

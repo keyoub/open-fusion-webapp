@@ -100,7 +100,7 @@ class MiscForm(forms.Form):
    radius = forms.FloatField(required=False, label="Aftershock Radius",
       help_text="in Kilometers", min_value = 0.1, max_value=5)
    
-   addresses = forms.CharField(widget=forms.Textarea)   
+   addresses = forms.CharField(required=False, widget=forms.Textarea)   
 
 
 
