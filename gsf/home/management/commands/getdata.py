@@ -16,7 +16,7 @@ class Command(BaseCommand):
             "access_token": TWITTER_ACCESS_TOKEN,
          }
       })
-      queries = OgreQueries.objects.all().as_pymongo()l
+      queries = OgreQueries.objects.all().as_pymongo()
       for query in queries:
          # TODO: add limit to number of queries to run
          query.pop("_id", None)
@@ -48,7 +48,7 @@ class Command(BaseCommand):
                except Exception, e:
                   logger.debug(e)  
             else:
-               logger.debug(data)
+               logger.debug("Found duplicates")
          
          
       
