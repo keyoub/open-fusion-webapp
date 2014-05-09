@@ -1,4 +1,4 @@
-from api.models import Features, Coordinates
+from api.models import Features, Coordinates, OgreQueries
 import random, logging
 
 logger = logging.getLogger(__name__)
@@ -11,15 +11,25 @@ def exclude_fields(data, keys):
       if keys:
          for k in keys:
             d["properties"].pop(k, None)
-      else:
-         d.pop("_id", None)
-         d["properties"].pop("date_added", None)
+      d.pop("_id", None)
+      d["properties"].pop("date_added", None)
 
 """
    Query the local db for cached third party data before
    passing requests to the retriever
 """
-def query_cached_third_party(source, keyword, options, location, quantity):
+def query_cached_third_party(source, keyword, options, location):
+   # Save the user query for cache buliding system
+   try:         
+      query = OgreQueries(sources=(source,),
+         media=options,
+         keyword=keyword,
+         location=location[:-1] if location else None)
+      query.save()
+   except Exception, e:
+      logger.debug(e)
+      
+   # Get cached data 
    data_set = Features.objects(properties__source=source)
    if location:
       coords = [location[1], location[0]]
@@ -32,10 +42,12 @@ def query_cached_third_party(source, keyword, options, location, quantity):
       data_set = data_set(properties__image__exists=True)
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
-   data_set = list(data_set.as_pymongo())
-   random.shuffle(data_set)
-   logger.debug("Number of tweets found on db: %d" % len(data_set))
-   return data_set[:quantity]
+      
+   data_set = data_set.as_pymongo()
+   exclude_fields(data_set, None)
+   #random.shuffle(data_set)
+   
+   return data_set
    
 """
    Query the local db for images
@@ -43,7 +55,10 @@ def query_cached_third_party(source, keyword, options, location, quantity):
 def query_for_images(faces, bodies, geo, coords, radius):
    data_set = Features.objects(properties__image__exists=True)
    if geo:
-      data_set = data_set(geometry__near=coords, geometry__max_distance=radius*1000)
+      data_set = data_set(
+         geometry__near=coords,
+         geometry__max_distance=radius*1000
+      )
    EXCLUDE = [
       "humidity",
       "noise_level",

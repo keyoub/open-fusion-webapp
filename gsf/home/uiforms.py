@@ -59,15 +59,9 @@ class TwitterFusionForm(forms.Form):
       
    keywords = forms.CharField(required=False, help_text="eg. Wild OR Stallions")
    
-   number = forms.DecimalField(required=False, label="Number of Tweets",
-      min_value = 1, max_value = 15, help_text="""Default 1, Max 15. 
-      Beware that large requests take a long time to get back from twitter""")
-      
-"""
-   The form constructor for manual location entering
-"""
-class AddressForm(forms.Form):
-   addresses = forms.CharField(widget=forms.Textarea)
+   #number = forms.DecimalField(required=False, label="Number of Tweets",
+   #   min_value = 1, max_value = 15, help_text="""Default 1, Max 15. 
+   #   Beware that large requests take a long time to get back from twitter""")
 
 """
    The form constructor for twitter interface
