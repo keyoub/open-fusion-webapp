@@ -83,5 +83,5 @@ def query_numeric_data(keyword, logic, value,
          geometry__max_distance=radius*1000)
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
-   exclude_fields(data, exclude_list)
+   exclude_fields(data_set, exclude_list)
    return data
