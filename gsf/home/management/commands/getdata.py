@@ -7,25 +7,33 @@ import logging, json
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
+   args = "query_limit"
    help = "Gets data using the retriever and saved user queries"
    
    def handle(self, *args, **options):
+      query_limit = 1
+      for limit in args:
+         query_limit = limit
+         
       retriever = OGRe ({
          "Twitter": {
             "consumer_key": TWITTER_CONSUMER_KEY,
             "access_token": TWITTER_ACCESS_TOKEN,
          }
       })
+      
       queries = OgreQueries.objects.all().as_pymongo()
+      logger.debug(len(queries))
       for query in queries:
-         # TODO: add limit to number of queries to run
+         # TODO: add limit to number of queries to runl
          query.pop("_id", None)
          query.pop("date_added", None)
          if query.get("location", None):
             query["location"].append("km")
          else:
             query.pop("location", None)
-         query["quantity"] = 15
+         query["quantity"] = query_limit*100
+         query["query_limit"] = query_limit
          
          # Get tweets from twitter
          tweets = {}
@@ -46,9 +54,7 @@ class Command(BaseCommand):
                try:
                   feature.save()
                except Exception, e:
-                  logger.debug(e)  
-            else:
-               logger.debug("Found duplicates")
+                  logger.debug(e)
          
          
       

@@ -35,6 +35,10 @@ class Features(Document):
    type        = StringField(default="Feature")
    geometry    = PointField(required=True)
    properties  = EmbeddedDocumentField(Properties)
+   
+   @queryset_manager
+   def objects(doc_cls, queryset):
+      return queryset.order_by("-properties.date_added")
 
 """
    Coordinates to be sent to field agents

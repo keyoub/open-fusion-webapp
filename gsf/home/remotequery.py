@@ -23,12 +23,17 @@ def query_third_party(
    keyword, 
    options, 
    location, 
-   quantity,
+   query_limit,
    cache_flag
 ):
    
    results = []
    error = ""
+
+   if query_limit is None:
+      query_limit = 5
+      
+   quantity = query_limit*100
    
    # Save the user query for cache buliding system
    try:         
@@ -39,51 +44,47 @@ def query_third_party(
       query.save()
    except Exception, e:
       logger.debug(e)
+      
+   outside_data = {}
+   try:
+      outside_data = retriever.fetch(sources,
+                           media=options,
+                           keyword=keyword,
+                           quantity=quantity,
+                           location=location,
+                           query_limit=query_limit)
+   except TwythonRateLimitError, e:
+      logger.debug(e)
+      error = """Unfortunately our Twitter retriever has been rate
+         limited. We cannot do anything but wait for Twitter's tyranny to end."""
+   except TwythonError, e:
+      logger.error(e)
+   except Exception, e:
+      logger.error(e)
+
+   # Cache the data in db
+   for data in outside_data.get("features", []):
+      kwargs = {
+               "geometry": data["geometry"],
+               "properties__time": data["properties"]["time"],
+               "properties__text": data["properties"]["text"],
+               }
+      if not Features.objects.filter(**kwargs):
+         feature = Features(**data)
+         try:
+            feature.save()
+         except Exception, e:
+            logger.debug(e)
+
+   results.extend(outside_data.get("features", []))
    
    # Get data from local cache if the option is True
    if cache_flag:
       for source in sources:
          results.extend(query_cached_third_party(
-               source, keyword, options, location, quantity
+               source, keyword, options, location
             )
          )
-
-   # Get results from third party provider if needed
-   if len(results) < quantity:
-      quantity = quantity - len(results)
-      logger.debug("Number of tweets requested from twitter %d" % quantity)
-      outside_data = {}
-      try:
-         outside_data = retriever.fetch(sources,
-                              media=options,
-                              keyword=keyword,
-                              quantity=quantity,
-                              location=location,
-                              interval=None)
-      except TwythonRateLimitError, e:
-         logger.debug(e)
-         error = """Unfortunately our Twitter retriever has been rate
-            limited. We cannot do anything but wait for Twitter's tyranny to end."""
-      except TwythonError, e:
-         logger.error(e)
-      except Exception, e:
-         logger.error(e)
-
-      # Cache the data in db
-      for data in outside_data.get("features", []):
-         kwargs = {
-                  "geometry": data["geometry"],
-                  "properties__time": data["properties"]["time"],
-                  "properties__text": data["properties"]["text"],
-                  }
-         if not Features.objects.filter(**kwargs):
-            feature = Features(**data)
-            try:
-               feature.save()
-            except Exception, e:
-               logger.debug(e)
-
-      results.extend(outside_data.get("features", []))
 
    return (error, results)
    
