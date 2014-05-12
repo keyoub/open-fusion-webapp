@@ -83,5 +83,6 @@ def query_numeric_data(keyword, logic, value,
          geometry__max_distance=radius*1000)
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
+   data_set = data_set.filter(**kwargs).as_pymongo()
    exclude_fields(data_set, exclude_list)
-   return data
+   return data_set
