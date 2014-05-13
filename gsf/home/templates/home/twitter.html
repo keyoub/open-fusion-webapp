@@ -14,11 +14,18 @@
 
 <h1>Search Tweets</h1>
 
-<div class="col-md-5">
-   <form action="/twitter/" method="post" class="form" id="twitterform">
-      {% csrf_token %}
-      {% bootstrap_form form %}
-
+<form action="/twitter/" method="post" class="form" id="twitterform">
+   {% csrf_token %}
+   <div class="col-md-5">
+      {% for field in required_fields %}      
+         {% bootstrap_field field %}
+      {% endfor %}
+   </div>
+   <div class="col-md-5">
+      {% for field in optional_fields %}      
+         {% bootstrap_field field %}
+      {% endfor %}
+         
       {% buttons %}
          <p id="sendwrapper">
           <button id="vizit" type="submit" class="btn btn-primary">
@@ -26,8 +33,8 @@
           </button>
          </p>
       {% endbuttons %}
-   </form>
-</div>
+   </div>
+</form>
 <div class="col-md-5"></div>
 
 

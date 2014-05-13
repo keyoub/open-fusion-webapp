@@ -4,7 +4,6 @@ from api.models import Features
 import datetime, random
 
 def index(request):
-	data = Features.objects[:200]
-	context = {'data' : data}
-	return render(request, 'show/index.html', context)
-
+   data = Features.objects()
+   context = {'data' : data}
+   return render(request, 'show/index.html', context)

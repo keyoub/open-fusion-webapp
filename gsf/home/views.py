@@ -180,93 +180,60 @@ def twitter(request):
       # Get query parameters
       if form.is_valid():
          # Initialize variables and flags
-         address_flag, no_result_flag, time_flag = False, False, False
-         lat, lon = 0.0, 0.0
-         params = {"what":None,"where":None}
+         epicenters = []
+         interval = None
          
-         # Get data from the from
-         keywords = form.cleaned_data["keywords"]
-         addr = form.cleaned_data["addr"]
-         radius = form.cleaned_data["radius"]
+         form_data = form.cleaned_data
          t_from = form.cleaned_data["t_from"]
          t_to = form.cleaned_data["t_to"]
-         text = form.cleaned_data["text"]
-         images = form.cleaned_data["images"]
 
-         # Get coordinates from the address entered
-         if addr:
-            try:
-               results = Geocoder.geocode(addr)
-               lat = float(results[0].coordinates[0])
-               lon = float(results[0].coordinates[1])
-            except Exception, e:
-               # If the geocoder API doesn't return with results
-               # return the user to home page with the address error flag
-               logger.error(e)
-               message = """The address you gave us is in another
-                            dimension. Try again with an earthly address please."""
-               return render(request, "home/errors.html",
-                        {"url": "/twitter/", "message": message})
-
-            # Start building the query for the retriever
-            params["where"] = (lat, lon, radius, "km")
-
-         if images and text:
-            params["what"] = ("text", "image")
-         elif images:
-            params["what"] = ("image",)
-         else:
-            params["what"] = ("text",)
+         # Get epicenters
+         epicenters = create_epicenters_from_addresses(form_data["addresses"])
+         if not epicenters:
+            message = """The addresses you gave us is in another
+               dimension. Try again with an earthly address please."""
+            return render(request, "home/errors.html",
+                     {"url": "/twitter/", "message": message})
 
          # Get time span and convert to epoch time
          if t_from and t_to:
             t_from = int(time.mktime(
-               time.strptime(str(t_from)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+               time.strptime(
+                  str(t_from)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+                  
             t_to   = int(time.mktime(
-               time.strptime(str(t_to)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
-            params["when"] = (t_from, t_to)
-         # Return to home page with error if only one field id provided
-         elif t_from or t_to:
-            message = """If you expect time interval search you have to 
-                         give us both beginning and end!"""
-            return render(request, "home/errors.html",
-                     {"url": "/twitter/", "message": message})
-
-         # Get twitter data
-         data = None
-         try:
-            data = retriever.get(("Twitter",),
-                                 keyword=keywords, 
-                                 what=params["what"],
-                                 where=params["where"])
-         except Exception, e:
-            logger.debug(e)
-
-         # Return to error page if no tweets were found
-         if not data or not data["features"]:
-            message = """Either you gave us a lousy query or
-                         we sucked at finding results for you."""
-            return render(request, "home/errors.html",
-                     {"url": "/twitter/", "message": message})
+               time.strptime(
+                  str(t_to)[:19], "%Y-%m-%d %H:%M:%S"))) - time.timezone
+            interval = (t_from, t_to)
 
          # The center pin for the visualizer
          package =   {
                         "OpenFusion": "5",
                         "type": "FeatureCollection",
-                        "features": [
-                           { 
-                              "type": "Feature",
-                              "geometry": {
-                                 "type": "Point",
-                                 "coordinates": [lon, lat]
-                              },
-                              "properties": {
-                                 "radius": (radius*1000),
-                                 "related": data,
-                              }
-                           }
-                        ]
-                     }
+                        "features": [],
+         }
+         
+         for epicenter in epicenters:
+            # Get aftershocks
+            aftershocks = []
+            lon = epicenter["geometry"]["coordinates"][0]
+            lat = epicenter["geometry"]["coordinates"][1]
+            location=(lat, lon, form_data["radius"], "km")
+            
+            aftershocks = query_third_party(
+               ("Twitter",), form_data["keywords"], form_data["options"], 
+               location, interval=interval, query_limit=2,
+               cache_flag=True
+            )
+            
+            # Add the epicenter with added aftershocks to the package
+            epicenter["properties"]["radius"] = form_data["radius"]*1000               
+            epicenter["properties"]["related"] = { 
+               "type": "FeatureCollection",
+               "features": aftershocks
+            }
+            
+                      
          # Creat the path for the visualizer data and write to file
          base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
          vizit_file = dump_data_to_file("points_", base_path, package)
@@ -283,9 +250,16 @@ def twitter(request):
                   "back_url":"/twitter/",
                })
    else:
-      form = TwitterForm()
+      form = list( TwitterForm() )
+      required_fields = [form[0], form[1]]
+      optional_fields = form[2:]
 
-   return render(request, "home/twitter.html", {"form":form})
+   return render(request, "home/twitter.html", 
+      {
+         "required_fields": required_fields,
+         "optional_fields": optional_fields,
+      }
+   )
 
 """
    Allow the site admin to send set of coordinates to field

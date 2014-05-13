@@ -22,7 +22,8 @@ def query_third_party(
    sources,
    keyword, 
    options, 
-   location, 
+   location,
+   interval,
    query_limit,
    cache_flag
 ):
@@ -52,6 +53,7 @@ def query_third_party(
                            keyword=keyword,
                            quantity=quantity,
                            location=location,
+                           interval=interval,
                            query_limit=query_limit)
    except TwythonRateLimitError, e:
       logger.debug(e)
