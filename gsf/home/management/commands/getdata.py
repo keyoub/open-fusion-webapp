@@ -22,8 +22,7 @@ class Command(BaseCommand):
          }
       })
       
-      queries = OgreQueries.objects.all().as_pymongo()
-      logger.debug(len(queries))
+      queries = OgreQueries.objects.all().as_pymongo()[:350]
       for query in queries:
          # TODO: add limit to number of queries to runl
          query.pop("_id", None)

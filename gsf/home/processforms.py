@@ -100,7 +100,7 @@ def process_twitter_form(params, location):
    if len(cached_tweets) is 0:
       live_tweets = query_third_party(
          ("Twitter",), params["keywords"], params["options"], 
-         location, None, cache_flag = False
+         location, None, None, False
       )
       data.extend(live_tweets[1])
       """if (result[0] != "") and (len(result[1]) == 0):

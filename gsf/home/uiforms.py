@@ -66,15 +66,23 @@ class TwitterFusionForm(forms.Form):
 """
    The form constructor for twitter interface
 """
-class TwitterForm(forms.Form):
-   keywords = forms.CharField(required=False, 
-      help_text="Space separated keywords")
-      
-   addr = forms.CharField(required=True, max_length=500, label="*Address",
-      help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
+class TwitterForm(forms.Form):      
+   addresses = forms.CharField(required=True, widget=forms.Textarea,
+      label="*Addresses",
+      help_text="""One address per line. Eg.<br /> Santa Cruz, CA
+                   <br />Mission st, San Francisco""")
       
    radius = forms.FloatField(required=True, label="*Radius",
       help_text="in Kilometers", min_value = 0.1, max_value =5)
+
+   options = forms.MultipleChoiceField(required=False, choices=TWITTER_CHOICES,
+      widget=forms.CheckboxSelectMultiple())
+      
+   keywords = forms.CharField(required=False, 
+      help_text="Space separated keywords")
+      
+   #addr = forms.CharField(required=True, max_length=500, label="*Address",
+   #   help_text="eg. Santa Cruz, CA or Mission st, San Francisco")
       
    t_from = forms.DateTimeField(required=False, label="From",
       help_text="Enter starting date and time",
@@ -83,9 +91,6 @@ class TwitterForm(forms.Form):
    t_to = forms.DateTimeField(required=False, label="To",
       help_text="Enter ending date and time",
       widget=DateTimePicker(options={"format": "YYYY-MM-DD HH:mm:ss"}))
-      
-   text = forms.BooleanField(required=False)
-   images = forms.BooleanField(required=False)
    
 """
    The Aftershocks form constructor for GSF data querying
@@ -94,7 +99,9 @@ class MiscForm(forms.Form):
    radius = forms.FloatField(required=False, label="Aftershock Radius",
       help_text="in Kilometers", min_value = 0.1, max_value=5)
    
-   addresses = forms.CharField(required=False, widget=forms.Textarea)   
+   addresses = forms.CharField(required=False, widget=forms.Textarea,
+      help_text="""One address per line. Eg.<br /> Santa Cruz, CA
+                   <br />Mission st, San Francisco""")   
 
 
 
