@@ -215,12 +215,12 @@ def twitter(request):
          
          for epicenter in epicenters:
             # Get aftershocks
-            aftershocks = []
+            tweets = []
             lon = epicenter["geometry"]["coordinates"][0]
             lat = epicenter["geometry"]["coordinates"][1]
             location=(lat, lon, form_data["radius"], "km")
             
-            aftershocks = query_third_party(
+            tweets = query_third_party(
                ("Twitter",), form_data["keywords"], form_data["options"], 
                location, interval=interval, query_limit=2,
                cache_flag=True
@@ -230,9 +230,10 @@ def twitter(request):
             epicenter["properties"]["radius"] = form_data["radius"]*1000               
             epicenter["properties"]["related"] = { 
                "type": "FeatureCollection",
-               "features": aftershocks
+               "features": tweets[1]
             }
             
+         package["features"] = epicenters
                       
          # Creat the path for the visualizer data and write to file
          base_path = os.path.join(BASE_DIR, "static", "vizit", "data")

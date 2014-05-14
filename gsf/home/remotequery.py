@@ -81,7 +81,7 @@ def query_third_party(
    results.extend(outside_data.get("features", []))
    
    # Get data from local cache if the option is True
-   if cache_flag:
+   if cache_flag and (interval is None):
       for source in sources:
          results.extend(query_cached_third_party(
                source, keyword, options, location
