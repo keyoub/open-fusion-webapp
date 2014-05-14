@@ -1,21 +1,23 @@
 from django.core.management.base import BaseCommand, CommandError
 from gsf.settings import TWITTER_CONSUMER_KEY, TWITTER_ACCESS_TOKEN
 from api.models import OgreQueries, Features
+from twython import TwythonRateLimitError
 from ogre import OGRe
 import logging, json, datetime
 
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-   args = "query_limit"
-   help = "Gets data using the retriever and saved user queries"
+   args = "number_of_queries"
+   help = "Gets data using the retriever and the saved user queries"
    
-   def handle(self, *args, **options):
-      logger.info("getdata was successfully invoked at %s" % datetime.datetime.now())
+   def handle(self, *args, **options):            
       query_limit = 1
-      for limit in args:
-         query_limit = limit
-         
+      number_of_queries = 100
+      
+      for number in args:
+         number_of_queries = number
+               
       retriever = OGRe ({
          "Twitter": {
             "consumer_key": TWITTER_CONSUMER_KEY,
@@ -23,7 +25,12 @@ class Command(BaseCommand):
          }
       })
       
-      queries = OgreQueries.objects.all().as_pymongo()[:350]
+      logger.info(
+         "Getdata was successfully invoked at %s with %d queries." % 
+            (datetime.datetime.now(), number_of_queries)
+      )
+      
+      queries = OgreQueries.objects.all().as_pymongo()[:number_of_queries]
       for query in queries:
          query.pop("_id", None)
          query.pop("date_added", None)
@@ -38,6 +45,9 @@ class Command(BaseCommand):
          tweets = {}
          try:
             tweets = retriever.fetch(**query)
+         except TwythonRateLimitError, e:
+            logger.error(e)
+            break
          except Exception, e:
             logger.error(e)
          
