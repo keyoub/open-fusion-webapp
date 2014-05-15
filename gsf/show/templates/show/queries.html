@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block main %}
+<h1>Data Collections</h1>
+
+<style>
+   table #data {
+      width: 30%;
+   }
+</style>
+
+<br />
+<br />
+<table class="table">
+      <thead>
+        <tr>
+	      <th class="header">Timestamp</th>
+         <th class="header">Source</th>
+         <th class="header">Media</th>
+     	   <th class="header">Keywords</th>
+     	   <th class="header">Location</th>
+	     </tr>
+      </thead>
+   <tbody>
+	{% for d in data %}
+	  <tr>
+	    <td>{{ d.date_added|date:"Y-m-d G:i:s" }}</td>
+	    <td>{{ d.sources }}</td>
+	    <td>{{ d.media }}</td>
+	    <td>{{ d.keyword }}</td>
+	    <td>{{ d.location }}</td>
+	  </tr>
+	{% endfor %}
+      </tbody>
+</table>
+
+{% endblock %}
