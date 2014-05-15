@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from gsf.settings import BASE_DIR
-from api.models import Features, APIKey, Coordinates
+from api.models import Features, APIKey, Coordinates, OgreQueries
 from uiforms import *
 from localquery import *
 from remotequery import *
@@ -38,6 +38,12 @@ def index(request):
          misc_form.is_valid():
          
          # Initialize variables
+         metadata = ""
+         try:
+            metadata = str(request.META)
+         except Exception, e:
+            logger.debug(e)
+
          epicenters, aftershocks = [], []
          radius = misc_form.cleaned_data["radius"]
          addresses = misc_form.cleaned_data["addresses"]
@@ -49,7 +55,7 @@ def index(request):
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
             epicenters.extend(process_twitter_form(
-                  twt_params, None
+                  twt_params, None, metadata
                )
             )
 
@@ -90,7 +96,7 @@ def index(request):
                if twt_params["options"]:
                   location=(lat, lon, radius, "km")
                   aftershocks.extend(process_twitter_form(
-                        twt_params, location
+                        twt_params, location, metadata
                      )
                   )
 
@@ -180,6 +186,12 @@ def twitter(request):
       # Get query parameters
       if form.is_valid():
          # Initialize variables and flags
+         metadata = ""
+         try:
+            metadata = str(request.META)
+         except Exception, e:
+            logger.debug(e)
+         
          epicenters = []
          interval = None
          
@@ -219,10 +231,20 @@ def twitter(request):
             lon = epicenter["geometry"]["coordinates"][0]
             lat = epicenter["geometry"]["coordinates"][1]
             location=(lat, lon, form_data["radius"], "km")
+
+            try:
+               query = OgreQueries(sources=["Twitter"],
+                  media=form_data["options"],
+                  keyword=form_data["keywords"],
+                  metadata=metadata,
+                  location=location[:-1] if location else None)
+               query.save()
+            except Exception, e:
+               logger.debug(e)
             
             tweets = query_third_party(
                ("Twitter",), form_data["keywords"], form_data["options"], 
-               location, interval=interval, query_limit=2,
+               location, interval=interval, query_limit=1,
                cache_flag=True
             )
             

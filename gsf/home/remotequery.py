@@ -37,14 +37,14 @@ def query_third_party(
    quantity = query_limit*100
    
    # Save the user query for cache buliding system
-   try:         
+   """try:         
       query = OgreQueries(sources=sources,
          media=options,
          keyword=keyword,
          location=location[:-1] if location else None)
       query.save()
    except Exception, e:
-      logger.debug(e)
+      logger.debug(e)"""
       
    outside_data = {}
    try:

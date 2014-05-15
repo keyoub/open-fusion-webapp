@@ -1,5 +1,6 @@
 from localquery import *
 from remotequery import *
+from api.models import OgreQueries
 import logging, io, os, hashlib, datetime, json, random
 
 logger = logging.getLogger(__name__)
@@ -88,8 +89,19 @@ def process_gsf_form(params, aftershocks, coords, radius):
 """
    Process the two Twitter Forms
 """
-def process_twitter_form(params, location):
+def process_twitter_form(params, location, metadata):
    data, cached_tweets, live_tweets = [], [], []
+
+   # Save the user query for cache buliding system
+   try:
+      query = OgreQueries(sources=["Twitter"],
+         media=params["options"],
+         keyword=params["keywords"],
+         metadata=metadata,
+         location=location[:-1] if location else None)
+      query.save()
+   except Exception, e:
+      logger.debug(e)
    
    # First search the local cache and if no results are found,
    # pass the query to the OGRe

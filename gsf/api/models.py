@@ -54,6 +54,7 @@ class Coordinates(Document):
 """
 class OgreQueries(Document):
    date_added = DateTimeField(default=datetime.datetime.utcnow())
+   metadata   = StringField()
    sources    = ListField(StringField())
    media      = ListField(StringField())
    keyword    = StringField()

@@ -20,14 +20,14 @@ def exclude_fields(data, keys):
 """
 def query_cached_third_party(source, keyword, options, location):
    # Save the user query for cache buliding system
-   try:         
+   """try:         
       query = OgreQueries(sources=(source,),
          media=options,
          keyword=keyword,
          location=location[:-1] if location else None)
       query.save()
    except Exception, e:
-      logger.debug(e)
+      logger.debug(e)"""
       
    # Get cached data 
    data_set = Features.objects(properties__source=source)

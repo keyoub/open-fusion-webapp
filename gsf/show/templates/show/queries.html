@@ -15,7 +15,8 @@
       <thead>
         <tr>
 	      <th class="header">Timestamp</th>
-         <th class="header">Source</th>
+	      <th class="header">HTTP Metadata</th>
+         <th class="header">Sources</th>
          <th class="header">Media</th>
      	   <th class="header">Keywords</th>
      	   <th class="header">Location</th>
@@ -25,6 +26,7 @@
 	{% for d in data %}
 	  <tr>
 	    <td>{{ d.date_added|date:"Y-m-d G:i:s" }}</td>
+	    <td>{{ d.metadata }}</td>
 	    <td>{{ d.sources }}</td>
 	    <td>{{ d.media }}</td>
 	    <td>{{ d.keyword }}</td>

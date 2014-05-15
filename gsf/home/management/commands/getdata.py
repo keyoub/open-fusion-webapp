@@ -34,6 +34,7 @@ class Command(BaseCommand):
       for query in queries:
          query.pop("_id", None)
          query.pop("date_added", None)
+         query.pop("ip", None)
          if query.get("location", None):
             query["location"].append("km")
          else:
