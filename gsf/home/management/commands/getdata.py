@@ -25,11 +25,6 @@ class Command(BaseCommand):
          }
       })
       
-      logger.info(
-         "Getdata was successfully invoked at %s with %d queries." % 
-            (datetime.datetime.now(), number_of_queries)
-      )
-      
       queries = OgreQueries.objects.all().as_pymongo()[:number_of_queries]
       for query in queries:
          query.pop("_id", None)

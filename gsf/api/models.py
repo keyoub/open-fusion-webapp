@@ -62,7 +62,7 @@ class OgreQueries(Document):
    
    @queryset_manager
    def objects(doc_cls, queryset):
-      return queryset.order_by("-date_added")
+      return queryset.order_by("-date_added")[:300]
       
 
 """

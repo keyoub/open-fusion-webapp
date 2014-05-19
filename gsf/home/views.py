@@ -40,7 +40,7 @@ def index(request):
          # Initialize variables
          metadata = ""
          try:
-            metadata = str(request.META)
+            metadata = str(request.META.pop("REMOTE_ADDR", None))
          except Exception, e:
             logger.debug(e)
 
@@ -188,7 +188,7 @@ def twitter(request):
          # Initialize variables and flags
          metadata = ""
          try:
-            metadata = str(request.META)
+            metadata = str(request.META.pop("REMOTE_ADDR", None))
          except Exception, e:
             logger.debug(e)
          
