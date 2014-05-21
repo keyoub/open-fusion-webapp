@@ -45,8 +45,12 @@ def index(request):
             logger.debug(e)
 
          epicenters, aftershocks = [], []
+         live_flag = False 
          radius = misc_form.cleaned_data["radius"]
          addresses = misc_form.cleaned_data["addresses"]
+
+         if misc_form.cleaned_data["live_option"] == "live":
+            live_flag = True
          
          if addresses:
             epicenters.extend(create_epicenters_from_addresses(addresses))
@@ -154,6 +158,8 @@ def index(request):
                   "field_agents":field_agents,
                   "back_url":"/"
                 })
+      else:
+         logger.debug("form validation error")
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
       gsf_aftershocks_form = GSFFusionForm(prefix="gsf_aftershocks")
@@ -172,6 +178,7 @@ def index(request):
                   "twitter_aftershocks_form": twitter_aftershocks_form,
                   "radius": misc_fields[0],
                   "addresses": misc_fields[1],
+                  "live": misc_fields[2],
                  })
 
 """

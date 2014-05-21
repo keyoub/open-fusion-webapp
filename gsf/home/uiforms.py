@@ -2,6 +2,11 @@ from django import forms
 from bootstrap3_datetime.widgets import DateTimePicker
 
 # Choices variables for the forms select fields
+LIVE_CHOICES = (
+   ("live", "Live Data"),
+   ("cache", "Cached Data"),
+)
+
 TWITTER_CHOICES = (
    ("image", "Images"),
    ("text", "Text"),
@@ -92,12 +97,15 @@ class TwitterForm(forms.Form):
    The Aftershocks form constructor for GSF data querying
 """
 class MiscForm(forms.Form):
-   radius = forms.FloatField(required=False, label="Aftershock Radius",
-      help_text="in Kilometers", min_value = 0.1, max_value=5)
+   radius = forms.FloatField(required=False, label="Aftershock Radius (Km)",
+      min_value = 0.1, max_value=5)
    
    addresses = forms.CharField(required=False, widget=forms.Textarea,
       help_text="""One address per line. Eg.<br /> Santa Cruz, CA
-                   <br />Mission st, San Francisco""")   
+                   <br />Mission st, San Francisco""")
+                   
+   live_option = forms.ChoiceField(required=False, choices=LIVE_CHOICES,
+      widget=forms.RadioSelect())
 
 
 

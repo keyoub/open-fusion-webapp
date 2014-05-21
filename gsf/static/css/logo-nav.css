@@ -198,6 +198,15 @@ a:hover {
    color: white;
 }
 
+.switch-toggle {
+   width:50%;
+   margin-bottom:0;
+}
+
+.switch-toggle input + label {
+   cursor: pointer;
+}
+
 /******** vizit admin css **********/
 .back-button{
    /*color: white;

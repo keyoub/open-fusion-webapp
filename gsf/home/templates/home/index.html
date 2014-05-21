@@ -10,12 +10,26 @@
 {% block main %}
 
 <link href="{% static "css/nprogress.css" %}" rel="stylesheet">
-<script src="{% static "js/nprogress.js" %}"></script>
+<link href="{% static "css/toggle-switch.css" %}" rel="stylesheet">
+
+<script type="text/javascript" src="{% static "js/nprogress.js" %}"></script>
 
 <h1>Fusion Interface</h1>
 
 <form action="/" method="post" class="form" id="fuseform">
    {% csrf_token %}
+   
+   <h2>Search Type</h2>
+   
+   <div class="switch-toggle well">
+      <input id="id_misc_form-live_option_1" name="misc_form-live_option" type="radio" value="cache" checked />
+      <label for="id_misc_form-live_option_1" onclick="">Cached</label>
+      
+      <input id="id_misc_form-live_option_0" name="misc_form-live_option" type="radio" value="live" />
+      <label for="id_misc_form-live_option_0" onclick="">Live</label>
+      
+      <a class="btn btn-primary"></a>
+   </div>
    <div id="fusionTopRow" class="row">
       <div class="col-md-5">
          <h2>Epicenters
@@ -146,6 +160,10 @@
          top.location="http:"+top.location.href.substr(6);
       }
    }
+   
+   //$("[name='misc_form-live_option']").bootstrapSwitch();
+   //$("[name='twitter_epicenters-options']").bootstrapSwitch();
+   
    /*$(function () {
       $('.date').datetimepicker();
    });*/
