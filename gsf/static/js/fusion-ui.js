@@ -32,7 +32,7 @@ $( document ).ready(function() {
    // Custom form validation on submit
    var frm = $("#fuseform");
    frm.submit(function(e){
-      if (check_form("aftershocks")){
+      if (check_form("aftershocks") || check_form("misc_form")){
          if($("#id_misc_form-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
@@ -119,7 +119,6 @@ $( document ).ready(function() {
    });
    
    $("#id_misc_form-live_option_1").click(function () {
-      $("#aftEnable").css("display", "");
       $("#twitterEpi").css("display", "");
       $("#twtEpiDiv").css("display", "");
       $("#gsfEpi").css("display", "");
@@ -127,4 +126,14 @@ $( document ).ready(function() {
       $("#gsfAft").css("display", "");
       $("#gsfAftDiv").css("display", "");      
    });
+   
+   // Initialize the UI sliders
+   /*$("#id_gsf_epicenters-temperature").slider({});
+   $("#id_gsf_epicenters-humidity").slider({});
+   $("#id_gsf_epicenters-noise_level").slider({});
+   
+   $("#id_gsf_aftershocks-temperature").slider({});
+   $("#id_gsf_aftershocks-humidity").slider({});
+   $("#id_gsf_aftershocks-noise_level").slider({});*/
+   
 });

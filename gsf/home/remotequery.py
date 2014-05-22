@@ -24,8 +24,7 @@ def query_third_party(
    options, 
    location,
    interval,
-   query_limit,
-   cache_flag
+   query_limit
 ):
    
    results = []
@@ -69,14 +68,6 @@ def query_third_party(
             logger.debug(e)
 
    results.extend(outside_data.get("features", []))
-   
-   # Get data from local cache if the option is True
-   if cache_flag and (interval is None):
-      for source in sources:
-         results.extend(query_cached_third_party(
-               source, keyword, options, location
-            )
-         )
 
    return (error, results)
    

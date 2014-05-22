@@ -1,5 +1,5 @@
 from api.models import Features, Coordinates, OgreQueries
-import random, logging
+import logging, random
 
 logger = logging.getLogger(__name__)
 
@@ -19,16 +19,6 @@ def exclude_fields(data, keys):
    passing requests to the retriever
 """
 def query_cached_third_party(source, keyword, options, location):
-   # Save the user query for cache buliding system
-   """try:         
-      query = OgreQueries(sources=(source,),
-         media=options,
-         keyword=keyword,
-         location=location[:-1] if location else None)
-      query.save()
-   except Exception, e:
-      logger.debug(e)"""
-      
    # Get cached data 
    data_set = Features.objects(properties__source=source)
    if location:
@@ -43,9 +33,10 @@ def query_cached_third_party(source, keyword, options, location):
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
       
-   data_set = data_set.as_pymongo()
+   data_set = list(data_set.as_pymongo())
+   random.shuffle(data_set)
+   
    exclude_fields(data_set, None)
-   #random.shuffle(data_set)
    
    return data_set
    

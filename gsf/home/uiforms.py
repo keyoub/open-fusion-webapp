@@ -18,11 +18,11 @@ GSF_IMAGE_CHOICES = (
 )
 
 OPERATORS = (
-   ("", "="),
-   ("__gt", ">"),
-   ("__lt", "<"),
-   ("__gte", ">="),
-   ("__lte", "<="),
+   ("", "equals"),
+   ("__gt", "greater than"),
+   ("__lt", "less than"),
+   ("__gte", "greater than or equal"),
+   ("__lte", "less than or equal"),
 )
 
 LOGICALS = (
@@ -34,6 +34,13 @@ LOGICALS = (
    The form constructor for GSF data querying
 """
 class GSFFusionForm(forms.Form):
+   """widget=forms.NumberInput(attrs={
+         "data-slider-min":"1",
+         "data-slider-max":"150",
+         "data-slider-step":"1",
+         "data-slider-value":"",
+      })"""
+      
    images = forms.MultipleChoiceField(required=False,
       choices=GSF_IMAGE_CHOICES, widget=forms.CheckboxSelectMultiple())
       
@@ -41,19 +48,22 @@ class GSFFusionForm(forms.Form):
       required=False, choices=OPERATORS)
       
    temperature = forms.DecimalField(label="", required=False,
-      help_text="eg. Temperature >= 60 &deg;F", min_value=1, max_value=150)
+      help_text="eg. Temperature >= 60 &deg;F", min_value=1, max_value=150
+   )
                      
    humidity_logic  = forms.ChoiceField(label="Humidity",
       required=False, choices=OPERATORS)
       
    humidity = forms.DecimalField(label="", required=False,
-      help_text="eg. humidity <= 60 %", min_value=0, max_value=100)
+      help_text="eg. humidity <= 60 %", min_value=0, max_value=100
+   )
                   
    noise_level_logic  = forms.ChoiceField(label="Noise Level",
       required=False, choices=OPERATORS)
                      
    noise_level = forms.DecimalField(label="",required=False,
-      help_text="eg. Noise level < 80 dB", min_value=-120, max_value=100)
+      help_text="eg. Noise level < 80 dB", min_value=-120, max_value=100
+   )
 
 """
    The form constructor for Twitter querying

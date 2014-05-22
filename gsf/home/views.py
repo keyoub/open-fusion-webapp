@@ -55,20 +55,23 @@ def index(request):
          if addresses:
             epicenters.extend(create_epicenters_from_addresses(addresses))
 
-         # Get twitter epicenters
-         twt_params = twitter_epicenters_form.cleaned_data
-         if twt_params["options"]:
-            epicenters.extend(process_twitter_form(
-                  twt_params, None, metadata
+         if not live_flag:
+            logger.debug("cached searches 1")
+            # Get twitter epicenters
+            twt_params = twitter_epicenters_form.cleaned_data
+            if twt_params["options"]:
+               epicenters.extend(process_twitter_form(
+                     twt_params, None, metadata, live_flag
+                  )
+               )
+   
+            # Get gsf epicenters
+            gsf_epicenter_params = gsf_epicenters_form.cleaned_data
+            epicenters.extend(process_gsf_form(
+                  gsf_epicenter_params, aftershocks=False,
+                  coords=None, radius=None
                )
             )
-
-         # Get gsf epicenters
-         gsf_epicenter_params = gsf_epicenters_form.cleaned_data
-         epicenters.extend(process_gsf_form(
-               gsf_epicenter_params, aftershocks=False, coords=None, radius=None
-            )
-         )
 
          if not epicenters:
             message = """Either you gave us a lousy query or
@@ -100,16 +103,18 @@ def index(request):
                if twt_params["options"]:
                   location=(lat, lon, radius, "km")
                   aftershocks.extend(process_twitter_form(
-                        twt_params, location, metadata
+                        twt_params, location, metadata, live_flag
                      )
                   )
 
                # Get gsf aftershocks
-               aftershocks.extend(process_gsf_form(
-                    gsf_aftershock_params, aftershocks=True,
-                    coords=[lon, lat], radius=radius
+               if not live_flag:
+                  logger.debug("cached searches 1")
+                  aftershocks.extend(process_gsf_form(
+                       gsf_aftershock_params, aftershocks=True,
+                       coords=[lon, lat], radius=radius
+                     )
                   )
-               )
                
                #exclude_fields(aftershocks, None)
                
