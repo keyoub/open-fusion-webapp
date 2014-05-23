@@ -1,6 +1,7 @@
 import logging
 from ogre import OGRe
 from pygeocoder import Geocoder
+from ogre.exceptions import OGReLimitError
 from api.models import Features, OgreQueries
 from localquery import query_cached_third_party
 from twython import TwythonRateLimitError, TwythonError
@@ -44,7 +45,7 @@ def query_third_party(
                            location=location,
                            interval=interval,
                            query_limit=query_limit)
-   except TwythonRateLimitError, e:
+   except (TwythonRateLimitError, OGReLimitError) as e:
       logger.debug(e)
       error = """Unfortunately our Twitter retriever has been rate
          limited. We cannot do anything but wait for Twitter's tyranny to end."""

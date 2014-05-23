@@ -127,6 +127,10 @@ $( document ).ready(function() {
       $("#gsfAftDiv").css("display", "");      
    });
    
+   if ($("#id_misc_form-live_option_0").is(":checked")){
+      $("#id_misc_form-live_option_0").trigger("click");
+   }
+   
    // Initialize the UI sliders
    /*$("#id_gsf_epicenters-temperature").slider({});
    $("#id_gsf_epicenters-humidity").slider({});

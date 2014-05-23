@@ -3,6 +3,7 @@ from gsf.settings import TWITTER_CONSUMER_KEY, TWITTER_ACCESS_TOKEN
 from api.models import OgreQueries, Features
 from twython import TwythonRateLimitError
 from ogre import OGRe
+from ogre.exceptions import OGReLimitError
 import logging, json, datetime
 
 logger = logging.getLogger(__name__)
@@ -11,7 +12,8 @@ class Command(BaseCommand):
    args = "number_of_queries"
    help = "Gets data using the retriever and the saved user queries"
    
-   def handle(self, *args, **options):            
+   def handle(self, *args, **options):
+      logger.debug("hello")          
       query_limit = 1
       number_of_queries = 100
       
@@ -41,7 +43,7 @@ class Command(BaseCommand):
          tweets = {}
          try:
             tweets = retriever.fetch(**query)
-         except TwythonRateLimitError, e:
+         except (TwythonRateLimitError, OGReLimitError) as e:
             logger.error(e)
             break
          except Exception, e:
