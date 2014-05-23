@@ -123,7 +123,7 @@ $( document ).ready(function() {
    
    // Cache and live search switches
    $("#id_misc_form-live_option_0").click(function () {
-      resetForm($("#fuseform"));
+      //resetForm($("#fuseform"));
       //$("#aftEnable").css("display", "none");
       $("#twitterEpi").css("display", "none");
       $("#twtEpiDiv").css("display", "none");
@@ -134,7 +134,7 @@ $( document ).ready(function() {
    });
    
    $("#id_misc_form-live_option_1").click(function () {
-      resetForm($("#fuseform"));
+      //resetForm($("#fuseform"));
       $("#twitterEpi").css("display", "");
       $("#twtEpiDiv").css("display", "");
       $("#gsfEpi").css("display", "");

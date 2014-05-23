@@ -76,8 +76,7 @@ def index(request):
          else:
             try:
                temp = retriever.fetch(
-                  fail_hard=True, sources=("Twitter",), 
-                  keyword="test", quantity=1
+                  fail_hard=True
                )
             except (OGReLimitError, TwythonRateLimitError) as e:
                logger.error(e)
