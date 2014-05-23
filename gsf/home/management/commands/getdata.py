@@ -12,8 +12,7 @@ class Command(BaseCommand):
    args = "number_of_queries"
    help = "Gets data using the retriever and the saved user queries"
    
-   def handle(self, *args, **options):
-      logger.debug("hello")          
+   def handle(self, *args, **options):        
       query_limit = 1
       number_of_queries = 100
       
@@ -38,12 +37,13 @@ class Command(BaseCommand):
             query.pop("location", None)
          query["quantity"] = query_limit*100
          query["query_limit"] = query_limit
+         query["fail_hard"] = True
          
          # Get tweets from twitter
          tweets = {}
          try:
             tweets = retriever.fetch(**query)
-         except (TwythonRateLimitError, OGReLimitError) as e:
+         except (OGReLimitError, TwythonRateLimitError) as e:
             logger.error(e)
             break
          except Exception, e:

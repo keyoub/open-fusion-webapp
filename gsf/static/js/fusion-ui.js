@@ -32,7 +32,7 @@ $( document ).ready(function() {
    // Custom form validation on submit
    var frm = $("#fuseform");
    frm.submit(function(e){
-      if (check_form("aftershocks") || check_form("misc_form")){
+      if (check_form("aftershocks")){// || check_form("misc_form")){
          if($("#id_misc_form-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
@@ -107,9 +107,24 @@ $( document ).ready(function() {
       $("#gsfAftDiv").toggle(options);
    }
    
+   function resetForm($form) {
+      $("#fuseform").find("input, textarea").each(function(){
+         if ($(this).prop("id").indexOf("live_option") < 0 &&
+             $(this).prop("type").indexOf("hidden") < 0){
+            $(this).val("");
+         }
+      });
+      $("#fuseform").find("input:checkbox").each(function(){
+         if ($(this).prop("id").indexOf("live_option") < 0){
+            $(this).removeAttr('checked');
+         }
+      });
+   }
+   
    // Cache and live search switches
    $("#id_misc_form-live_option_0").click(function () {
-      $("#aftEnable").css("display", "none");
+      resetForm($("#fuseform"));
+      //$("#aftEnable").css("display", "none");
       $("#twitterEpi").css("display", "none");
       $("#twtEpiDiv").css("display", "none");
       $("#gsfEpi").css("display", "none");
@@ -119,6 +134,7 @@ $( document ).ready(function() {
    });
    
    $("#id_misc_form-live_option_1").click(function () {
+      resetForm($("#fuseform"));
       $("#twitterEpi").css("display", "");
       $("#twtEpiDiv").css("display", "");
       $("#gsfEpi").css("display", "");
@@ -128,7 +144,13 @@ $( document ).ready(function() {
    });
    
    if ($("#id_misc_form-live_option_0").is(":checked")){
-      $("#id_misc_form-live_option_0").trigger("click");
+      $("#twitterEpi").css("display", "none");
+      $("#twtEpiDiv").css("display", "none");
+      $("#gsfEpi").css("display", "none");
+      $("#gsfEpiDiv").css("display", "none");
+      $("#gsfAft").css("display", "none");
+      $("#gsfAftDiv").css("display", "none");
+      //$("#id_misc_form-live_option_0").trigger("click");
    }
    
    // Initialize the UI sliders

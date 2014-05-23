@@ -5,6 +5,8 @@ from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from gsf.settings import BASE_DIR
 from api.models import Features, APIKey, Coordinates, OgreQueries
+from ogre.exceptions import OGReLimitError
+from twython import TwythonRateLimitError
 from uiforms import *
 from localquery import *
 from remotequery import *
@@ -71,6 +73,21 @@ def index(request):
                   coords=None, radius=None
                )
             )
+         else:
+            try:
+               temp = retriever.fetch(
+                  fail_hard=True, sources=("Twitter",), 
+                  keyword="test", quantity=1
+               )
+            except (OGReLimitError, TwythonRateLimitError) as e:
+               logger.error(e)
+               message = """Unfortunately our Twitter retriever has been rate
+                            limited. We cannot do anything but wait for
+                            Twitter's tyranny to end."""
+               return render(request, "home/errors.html",
+                        {"url": "/", "message": message})
+            except Exception, e:
+               logger.error(e)
 
          if not epicenters:
             message = """Either you gave us a lousy query or
