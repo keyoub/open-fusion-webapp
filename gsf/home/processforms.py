@@ -43,44 +43,25 @@ def process_gsf_form(params, aftershocks, coords, radius):
       elif image == "imb":
          bodies = True
 
-   if (faces or bodies) and aftershocks:
+   if faces or bodies:
       results.extend(
          query_for_images(
-            faces, bodies, geo=True,
+            faces, bodies, geo=aftershocks,
             coords=coords, radius=radius
-         )
-      )
-   elif faces or bodies:
-      results.extend(
-         query_for_images(
-            faces, bodies, geo=False,
-            coords=None, radius=None
          )
       )
 
    generic_list = ["temperature", "humidity", "noise_level"]
-   exclude_list = ["image", "faces_detected", "people_detected",
-                   "humidity", "noise_level", "temperature"] 
+   exclude_list = ["image", "faces_detected", "people_detected"] 
    for k,v in params.items():
       if (k in generic_list) and v:
-         temp_list = []
-         for elem in exclude_list:
-            if elem != k:
-               temp_list.append(elem)
-         if aftershocks:
-            results.extend(
-               query_numeric_data(
-                  k, params[k+"_logic"], v, temp_list,
-                  geo=True, coords=coords, radius=radius
-               )
+         results.extend(
+            query_numeric_data(
+               k, params[k+"_logic"], v, exclude_list,
+               geo=aftershocks, coords=coords, radius=radius
             )
-         else:
-            results.extend(
-               query_numeric_data(
-                  k, params[k+"_logic"], v, temp_list,
-                  geo=False, coords=None, radius=None
-               )
-            )
+         )
+         
 
    beautify_results(results)
 

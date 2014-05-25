@@ -122,6 +122,7 @@ $( document ).ready(function() {
    }
    
    // Cache and live search switches
+   /*
    $("#id_misc_form-live_option_0").click(function () {
       //resetForm($("#fuseform"));
       //$("#aftEnable").css("display", "none");
@@ -152,6 +153,7 @@ $( document ).ready(function() {
       $("#gsfAftDiv").css("display", "none");
       //$("#id_misc_form-live_option_0").trigger("click");
    }
+   */
    
    // Initialize the UI sliders
    /*$("#id_gsf_epicenters-temperature").slider({});

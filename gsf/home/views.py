@@ -47,50 +47,50 @@ def index(request):
             logger.debug(e)
 
          epicenters, aftershocks = [], []
-         live_flag = False 
+         epi_live_flag, aft_live_flag = False, False 
          radius = misc_form.cleaned_data["radius"]
          addresses = misc_form.cleaned_data["addresses"]
 
-         if misc_form.cleaned_data["live_option"] == "live":
-            live_flag = True
+         if twitter_epicenters_form.cleaned_data["live_option"] == "live":
+            epi_live_flag = True
+         if twitter_aftershocks_form.cleaned_data["live_option"] == "live":
+            aft_live_flag = True
          
          if addresses:
             epicenters.extend(create_epicenters_from_addresses(addresses))
-
-         if not live_flag:
-            # Get twitter epicenters
-            twt_params = twitter_epicenters_form.cleaned_data
-            if twt_params["options"]:
-               epicenters.extend(process_twitter_form(
-                     twt_params, None, metadata, live_flag
-                  )
-               )
-   
-            # Get gsf epicenters
-            gsf_epicenter_params = gsf_epicenters_form.cleaned_data
-            epicenters.extend(process_gsf_form(
-                  gsf_epicenter_params, aftershocks=False,
-                  coords=None, radius=None
+            
+         # Get twitter epicenters
+         twt_params = twitter_epicenters_form.cleaned_data
+         if twt_params["options"]:
+            epicenters.extend(process_twitter_form(
+                  twt_params, None, metadata, epi_live_flag
                )
             )
-         else:
+
+         # Get gsf epicenters
+         gsf_epicenter_params = gsf_epicenters_form.cleaned_data
+         epicenters.extend(process_gsf_form(
+               gsf_epicenter_params, aftershocks=False,
+               coords=None, radius=None
+            )
+         )
+         """else:
             try:
                temp = retriever.fetch(
                   fail_hard=True
                )
             except (OGReLimitError, TwythonRateLimitError) as e:
                logger.error(e)
-               message = """Unfortunately our Twitter retriever has been rate
+               message = Unfortunately our Twitter retriever has been rate
                             limited. We cannot do anything but wait for
-                            Twitter's tyranny to end."""
+                            Twitter's tyranny to end.
                return render(request, "home/errors.html",
                         {"url": "/", "message": message})
             except Exception, e:
-               logger.error(e)
+               logger.error(e)"""
 
          if not epicenters:
-            message = """Either you gave us a lousy query or
-                         we sucked at finding results for you."""
+            message = """We couldn't find what you were looking for. """
             return render(request, "home/errors.html",
                      {"url": "/", "message": message})
 
@@ -118,7 +118,7 @@ def index(request):
                if twt_params["options"]:
                   location=(lat, lon, radius, "km")
                   aftershocks.extend(process_twitter_form(
-                        twt_params, location, metadata, live_flag
+                        twt_params, location, metadata, aft_live_flag
                      )
                   )
 
@@ -197,7 +197,7 @@ def index(request):
                   "twitter_aftershocks_form": twitter_aftershocks_form,
                   "radius": misc_fields[0],
                   "addresses": misc_fields[1],
-                  "live": misc_fields[2],
+                  #"live": misc_fields[2],
                  })
 
 """
