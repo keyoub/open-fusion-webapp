@@ -24,8 +24,7 @@ def query_third_party(
    options, 
    location,
    interval,
-   query_limit,
-   cache_flag
+   query_limit
 ):
    
    results = []
@@ -35,16 +34,6 @@ def query_third_party(
       query_limit = 5
       
    quantity = query_limit*100
-   
-   # Save the user query for cache buliding system
-   """try:         
-      query = OgreQueries(sources=sources,
-         media=options,
-         keyword=keyword,
-         location=location[:-1] if location else None)
-      query.save()
-   except Exception, e:
-      logger.debug(e)"""
       
    outside_data = {}
    try:
@@ -79,14 +68,6 @@ def query_third_party(
             logger.debug(e)
 
    results.extend(outside_data.get("features", []))
-   
-   # Get data from local cache if the option is True
-   if cache_flag and (interval is None):
-      for source in sources:
-         results.extend(query_cached_third_party(
-               source, keyword, options, location
-            )
-         )
 
    return (error, results)
    

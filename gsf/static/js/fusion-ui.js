@@ -4,7 +4,8 @@ $( document ).ready(function() {
    function check_form(form_name){
       var valid = false;
       $("#fuseform").find("input, textarea").each(function(){
-         if ($(this).prop("id").indexOf(form_name) >= 0){
+         if ($(this).prop("id").indexOf(form_name) >= 0 &&
+             $(this).prop("id").indexOf("live_option") < 0){
             if ($(this).prop("type") != "checkbox" &&
                 $(this).val() != ""){
                valid = true;
@@ -31,7 +32,7 @@ $( document ).ready(function() {
    // Custom form validation on submit
    var frm = $("#fuseform");
    frm.submit(function(e){
-      if (check_form("aftershocks")){
+      if (check_form("aftershocks") || check_form("misc_form")){
          if($("#id_misc_form-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
@@ -105,4 +106,34 @@ $( document ).ready(function() {
    if (check_form("gsf_aftershocks")){
       $("#gsfAftDiv").toggle(options);
    }
+   
+   // Cache and live search switches
+   $("#id_misc_form-live_option_0").click(function () {
+      $("#aftEnable").css("display", "none");
+      $("#twitterEpi").css("display", "none");
+      $("#twtEpiDiv").css("display", "none");
+      $("#gsfEpi").css("display", "none");
+      $("#gsfEpiDiv").css("display", "none");
+      $("#gsfAft").css("display", "none");
+      $("#gsfAftDiv").css("display", "none");      
+   });
+   
+   $("#id_misc_form-live_option_1").click(function () {
+      $("#twitterEpi").css("display", "");
+      $("#twtEpiDiv").css("display", "");
+      $("#gsfEpi").css("display", "");
+      $("#gsfEpiDiv").css("display", "");
+      $("#gsfAft").css("display", "");
+      $("#gsfAftDiv").css("display", "");      
+   });
+   
+   // Initialize the UI sliders
+   /*$("#id_gsf_epicenters-temperature").slider({});
+   $("#id_gsf_epicenters-humidity").slider({});
+   $("#id_gsf_epicenters-noise_level").slider({});
+   
+   $("#id_gsf_aftershocks-temperature").slider({});
+   $("#id_gsf_aftershocks-humidity").slider({});
+   $("#id_gsf_aftershocks-noise_level").slider({});*/
+   
 });

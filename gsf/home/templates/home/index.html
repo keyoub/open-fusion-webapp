@@ -10,12 +10,26 @@
 {% block main %}
 
 <link href="{% static "css/nprogress.css" %}" rel="stylesheet">
-<script src="{% static "js/nprogress.js" %}"></script>
+<link href="{% static "css/toggle-switch.css" %}" rel="stylesheet">
+
+<script type="text/javascript" src="{% static "js/nprogress.js" %}"></script>
 
 <h1>Fusion Interface</h1>
 
 <form action="/" method="post" class="form" id="fuseform">
    {% csrf_token %}
+   
+   <h2>Search Type</h2>
+   
+   <div class="switch-toggle well">
+      <input id="id_misc_form-live_option_1" name="misc_form-live_option" type="radio" value="cache" checked />
+      <label for="id_misc_form-live_option_1" onclick="">Cached</label>
+      
+      <input id="id_misc_form-live_option_0" name="misc_form-live_option" type="radio" value="live" />
+      <label for="id_misc_form-live_option_0" onclick="">Live</label>
+      
+      <a class="btn btn-primary"></a>
+   </div>
    <div id="fusionTopRow" class="row">
       <div class="col-md-5">
          <h2>Epicenters
@@ -97,9 +111,10 @@
       </div>
       <div class="modal-body">
          <p>
-            Epicenters refer to the first query set you provide to get geo locations.
-            After the query is performed, a set of the coordinates are retrieved which then are used
-            to get geo data related to the query set you pass in on the Aftershocks form.<br />
+            When you pass parameters in the epicenters section, we use these information to get geo
+            coordinates to create epicenters. The twitter and senory data are used to get randomized locations 
+            around the world whereas the locations entered are there so that you have more
+            control over where you want to see aftershocks.<br />
             <br />
             Below you can see a screenshot of what the map visualization looks like when you 
             create a Fusion query.<br />

@@ -34,7 +34,7 @@ def beautify_results(packages):
    Process the two UI forms for GSF querying and get 
    results for each form query parameters
 """
-def process_gsf_form(params, aftershocks, coords, radius):
+def process_gsf_form(params, aftershocks, coords, radius):   
    results, third_party_results = [], {}
    faces, bodies = False, False
    for image in params["images"]:
@@ -89,7 +89,7 @@ def process_gsf_form(params, aftershocks, coords, radius):
 """
    Process the two Twitter Forms
 """
-def process_twitter_form(params, location, metadata):
+def process_twitter_form(params, location, metadata, live_search_flag):
    data, cached_tweets, live_tweets = [], [], []
 
    # Save the user query for cache buliding system
@@ -103,22 +103,18 @@ def process_twitter_form(params, location, metadata):
    except Exception, e:
       logger.debug(e)
    
-   # First search the local cache and if no results are found,
-   # pass the query to the OGRe
-   cached_tweets = query_cached_third_party(
-      "Twitter", params["keywords"], 
-      params["options"], location
-   )
-   if len(cached_tweets) is 0:
+   if live_search_flag:
       live_tweets = query_third_party(
          ("Twitter",), params["keywords"], params["options"], 
-         location, None, None, False
+         location, None, None
       )
       data.extend(live_tweets[1])
-      """if (result[0] != "") and (len(result[1]) == 0):
-         return render(request, "home/errors.html",
-            {"url": "/", "message": result[0]})"""
-   data.extend(cached_tweets)
+   else:
+      cached_tweets = query_cached_third_party(
+         "Twitter", params["keywords"], 
+         params["options"], location
+      )     
+      data.extend(cached_tweets[:30])
       
    return data
 
