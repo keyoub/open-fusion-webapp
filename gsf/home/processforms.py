@@ -106,7 +106,7 @@ def process_twitter_form(params, location, metadata, live_search_flag):
    if live_search_flag:
       live_tweets = query_third_party(
          ("Twitter",), params["keywords"], params["options"], 
-         location, None, None
+         location, None, 1
       )
       data.extend(live_tweets[1])
    else:

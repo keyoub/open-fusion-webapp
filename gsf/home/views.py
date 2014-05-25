@@ -56,7 +56,6 @@ def index(request):
             epicenters.extend(create_epicenters_from_addresses(addresses))
 
          if not live_flag:
-            logger.debug("cached searches 1")
             # Get twitter epicenters
             twt_params = twitter_epicenters_form.cleaned_data
             if twt_params["options"]:
@@ -109,7 +108,6 @@ def index(request):
 
                # Get gsf aftershocks
                if not live_flag:
-                  logger.debug("cached searches 1")
                   aftershocks.extend(process_gsf_form(
                        gsf_aftershock_params, aftershocks=True,
                        coords=[lon, lat], radius=radius

@@ -38,7 +38,7 @@ class Features(Document):
    
    @queryset_manager
    def objects(doc_cls, queryset):
-      return queryset.order_by("-properties.date_added")[:500]
+      return queryset.order_by("-properties.date_added")[:200]
 
 """
    Coordinates to be sent to field agents

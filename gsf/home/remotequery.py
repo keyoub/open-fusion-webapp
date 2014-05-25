@@ -31,7 +31,7 @@ def query_third_party(
    error = ""
 
    if query_limit is None:
-      query_limit = 5
+      query_limit = 1
       
    quantity = query_limit*100
       
