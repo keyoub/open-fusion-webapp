@@ -55,43 +55,54 @@ def index(request):
             epi_live_flag = True
          if twitter_aftershocks_form.cleaned_data["live_option"] == "live":
             aft_live_flag = True
+            
+         if aft_live_flag or epi_live_flag:
+            try:
+               temp = retriever.fetch(
+                  fail_hard=True, sources=("Twitter",), keyword="test"
+               )
+            except OGReLimitError as e:
+               logger.error(e)
+               reset_time = time.strftime('%H:%M:%S',
+                  time.localtime(e.reset))
+               logger.error(reset_time)
+               message = """Unfortunately our Twitter retriever has been rate
+                            limited. Please try back after 
+                            """ + reset_time 
+               return render(request, "home/errors.html",
+                        {"url": "/", "message": message})
+            except TwythonRateLimitError as e:
+               logger.error(e)
+               message = """Unfortunately our Twitter retriever has been rate
+                            limited. We cannot do anything but wait for
+                            Twitter's tyranny to end."""
+               return render(request, "home/errors.html",
+                        {"url": "/", "message": message})
+            except Exception, e:
+               logger.error(e)
+               message = """Our Twitter retriever is having problems right now.
+                            Please check back later."""
+               return render(request, "home/errors.html",
+                        {"url": "/", "message": message})
          
          if addresses:
             epicenters.extend(create_epicenters_from_addresses(addresses))
             
          # Get twitter epicenters
-         logger.debug(datetime.datetime.utcnow())
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
             epicenters.extend(process_twitter_form(
                   twt_params, None, metadata, epi_live_flag
                )
             )
-         logger.debug(datetime.datetime.utcnow())
 
          # Get gsf epicenters
-         logger.debug(datetime.datetime.utcnow())
          gsf_epicenter_params = gsf_epicenters_form.cleaned_data
          epicenters.extend(process_gsf_form(
                gsf_epicenter_params, aftershocks=False,
                coords=None, radius=None
             )
          )
-         logger.debug(datetime.datetime.utcnow())
-         """else:
-            try:
-               temp = retriever.fetch(
-                  fail_hard=True
-               )
-            except (OGReLimitError, TwythonRateLimitError) as e:
-               logger.error(e)
-               message = Unfortunately our Twitter retriever has been rate
-                            limited. We cannot do anything but wait for
-                            Twitter's tyranny to end.
-               return render(request, "home/errors.html",
-                        {"url": "/", "message": message})
-            except Exception, e:
-               logger.error(e)"""
 
          if not epicenters:
             message = """We couldn't find what you were looking for. """
@@ -111,7 +122,6 @@ def index(request):
 
          results = []
          # Create epicenters with aftershocks embedded if radius given
-         logger.debug(datetime.datetime.utcnow())
          if radius:
             for epicenter in epicenters:
                # Get aftershocks
@@ -145,16 +155,13 @@ def index(request):
                results.append(epicenter)
          else:
             results = epicenters
-         logger.debug(datetime.datetime.utcnow())
          
          #exclude_fields(results, None)
          package["features"] = results
 
-         logger.debug(datetime.datetime.utcnow())
          # Creat the path for the visualizer data and write to file
          base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
          vizit_file = dump_data_to_file("points_", base_path, package)
-         logger.debug(datetime.datetime.utcnow())
          
          # Check if the admin is logged in and make a list of
          # active phones available to send coordinates to

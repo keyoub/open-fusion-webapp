@@ -37,7 +37,6 @@ def query_third_party(
    quantity = query_limit*100
       
    outside_data = {}
-   logger.debug(datetime.datetime.utcnow())
    try:
       outside_data = retriever.fetch(sources,
                            media=options,
@@ -54,7 +53,6 @@ def query_third_party(
       logger.error(e)
    except Exception, e:
       logger.error(e)
-   logger.debug(datetime.datetime.utcnow())
 
    # Cache the data in db
    logger.debug(datetime.datetime.utcnow())
