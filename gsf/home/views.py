@@ -123,12 +123,11 @@ def index(request):
                   )
 
                # Get gsf aftershocks
-               if not live_flag:
-                  aftershocks.extend(process_gsf_form(
-                       gsf_aftershock_params, aftershocks=True,
-                       coords=[lon, lat], radius=radius
-                     )
+               aftershocks.extend(process_gsf_form(
+                    gsf_aftershock_params, aftershocks=True,
+                    coords=[lon, lat], radius=radius
                   )
+               )
                
                #exclude_fields(aftershocks, None)
                
