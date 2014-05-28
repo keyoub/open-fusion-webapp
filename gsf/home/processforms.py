@@ -15,19 +15,19 @@ def beautify_results(packages):
       if "text" not in properties:
          properties["text"] = ""
       if "noise_level" in properties:
-         properties["text"] += "<br /><b>Noise Level</b>:" + \
+         properties["text"] += "<br /><b>Noise Level:</b>" + \
                               str(properties["noise_level"]) + " dB"
       if "temperature" in properties:
-         properties["text"] += "<br /><b>Temperature</b>: " + \
-                              str(properties["temperature"]) + " &deg;F"
+         properties["text"] += "<br /><b>Temperature:</b> " + \
+                              str(properties["temperature"]) + " &deg;C"
       if "humidity" in properties:
-         properties["text"] += "<br /><b>Humidity</b>: " + \
+         properties["text"] += "<br /><b>Humidity:</b> " + \
                                str(properties["humidity"]) + " %"
       if "faces_detected" in properties:
-         properties["text"] += "<br /><b>Number of Faces Detected: </b>: " + \
+         properties["text"] += "<br /><b>Number of Faces Detected: </b> " + \
                                str(int(properties["faces_detected"]))
       if "people_detected" in properties:
-         properties["text"] += "<br /><b>Number of Bodies Detected: </b>: " + \
+         properties["text"] += "<br /><b>Number of Bodies Detected: </b> " + \
                                str(int(properties["people_detected"]))
 
 """
