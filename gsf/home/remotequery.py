@@ -1,4 +1,4 @@
-import logging
+import logging, datetime
 from ogre import OGRe
 from pygeocoder import Geocoder
 from ogre.exceptions import OGReLimitError
@@ -37,6 +37,7 @@ def query_third_party(
    quantity = query_limit*100
       
    outside_data = {}
+   logger.debug(datetime.datetime.utcnow())
    try:
       outside_data = retriever.fetch(sources,
                            media=options,
@@ -53,9 +54,11 @@ def query_third_party(
       logger.error(e)
    except Exception, e:
       logger.error(e)
+   logger.debug(datetime.datetime.utcnow())
 
    # Cache the data in db
-   for data in outside_data.get("features", []):
+   logger.debug(datetime.datetime.utcnow())
+   """for data in outside_data.get("features", []):
       kwargs = {
                "geometry": data["geometry"],
                "properties__time": data["properties"]["time"],
@@ -66,7 +69,8 @@ def query_third_party(
          try:
             feature.save()
          except Exception, e:
-            logger.debug(e)
+            logger.debug(e)"""
+   logger.debug(datetime.datetime.utcnow())
 
    results.extend(outside_data.get("features", []))
 
