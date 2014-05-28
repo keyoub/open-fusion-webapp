@@ -59,7 +59,8 @@ def index(request):
          if aft_live_flag or epi_live_flag:
             try:
                temp = retriever.fetch(
-                  fail_hard=True, sources=("Twitter",), keyword="test"
+                  fail_hard=True, sources=("Twitter",), keyword="test",
+                  quantity=1, query_limit=1
                )
             except OGReLimitError as e:
                logger.error(e)
