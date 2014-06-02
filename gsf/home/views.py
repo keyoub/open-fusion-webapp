@@ -194,6 +194,9 @@ def index(request):
                 })
       else:
          logger.debug("form validation error")
+         message = """Looks like the query you entered is not a valid one. Please try again."""
+         return render(request, "home/errors.html",
+                     {"url": "/", "message": message})
    else:
       gsf_epicenters_form = GSFFusionForm(prefix="gsf_epicenters")
       gsf_aftershocks_form = GSFFusionForm(prefix="gsf_aftershocks")

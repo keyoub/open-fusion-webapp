@@ -89,7 +89,10 @@ def process_twitter_form(params, location, metadata, live_search_flag):
          ("Twitter",), params["keywords"], params["options"], 
          location, None, 1
       )
-      data.extend(live_tweets[1])
+      if location:
+         data.extend(live_tweets[1])
+      else:
+         data.extend(live_tweets[1][:10])
    else:
       cached_tweets = query_cached_third_party(
          "Twitter", params["keywords"], 

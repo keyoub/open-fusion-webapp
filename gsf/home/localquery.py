@@ -24,10 +24,7 @@ def query_cached_third_party(source, keyword, options, location):
    if location:
       coords = [location[1], location[0]]
       radius = location[2]
-      data_set = data_set(
-         geometry__near=coords,
-         geometry__max_distance=radius*1000
-      )
+      data_set = data_set(geometry__geo_within_sphere=[coords, radius/6371.0])
    if "image" in options and "text" not in options:
       data_set = data_set(properties__image__exists=True)
    if keyword:
@@ -46,10 +43,7 @@ def query_cached_third_party(source, keyword, options, location):
 def query_for_images(faces, bodies, geo, coords, radius):
    data_set = Features.objects(properties__image__exists=True)
    if geo:
-      data_set = data_set(
-         geometry__near=coords,
-         geometry__max_distance=radius*1000
-      )
+      data_set = data_set(geometry__geo_within_sphere=[coords, radius/6371.0])
    EXCLUDE = [
       "humidity",
       "noise_level",
@@ -57,9 +51,12 @@ def query_for_images(faces, bodies, geo, coords, radius):
    ]
    data = []
    if faces:
-      data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
+      data_set = data_set(properties__faces_detected__gt=0)
+      #data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
    if bodies:
-      data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
+      data_set = data_set(properties__people_detected__gt=0)
+      #data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
+   data.extend(data_set.as_pymongo())
    exclude_fields(data, EXCLUDE)
    return data
 
@@ -70,8 +67,7 @@ def query_numeric_data(keyword, logic, value,
                        exclude_list, geo, coords, radius):
    data_set = Features.objects.all()
    if geo:
-      data_set = data_set(geometry__near=coords,
-         geometry__max_distance=radius*1000)
+      data_set = data_set(geometry__geo_within_sphere=[coords, radius/6371.0])
    query_string = "properties__" + keyword + logic
    kwargs = { query_string: value }
    data_set = data_set.filter(**kwargs).as_pymongo()
