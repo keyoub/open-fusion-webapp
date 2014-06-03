@@ -23,6 +23,7 @@ class Properties(EmbeddedDocument):
    humidity    = DecimalField(precision=5)
    faces_detected  = IntField()
    people_detected = IntField()
+   opencv_flag = BooleanField(default=False)
    
    def clean(self):
       """Saves the ISO time string as django DateTimeField"""
