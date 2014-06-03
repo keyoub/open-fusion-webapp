@@ -53,13 +53,13 @@ def census(filename, frontalface_cascade="alt"):
    
    """"""
    
-   logger.debug(filename + " Decoding image")   
+   #logger.debug(filename + " Decoding image")   
    image = cv2.imread(filename)
    
-   logger.debug("Converting to grayscale...")
+   #logger.debug("Converting to grayscale...")
    gray = image_grayscale(image, True)
    
-   logger.debug("Detecting people...")
+   #logger.debug("Detecting people...")
    people = detect_people(gray)
    probabilities = [0, 0, 0, 0]
    for (px, py, pw, ph) in people:
@@ -72,14 +72,14 @@ def census(filename, frontalface_cascade="alt"):
      if color != (255, 0, 0):
          cv2.rectangle(image, (px, py), (px+pw, py+ph), color, 2)
          
-   logger.info(
+   """logger.info(
      str(len(people))+' people (' +
      str(probabilities[1])+' confirmed, ' +
      str(probabilities[0]+probabilities[2])+' probable, ' +
      str(probabilities[3])+' potential)'
-   )
+   )"""
    
-   logger.debug("Detecting faces...")
+   #logger.debug("Detecting faces...")
    faces = detect_frontalface(gray, frontalface_cascade)
    probabilities = [0, 0, 0, 0, 0]
    for (fx, fy, fw, fh) in faces:
@@ -93,11 +93,11 @@ def census(filename, frontalface_cascade="alt"):
      center = ((fx+(fx+fw))/2, (fy+(fy+fh))/2)
      radius = (((fx-center[0])**2)+((fy-center[1])**2))**(1.0/2)
      cv2.circle(image, center, int(round(radius)), color, 2)
-   logger.info(
+   """logger.info(
      str(len(faces))+' faces (' +
      str(probabilities[2])+' confirmed, ' +
      str(probabilities[1]+probabilities[3])+' probable, ' +
      str(probabilities[0]+probabilities[4])+' potential)'
-   )
+   )"""
    
    return [len(faces), len(people)]

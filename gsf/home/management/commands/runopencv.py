@@ -8,16 +8,13 @@ import logging, os, time, subprocess
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-   args = "number_of_queries"
    help = "Gets data using the retriever and the saved user queries"
    
    def handle(self, *args, **options):
       try:
          images = Features.objects(properties__image__exists=True,
-            properties__opencv_flag=False)
+            properties__opencv_flag=False)[:100]
             
-         logger.debug(len(images))
-         
          for image in images:
             img = b64decode(image.properties.image)
             folder = "home/management/commands/tempdata/temp.jpg"
