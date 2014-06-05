@@ -3,18 +3,24 @@ from api.models import Features
 from detect import census
 from base64 import b64decode
 from gsf.settings import BASE_DIR
-import logging, os, time, subprocess
+import logging, os
 
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-   help = "Gets data using the retriever and the saved user queries"
+   args = "number_of_images"
+   help = "Run OpenCV on newly added images to the database."
    
    def handle(self, *args, **options):
       try:
+         number_of_images = 100
+
+         for num in args:
+            number_of_images = int(num)
+
          images = Features.objects(properties__image__exists=True,
-            properties__opencv_flag=False)[:100]
-            
+            properties__opencv_flag=False)[:number_of_images]
+         
          for image in images:
             img = b64decode(image.properties.image)
             folder = "home/management/commands/tempdata/temp.jpg"
@@ -38,6 +44,8 @@ class Command(BaseCommand):
                
             image.properties.opencv_flag = True
             image.save()
+
+         logger.info("runopencv completed on %d images." % len(images))
       except Exception as e:
          logger.debug(e)
    

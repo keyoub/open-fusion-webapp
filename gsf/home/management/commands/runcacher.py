@@ -17,7 +17,7 @@ class Command(BaseCommand):
       number_of_queries = 100
       
       for number in args:
-         number_of_queries = number
+         number_of_queries = int(number)
                
       retriever = OGRe ({
          "Twitter": {
