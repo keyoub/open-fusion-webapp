@@ -58,7 +58,11 @@ def query_for_images(faces, bodies, geo, coords, radius):
       #data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
    data.extend(data_set.as_pymongo())
    exclude_fields(data, EXCLUDE)
-   return data
+   
+   data = list(data)
+   random.shuffle(data)
+
+   return data[:30]
 
 """
    Query the local db for non-image data
