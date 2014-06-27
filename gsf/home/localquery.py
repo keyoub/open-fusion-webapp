@@ -1,5 +1,5 @@
 from api.models import Features, Coordinates, OgreQueries
-import logging, random
+import logging, random, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +29,8 @@ def query_cached_third_party(source, keyword, options, location):
       data_set = data_set(properties__image__exists=True)
    if keyword:
       data_set = data_set(properties__text__icontains=keyword)
-      
+    
    data_set = list(data_set.as_pymongo())
-   random.shuffle(data_set)
    
    exclude_fields(data_set, None)
    
@@ -49,20 +48,18 @@ def query_for_images(faces, bodies, geo, coords, radius):
       "noise_level",
       "temperature"
    ]
-   data = []
    if faces:
       data_set = data_set(properties__faces_detected__gt=0)
-      #data.extend(data_set(properties__faces_detected__gt=0).as_pymongo())
    if bodies:
       data_set = data_set(properties__people_detected__gt=0)
-      #data.extend(data_set(properties__people_detected__gt=0).as_pymongo())
-   data.extend(data_set.as_pymongo())
-   exclude_fields(data, EXCLUDE)
-   
-   data = list(data)
-   random.shuffle(data)
 
-   return data[:30]
+   data_set = data_set.as_pymongo()[:15]
+   exclude_fields(data_set, EXCLUDE)
+   
+   #data = list(data)
+   #random.shuffle(data)
+
+   return data_set
 
 """
    Query the local db for non-image data

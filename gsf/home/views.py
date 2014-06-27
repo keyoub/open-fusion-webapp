@@ -88,7 +88,8 @@ def index(request):
          
          if addresses:
             epicenters.extend(create_epicenters_from_addresses(addresses))
-            
+         
+
          # Get twitter epicenters
          twt_params = twitter_epicenters_form.cleaned_data
          if twt_params["options"]:
@@ -145,8 +146,6 @@ def index(request):
                   )
                )
                
-               #exclude_fields(aftershocks, None)
-               
                # Add the epicenter with added aftershocks to the package
                epicenter["properties"]["radius"] = radius*1000               
                epicenter["properties"]["related"] = { 
@@ -157,9 +156,8 @@ def index(request):
          else:
             results = epicenters
          
-         #exclude_fields(results, None)
          package["features"] = results
-
+         
          # Creat the path for the visualizer data and write to file
          base_path = os.path.join(BASE_DIR, "static", "vizit", "data")
          vizit_file = dump_data_to_file("points_", base_path, package)

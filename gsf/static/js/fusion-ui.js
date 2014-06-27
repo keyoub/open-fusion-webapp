@@ -32,7 +32,7 @@ $( document ).ready(function() {
    // Custom form validation on submit
    var frm = $("#fuseform");
    frm.submit(function(e){
-      if (check_form("aftershocks")){// || check_form("misc_form")){
+      if (check_form("aftershocks") || check_form("radius")){
          if($("#id_misc_form-radius").val() == ""){
             e.preventDefault();
             alert("To get aftershocks you must enter a Radius.");
