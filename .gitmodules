@@ -1,0 +1,3 @@
+[submodule "gsf/static/vizit"]
+	path = gsf/static/vizit
+	url = https://github.com/dmtucker/vizit.git
