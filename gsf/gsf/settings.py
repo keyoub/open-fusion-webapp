@@ -50,6 +50,8 @@ MIDDLEWARE_CLASSES = (
     'minidetector.Middleware',
 )
 
+DEBUG = True
+
 ROOT_URLCONF = 'gsf.urls'
 
 WSGI_APPLICATION = 'gsf.wsgi.application'

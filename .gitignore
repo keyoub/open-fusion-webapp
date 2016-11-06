@@ -8,3 +8,4 @@ temp.jpg
 .DS_Store
 local_settings.py
 db.sqlite3
+data/
